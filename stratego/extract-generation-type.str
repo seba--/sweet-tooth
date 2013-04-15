@@ -56,7 +56,7 @@ rules // extract type
     ; <map(extract-generation-type-from-term)> terms => types
     ; <push-call> (def, strats, types) => maybe-skip
     ; if <?Some(type)> maybe-skip
-        then !maybe-skip
+        then !type
         else finally(
                { LocalStrats, Env:
                    <bind-strats> (vstrats, strats)
@@ -219,6 +219,7 @@ rules // runtime support
   skip-call =
       ?call
     ; <elem> (call, <Stack>)
+    ; get-current-type
 
 rules // strategy management
   bind-strats = ?([],[])

@@ -4,7 +4,15 @@ imports
 rules
   stdlib-generation-type =
       ?("concat_strings_0_0", [], [], list)
-    ; <concat-string-types> list
+    ; <unknown-or(concat-string-types)> list
+
+  stdlib-generation-type =
+      ?("map_1_0", [strat], [], list)
+    ; <unknown-or(map(unknown-or(with-current-type(<extract-generation-type> strat))))> list
+
+  stdlib-generation-type =
+      ?("collect_all_1_0", [strat], [], list)
+    ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> list
 
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")

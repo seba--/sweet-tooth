@@ -98,13 +98,13 @@ rules // type matching
   match-pat =
       ?( Var(v)
        , type)
-    ; if <lookup-var> v => pat
-        then <match-pat> (pat, type)
+    ; if <lookup-var> v => var-type
+        then <match-type> (var-type, type)
         else <bind-var> (v, type)
       end
 
   match-pat =
-    fatal-err(|"match pat is stuck")
+    fail; fatal-err(|"match pat is stuck")
 
 rules // term typing
   extract-generation-type-from-term =
@@ -121,6 +121,11 @@ rules // term typing
 
   extract-generation-type-from-term =
     fatal-err(|"extract-generation-type-from-term is stuck")
+
+rules // type matching
+
+  match-type =
+    fatal-err(|"match type is stuck")
 
 rules // auxiliary type functions
   set-current-type = rules ( CurrentType := <id> )

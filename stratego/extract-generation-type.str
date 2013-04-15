@@ -1,0 +1,73 @@
+module extract-generation-type
+imports 
+  libstratego-lib
+imports 
+  org/sugarj/languages/Stratego
+
+rules
+  main = io-wrap(extra-options,
+    extract-generation-type-main)
+
+  extra-options =
+    ArgOption(
+      "-desugar"
+    , rules(DesugarName := <id>)
+    , !"-desugar <strategy-name> Name of the desugaring strategy."
+    )
+
+rules // extract type
+  extract-generation-type-main = 
+      ?Specification([_,Strategies(<id>)])
+    ; rules ( AllStrats := <id> )
+    ; <set-current-type> <next-unknown-type>
+    ; <lookup-strategy> <DesugarName>
+    ; extract-generation-type
+
+
+  extract-generation-type =
+    // TODO implement variable scoping
+      ?Scope(vars, body)
+    ; <with-scoped-vars(extract-generation-type|vars)> body
+
+  extract-generation-type =
+      ?Seq(s1, s2)
+    ; <extract-generation-type> s1
+    ; <extract-generation-type> s2
+
+  extract-generation-type =
+      ?Match(pat)
+    ; <is-current-match-feasible> pat
+
+  extract-generation-type =
+    fatal-err(|"extract-generation-type is stuck")
+
+rules // type matching
+  is-current-match-feasible = 
+      !(<get-current-type>, <id>)
+    ; is-match-feasible
+
+  is-match-feasible =
+      ?(Unknown(_), _)
+
+rules // auxiliary type functions
+  set-current-type = rules ( CurrentType := <id> )
+  get-current-type = CurrentType
+  next-unknown-type = !Unknown(<newname> "X")
+
+rules // name binding
+  bind-var = 
+      ?(name, type)
+    ; rules ( Env :+ name -> type )
+
+  lookup-var = Env
+
+  with-scoped-vars(s|vars) = s
+
+rules // strategy management
+  lookup-strategy = ?name; <lookup-strategy(|name)> <AllStrats>
+
+  lookup-strategy(|name) = ?[SDefT(name, [] , [], <id>) | _]
+  lookup-strategy(|name) = ?[_ | <lookup-strategy(|name)>]
+  
+signature constructors
+  Unknown : String -> Type

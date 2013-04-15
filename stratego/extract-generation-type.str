@@ -21,13 +21,16 @@ rules // extract type
     ; rules ( AllStrats := <id> )
     ; <set-current-type> <next-unknown-type>
     ; <lookup-strategy> <DesugarName>
+    ; ?SDefT(_, [], [], <id>)
     ; extract-generation-type
 
 
   extract-generation-type =
-    // TODO implement variable scoping
       ?Scope(vars, body)
-    ; <with-scoped-vars(extract-generation-type|vars)> body
+        // TODO only scope `vars`, not all of the environment
+    ; { Env:
+        <extract-generation-type> body
+      }
 
   extract-generation-type =
       ?Seq(s1, s2)
@@ -42,6 +45,18 @@ rules // extract type
   extract-generation-type =
       ?Build(temp)
     ; <extract-generation-type-from-term> temp
+    ; set-current-type
+
+  extract-generation-type =
+      ?CallT(SVar(name), strats, terms)
+    ; <lookup-strategy> name
+    ; ?SDefT(_, vstrats, vterms, body)
+    ; <map(extract-generation-type-from-term)> terms => types
+    ; { LocalStrats, Env:
+          <bind-strats> (vstrats, strats)
+        ; <bind-vars> (vterms, types)
+        ; <extract-generation-type> body
+      }
 
   extract-generation-type =
     fatal-err(|"extract-generation-type is stuck")
@@ -99,14 +114,25 @@ rules // name binding
       ?(name, type)
     ; rules ( Env :+ name -> type )
 
+  bind-vars = ?([],[])
+  bind-vars = 
+      ?([v|vs], [type|types])
+    ; <bind-var> (v, type)
+    ; <bind-strats> (vs, types)
+
   lookup-var = Env
 
-  with-scoped-vars(s|vars) = s
-
 rules // strategy management
+  bind-strats = ?([],[])
+  bind-strats = 
+      ?([v|vs], [strat|strats])
+    ; rules ( LocalStrats :+ v -> strat )
+    ; <bind-strats> (vs, strats)
+
   lookup-strategy = ?name; <lookup-strategy(|name)> <AllStrats>
 
-  lookup-strategy(|name) = ?[SDefT(name, [] , [], <id>) | _]
+  lookup-strategy(|name) = <LocalStrats> name
+  lookup-strategy(|name) = ?[strat@SDefT(name, _, _, _) | _]; !strat
   lookup-strategy(|name) = ?[_ | <lookup-strategy(|name)>]
   lookup-strategy(|name) = <fatal-err(|"Unbound strategy name: ")> name
   

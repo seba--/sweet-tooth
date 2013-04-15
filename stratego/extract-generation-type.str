@@ -51,6 +51,7 @@ rules // extract type
       ?CallT(SVar(name), strats, terms)
     ; <lookup-strategy> name
     ; ?SDefT(_, vstrats, vterms, body)
+    ; <debug(!"call ")> name
     ; <map(extract-generation-type-from-term)> terms => types
     ; { LocalStrats, Env:
           <bind-strats> (vstrats, strats)
@@ -123,6 +124,10 @@ rules // term typing
     fatal-err(|"extract-generation-type-from-term is stuck")
 
 rules // type matching
+
+  match-type =
+      ?(Unknown(_), t@Unknown(_))
+    ; !t
 
   match-type =
     fatal-err(|"match type is stuck")

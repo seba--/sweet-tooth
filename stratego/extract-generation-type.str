@@ -3,6 +3,8 @@ imports
   libstratego-lib
 imports 
   org/sugarj/languages/Stratego
+imports
+  stdlib-generation-types
 
 rules
   main = io-wrap(extra-options,
@@ -20,7 +22,7 @@ rules // extract type
       ?Specification([_,Strategies(<id>)])
     ; rules ( AllStrats := <id> )
     ; <set-current-type> <next-unknown-type>
-    ; <lookup-strategy> <DesugarName>
+    ; <lookup-strategy <+ fatal-err(|"Desugaring strategy undefined: ")> <DesugarName>
     ; ?SDefT(_, [], [], <id>)
     ; extract-generation-type
 
@@ -50,14 +52,27 @@ rules // extract type
   extract-generation-type =
       ?CallT(SVar(name), strats, terms)
     ; <lookup-strategy> name
-    ; ?SDefT(_, vstrats, vterms, body)
-    ; <debug(!"call ")> name
+    ; ?def@SDefT(_, vstrats, vterms, body)
     ; <map(extract-generation-type-from-term)> terms => types
-    ; { LocalStrats, Env:
-          <bind-strats> (vstrats, strats)
-        ; <bind-vars> (vterms, types)
-        ; <extract-generation-type> body
-      }
+    ; <push-call> (def, strats, types) => maybe-skip
+    ; if <?Some(type)> maybe-skip
+        then !maybe-skip
+        else finally(
+               { LocalStrats, Env:
+                   <bind-strats> (vstrats, strats)
+                 ; <bind-vars> (vterms, types)
+                 ; <extract-generation-type> body
+               }
+             , <pop-call> (def, strats, types)
+             )
+      end
+
+  // call of stdlib function
+  extract-generation-type =
+      ?CallT(SVar(name), strats, terms)
+    ; <not(lookup-strategy)> name
+    ; <map(extract-generation-type-from-term)> terms => types
+    ; <stdlib-generation-type> (name, strats, types, <get-current-type>)
 
   extract-generation-type =
       ?GuardedLChoice(cond,s1,s2)
@@ -94,7 +109,7 @@ rules // type matching
 
   match-pat =
       ?( Anno(Str(s), _)
-       , s)
+       , Str([s]))
 
   match-pat =
       ?( Var(v)
@@ -109,12 +124,20 @@ rules // type matching
 
 rules // term typing
   extract-generation-type-from-term =
+      ?Anno(Op("Nil", []), _)  
+    ; ![]
+
+  extract-generation-type-from-term =
+      ?Anno(Op("Cons", [hd, tl]), _)  
+    ; ![<extract-generation-type-from-term> hd | <extract-generation-type-from-term> tl]
+
+  extract-generation-type-from-term =
       ?Anno(Op(cons, kids), _)  
     ; !cons#(<map(extract-generation-type-from-term)> kids)
 
   extract-generation-type-from-term =
       ?Anno(Str(s), _)  
-    ; !s
+    ; !Str([s])
 
   extract-generation-type-from-term =
       ?Var(<id>)
@@ -133,10 +156,7 @@ rules // type matching
     fatal-err(|"match type is stuck")
 
 rules // auxiliary type functions
-  set-current-type = rules ( CurrentType := <id> )
-  get-current-type = CurrentType
   next-unknown-type = !Unknown(<newname> "X")
-
 
   alternative-types = ?(t, t); !t
   alternative-types = 
@@ -157,6 +177,29 @@ rules // name binding
 
   lookup-var = Env
 
+rules // runtime support
+
+  set-current-type = rules ( CurrentType := <id> )
+  get-current-type = CurrentType
+  
+  try-init-stack = where(Stack <+ rules ( Stack := [] ))
+
+  push-call =
+      ?(def@SDefT(name,_,_,_), strats, types)
+//  ; <debug(!"call ")> (name, strats, types, <get-current-type>)
+    ; try-init-stack
+    ; !(def, strats, types, <get-current-type>) => call
+    ; (!Some(<skip-call>) <+ rules ( Stack := [call | <Stack>] ))
+
+  pop-call =
+      ?(def, strats, types)
+    ; Stack => [_ | rest]
+    ; rules (Stack := rest)
+
+  skip-call =
+      ?call
+    ; <elem> (call, <Stack>)
+
 rules // strategy management
   bind-strats = ?([],[])
   bind-strats = 
@@ -169,7 +212,6 @@ rules // strategy management
   lookup-strategy(|name) = <LocalStrats> name
   lookup-strategy(|name) = ?[strat@SDefT(name, _, _, _) | _]; !strat
   lookup-strategy(|name) = ?[_ | <lookup-strategy(|name)>]
-  lookup-strategy(|name) = <fatal-err(|"Unbound strategy name: ")> name
   
 signature constructors
   Unknown : String      -> Type

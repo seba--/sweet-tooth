@@ -1,0 +1,25 @@
+module stdlib-generation-types
+imports
+  extract-generation-type
+rules
+  stdlib-generation-type =
+      ?("concat_strings_0_0", [], [], list)
+    ; <concat-string-types> list
+
+  stdlib-generation-type =
+    fatal-err(|"Unknown stdlib function: ")
+
+
+rules
+  concat-string-types = ?[]; !Str([])
+  concat-string-types = ?[Str(ss)]; !Str(ss)
+  concat-string-types = ?[Unknown(v)]; !Str([Unknown(v)])
+  concat-string-types = 
+      ?[Str(ss) , Str(ss2) | list]
+    ; <concat-string-types> [Str(<conc> (ss, ss2)) | list]
+  concat-string-types = 
+      ?[Str(ss) , Unknown(v) | list]
+    ; <concat-string-types> [Str(<conc> (ss, [Unknown(v)])) | list]
+  concat-string-types = 
+      ?[Unknown(v) , Str(ss) | list]
+    ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]

@@ -108,6 +108,7 @@ rules // strategy management
 
   lookup-strategy(|name) = ?[SDefT(name, [] , [], <id>) | _]
   lookup-strategy(|name) = ?[_ | <lookup-strategy(|name)>]
+  lookup-strategy(|name) = <fatal-err(|"Unbound strategy name: ")> name
   
 signature constructors
   Unknown : String -> Type

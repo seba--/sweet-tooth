@@ -36,18 +36,58 @@ rules // extract type
 
   extract-generation-type =
       ?Match(pat)
-    ; <is-current-match-feasible> pat
+    ; !(pat, <get-current-type>)
+    ; match-pat
+
+  extract-generation-type =
+      ?Build(temp)
+    ; <extract-generation-type-from-term> temp
 
   extract-generation-type =
     fatal-err(|"extract-generation-type is stuck")
 
 rules // type matching
-  is-current-match-feasible = 
-      !(<get-current-type>, <id>)
-    ; is-match-feasible
+  match-pat =
+      ?( Anno(Op(cons, kids), _)
+       , cons#(kids'))
+    ; <zip; map(match-pat)> (kids, kids')
 
-  is-match-feasible =
-      ?(Unknown(_), _)
+  match-pat =
+      ?( Anno(Op(cons, kids), _)
+       , Unknown(_))
+    ; <map(next-unknown-type)> kids => unknown-kids
+    ; <zip; map(match-pat)> (kids, unknown-kids)
+
+  match-pat =
+      ?( Anno(Str(s), _)
+       , s)
+
+  match-pat =
+      ?( Var(v)
+       , type)
+    ; if <lookup-var> v => pat
+        then <match-pat> (pat, type)
+        else <bind-var> (v, type)
+      end
+
+  match-pat =
+    fatal-err(|"match pat is stuck")
+
+rules // term typing
+  extract-generation-type-from-term =
+      ?Anno(Op(cons, kids), _)  
+    ; !cons#(<map(extract-generation-type-from-term)> kids)
+
+  extract-generation-type-from-term =
+      ?Anno(Str(s), _)  
+    ; !s
+
+  extract-generation-type-from-term =
+      ?Var(<id>)
+    ; lookup-var
+
+  extract-generation-type-from-term =
+    fatal-err(|"extract-generation-type-from-term is stuck")
 
 rules // auxiliary type functions
   set-current-type = rules ( CurrentType := <id> )

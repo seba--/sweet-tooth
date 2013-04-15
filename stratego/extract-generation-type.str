@@ -59,6 +59,24 @@ rules // extract type
       }
 
   extract-generation-type =
+      ?GuardedLChoice(cond,s1,s2)
+    ; get-current-type => orig-type
+    ; <extract-generation-type> cond
+    ; <extract-generation-type> s1 => t1
+    ; get-current-type => pos-type
+    ; <set-current-type> orig-type
+    ; <extract-generation-type> s2 => t2
+    ; get-current-type => neg-type
+      // set current as merge of pos and neg
+    ; <alternative-types; set-current-type> (pos-type, neg-type)
+      // return result of s1 or s2
+    ; <alternative-types> (t1, t2)
+
+  extract-generation-type =
+      ?Id()
+    ; get-current-type
+
+  extract-generation-type =
     fatal-err(|"extract-generation-type is stuck")
 
 rules // type matching
@@ -109,6 +127,13 @@ rules // auxiliary type functions
   get-current-type = CurrentType
   next-unknown-type = !Unknown(<newname> "X")
 
+
+  alternative-types = ?(t, t); !t
+  alternative-types = 
+      ?(c#(kids), c#(kids'))
+    ; !c#(<zip; alternative-types> (kids, kids'))
+  alternative-types = ?(t1, t2); !Alt(t1, t2)
+
 rules // name binding
   bind-var = 
       ?(name, type)
@@ -137,4 +162,5 @@ rules // strategy management
   lookup-strategy(|name) = <fatal-err(|"Unbound strategy name: ")> name
   
 signature constructors
-  Unknown : String -> Type
+  Unknown : String      -> Type
+  Alt     : Type * Type -> Type

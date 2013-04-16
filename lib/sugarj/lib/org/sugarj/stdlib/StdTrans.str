@@ -1,0 +1,74 @@
+module org/sugarj/stdlib/StdTrans
+imports libstrategolib
+
+imports org/sugarj/transformations/Analyze
+imports org/sugarj/transformations/ATerm
+imports org/sugarj/transformations/GenerateSignatures
+imports org/sugarj/transformations/LayoutSugar
+imports org/sugarj/transformations/Renaming
+
+signature constructors
+  CompilationUnit : NameSpaceDec * List(ImportDec) * List(BodyDec) -> CompilationUnit
+
+strategies
+  compile-error = ?CompileError(_,_)
+  compile-error(|msg) = !CompileError(msg,<id>)
+  
+  desugar = fail
+  changed-tree(s) = ?t; s; not(equal(|t))
+  
+  unlocked-bottomup(s) = ?Locked(t) < id + all(unlocked-bottomup(s)); s
+  traverse(s) = compile-error <+ unlocked-bottomup(try(s; traverse(s)))
+  unlock = bottomup(try(?Locked(<id>)))
+
+  desugar-main = internal-main
+  internal-main = traverse(desugar); unlock
+  main = io-wrap(internal-main)
+  
+strategies
+  debug-strat(what, s) =
+    debug-analysis(!<conc-strings>("IN ", <what>, ": "));
+    (s < debug-analysis(!<conc-strings>("OUT ", <what>, ": "))
+       + debug-analysis(!<conc-strings>("FAILED ", <what>, ": ")); fail)
+
+strategies
+  generate-desugared :
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      filename := <guarantee-extension(|"desug")> path;
+      result   := <desugar-main; bottomup(strip-annos)> selected // we just return the input term
+
+  generate-desugared-analysis :
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      filename := <guarantee-extension(|"desug")> path;
+      result   := <desugar-main; nice-analysis-data-term> selected // we just return the input term
+  
+  generate-aterm:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result   := <bottomup(strip-annos)> selected
+
+  generate-aterm-analysis:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result   := <nice-analysis-data-term> selected
+  
+signature
+  constructors
+    Locked : a -> a
+    CompileError : A * B -> C
+
+signature
+  constructors
+    Some : a -> Option(a)
+    None : Option(a)
+
+
+signature
+  constructors
+    Cons : a * List(a) -> List(a)
+    Nil  : List(a)
+    Conc : List(a) * List(a) -> List(a)

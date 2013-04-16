@@ -1,0 +1,9 @@
+module org/sugarj/languages/SugarHaskell
+imports org/sugarj/languages/Sugar
+
+signature constructors
+  CompilationUnit : HaskellModuleDec * List(HaskellImportdecl) * List(SugarHaskellTopdecl) -> SugarCompilationUnit
+  ModuleDec : HaskellModid * Option(HaskellExports) -> HaskellModuleDec
+  HaskellBody : HaskellOffsideTopdeclList -> SugarHaskellBody
+  SugarBody : List(SugarDefElem) -> SugarHaskellBody
+  EditorBody : List(EditorServiceSection) -> SugarHaskellBody

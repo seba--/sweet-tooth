@@ -27,7 +27,7 @@ rules // extract type
     ; extract-generation-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-  extract-generation-type = get-current-type; debug; fail
+//  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -154,7 +154,7 @@ rules // type matching
       ?( Var(v)
        , type)
     ; if <lookup-var> v => var-type
-        then <match-pat> (<explode-type; debug(!"exploded: ")> var-type, type)
+        then <match-pat> (<explode-type> var-type, type)
         else <bind-var> (v, type)
       end
 
@@ -286,7 +286,7 @@ rules // runtime support
 
   push-call =
       ?(def@SDefT(name,_,_,_), strats, types)
-//  ; <debug(!"call ")> (name, strats, types, <get-current-type>)
+    ; <debug(!"call ")> (name, strats, types, <get-current-type>)
     ; try-init-stack
     ; !(def, strats, types, <get-current-type>) => call
     ; (!Some(<skip-call>) <+ rules ( Stack := [call | <Stack>] ))

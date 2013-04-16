@@ -26,6 +26,8 @@ rules // extract type
     ; ?SDefT(_, [], [], <id>)
     ; extract-generation-type
 
+//  extract-generation-type = !(<get-current-type>,<id>); debug; fail
+  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -37,12 +39,18 @@ rules // extract type
   extract-generation-type =
       ?Seq(s1, s2)
     ; <extract-generation-type> s1
-    ; <extract-generation-type> s2
+    ; if get-current-type => Empty()
+        then !Empty()
+        else <extract-generation-type> s2
+      end
 
   extract-generation-type =
       ?Match(pat)
     ; !(pat, <get-current-type>)
-    ; match-pat
+    ; if (match-pat <+ !Empty()) => Empty()
+        then debug(!"match failed: "); <set-current-type> Empty(); !Empty()
+        else get-current-type
+      end
 
   extract-generation-type =
       ?Build(temp)
@@ -56,7 +64,7 @@ rules // extract type
     ; <map(extract-generation-type-from-term)> terms => types
     ; <push-call> (def, strats, types) => maybe-skip
     ; if <?Some(type)> maybe-skip
-        then !type
+        then !type; set-current-type
         else finally(
                { LocalStrats, Env:
                    <bind-strats> (vstrats, strats)
@@ -72,39 +80,64 @@ rules // extract type
       ?CallT(SVar(name), strats, terms)
     ; <not(lookup-strategy)> name
     ; <map(extract-generation-type-from-term)> terms => types
-    ; <stdlib-generation-type> (name, strats, types, <get-current-type>)
+    ; def := SDefT(name, None(), None(), None())
+    ; <push-call> (def, strats, types) => maybe-skip
+    ; if <?Some(type)> maybe-skip
+        then !type
+        else finally(
+               <stdlib-generation-type> (name, strats, types, <get-current-type>)
+             , <pop-call> (def, strats, types)
+             )
+      end
 
   extract-generation-type =
       ?GuardedLChoice(cond,s1,s2)
     ; get-current-type => orig-type
+
     ; <extract-generation-type> cond
-    ; <extract-generation-type> s1 => t1
-    ; get-current-type => pos-type
-    ; <set-current-type> orig-type
-    ; <extract-generation-type> s2 => t2
-    ; get-current-type => neg-type
-      // set current as merge of pos and neg
-    ; <alternative-types; set-current-type> (pos-type, neg-type)
-      // return result of s1 or s2
-    ; <alternative-types> (t1, t2)
+    ; if ?Empty()
+        then <set-current-type> orig-type
+           ; <extract-generation-type> s2
+        else <extract-generation-type> s1 => t1
+           ; get-current-type => pos-type
+           ; <set-current-type> orig-type
+           ; <extract-generation-type> s2 => t2
+           ; get-current-type => neg-type
+           // set current as merge of pos and neg
+           ; <alternative-types; set-current-type> (pos-type, neg-type)
+           // return result of s1 or s2
+           ; <alternative-types> (t1, t2)
+      end
 
   extract-generation-type =
       ?Id()
     ; get-current-type
 
   extract-generation-type =
-    fatal-err(|"extract-generation-type is stuck")
+    fatal-err(|"extract-generation-type is stuck ")
 
 rules // type matching
+  match-pat =
+      ?( Unknown(name)
+       , Unknown(name))
+
+  match-pat =
+      ?( Unknown(name1)
+       , Unknown(name2))
+    ; <not(equal)> (name1, name2)
+    ; <bind-unknown> (name1, Unknown(name2))
+
   match-pat =
       ?( Anno(Op(cons, kids), _)
        , cons#(kids'))
     ; <zip; map(match-pat)> (kids, kids')
 
   match-pat =
-      ?( Anno(Op(cons, kids), _)
-       , Unknown(_))
+      ?( t@Anno(Op(cons, kids), _)
+       , Unknown(name))
+    ; <unknown-not-free-in> (name, t)
     ; <map(next-unknown-type)> kids => unknown-kids
+    ; <bind-unknown> (name, cons#(unknown-kids))
     ; <zip; map(match-pat)> (kids, unknown-kids)
 
   match-pat =
@@ -112,10 +145,16 @@ rules // type matching
        , Str([s]))
 
   match-pat =
+      ?( t@Anno(Str(s), _)
+       , Unknown(name))
+    ; <unknown-not-free-in> (name, t)
+    ; <bind-unknown> (name, Str([<next-unknown-type>]))
+
+  match-pat =
       ?( Var(v)
        , type)
     ; if <lookup-var> v => var-type
-        then <match-type> (var-type, type)
+        then <match-pat> (<explode-type; debug(!"exploded: ")> var-type, type)
         else <bind-var> (v, type)
       end
 
@@ -125,13 +164,36 @@ rules // type matching
 
   // explosion only supported for unknowns so far
   match-pat =
-      ?( Anno(Explode(term1, term2), _)
-       , Unknown(_))
+      ?( t@Anno(Explode(term1, term2), _)
+       , Unknown(name))
+    ; <unknown-not-free-in> (name, t)
     ; <match-pat> (term1, <next-unknown-type>)
     ; <match-pat> (term2, <next-unknown-type>)
 
   match-pat =
-    fatal-err(|"match pat is stuck")
+      ?( Unknown(name)
+       , t)
+    ; <unknown-not-free-in> (name, t)
+    ; <bind-unknown> (name, t)
+
+  match-pat =
+      ?( Unknown(name)
+       , Alt(t1, t2))
+    ; next-unknown-type => type1
+    ; next-unknown-type => type2
+    ; <bind-unknown> (name, Alt(type1, type2))
+    ; <match-pat> (type1, t1)
+    ; <match-pat> (type2, t2)
+
+//  match-pat =
+//      ?( t
+//       , Alt(t1, t2))
+//    ; <match-pat> (t, t1)
+//    ; <match-pat> (t, t2)
+
+  match-pat =
+      debug(!"match pat is stuck ")
+    ; !Empty()
 
 rules // term typing
   extract-generation-type-from-term =
@@ -157,14 +219,17 @@ rules // term typing
   extract-generation-type-from-term =
     fatal-err(|"extract-generation-type-from-term is stuck")
 
-rules // type matching
-  // match-type : (expected, actual) -> true or false
+rules // explode type
 
-  match-type =
-      ?(Unknown(_), t)
-    ; !t
-
-  match-type =
+  explode-type =
+      Unknown(id); resolve-all-unknown
+  explode-type = 
+      ?cons#(kids)
+    ; !Anno(Op(cons, <map(explode-type)> kids), [])
+  explode-type =
+      ?Str(ss)
+    ; !Anno(Str(ss), [])
+  explode-type =
     fatal-err(|"match type is stuck")
 
 rules // auxiliary type functions
@@ -177,6 +242,21 @@ rules // auxiliary type functions
     ; !c#(<zip; alternative-types> (kids, kids'))
   alternative-types = ?(t1, t2); !Alt(t1, t2)
 
+  bind-unknown =
+      ?(name, type)
+    ; where(try(<resolve-unknown> name; <fatal-err(|"rebound unknown: ")> name))
+    ; debug(!"bind-unknown: ")
+    ; rules ( UnknownEnv :+ name -> type)
+
+  resolve-unknown =
+    ?Unknown(<UnknownEnv>)
+
+  resolve-all-unknown =
+      innermost(resolve-unknown)
+
+  unknown-not-free-in =
+    ?(name, t); !t; not(collect-one(?Unknown(name)))
+
 rules // name binding
   bind-var = 
       ?(name, type)
@@ -188,12 +268,12 @@ rules // name binding
     ; <bind-var> (v, type)
     ; <bind-strats> (vs, types)
 
-  lookup-var = Env
+  lookup-var = Env; resolve-all-unknown
 
 rules // runtime support
 
   set-current-type = rules ( CurrentType := <id> )
-  get-current-type = CurrentType
+  get-current-type = CurrentType; resolve-all-unknown
   with-current-type(s) = 
       where(get-current-type => orig)
     ; set-current-type
@@ -219,7 +299,7 @@ rules // runtime support
   skip-call =
       ?call
     ; <elem> (call, <Stack>)
-    ; get-current-type
+    ; next-unknown-type
 
 rules // strategy management
   bind-strats = ?([],[])
@@ -237,3 +317,4 @@ rules // strategy management
 signature constructors
   Unknown : String      -> Type
   Alt     : Type * Type -> Type
+  Empty   :                Type

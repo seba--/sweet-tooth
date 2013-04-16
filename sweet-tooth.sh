@@ -31,6 +31,7 @@ $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $SRCPATH $SRCF
 echo
 
 echo "normalize resulting Stratego file"
+NORM=/var/folders/n_/ht4vd47d3z7f9t3xzw2y1n1w0000gn/T/desugar.str.ViRqAHrz # <- XML
 NORM=`mktemp -t desugar.str`
 $STRJ -F -o $NORM -i $SUGARJ_BIN/`dirname $SRCFILE`/`basename $SRCFILE .sugj`.str -I $SUGARJ_BIN -I $SUGARJ_LIB -I $SUGARJ_LIB
 echo "Wrote normalized Stratego code"

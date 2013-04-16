@@ -15,6 +15,22 @@ rules
     ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> list
 
   stdlib-generation-type =
+      ?("collect_1_0", [strat], [], list)
+    ; <unknown-or(collect(with-current-type(<extract-generation-type> strat)))> list
+
+  stdlib-generation-type = 
+      ?("foldr_2_0", [nil, cons], [], list)
+    ; nil-case  := Seq( Match(Anno(Op("Nil",[]),[])), nil)
+    ; cons-case :=   Seq( Match(Anno(Op("Cons", [Var("y"), Var("ys")]), []))
+                   , Seq( Build(Var("ys"))
+                   , Seq( CallT(SVar("foldr_2_0"), [nil, cons], [])
+                   , Seq( Match(Var("ys2"))
+                   , Seq( Build(Anno(Op("", [Var("y"), Var("ys2")]), []))
+                   ,      cons)))))
+    ; body := Scope([Var("y"), Var("ys")], GuardedLChoice(nil-case,Id(),cons-case))
+    ; <with-current-type(<extract-generation-type> body)> list
+
+  stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")
 
 

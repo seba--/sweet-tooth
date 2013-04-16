@@ -27,6 +27,8 @@ rules // extract type
     ; extract-generation-type
 
 
+  extract-generation-type = debug;fail
+
   extract-generation-type =
       ?Scope(vars, body)
         // TODO only scope `vars`, not all of the environment
@@ -72,7 +74,15 @@ rules // extract type
       ?CallT(SVar(name), strats, terms)
     ; <not(lookup-strategy)> name
     ; <map(extract-generation-type-from-term)> terms => types
-    ; <stdlib-generation-type> (name, strats, types, <get-current-type>)
+    ; def := SDefT(name, None(), None(), None())
+    ; <push-call> (def, strats, types) => maybe-skip
+    ; if <?Some(type)> maybe-skip
+        then !type
+        else finally(
+               <stdlib-generation-type> (name, strats, types, <get-current-type>)
+             , <pop-call> (def, strats, types)
+             )
+      end
 
   extract-generation-type =
       ?GuardedLChoice(cond,s1,s2)
@@ -103,13 +113,19 @@ rules // type matching
 
   match-pat =
       ?( Anno(Op(cons, kids), _)
-       , Unknown(_))
+       , Unknown(name))
     ; <map(next-unknown-type)> kids => unknown-kids
+    ; <bind-unknown> (name, cons#(unknown-kids))
     ; <zip; map(match-pat)> (kids, unknown-kids)
 
   match-pat =
       ?( Anno(Str(s), _)
        , Str([s]))
+
+  match-pat =
+      ?( Anno(Str(s), _)
+       , Unknown(name))
+    ; <bind-unknown> (name, Str([<next-unknown-type>]))
 
   match-pat =
       ?( Var(v)
@@ -177,6 +193,18 @@ rules // auxiliary type functions
     ; !c#(<zip; alternative-types> (kids, kids'))
   alternative-types = ?(t1, t2); !Alt(t1, t2)
 
+  bind-unknown =
+      ?(Unknown(name), type)
+    ; rules ( UnknownEnv :+ name -> type)
+  bind-unknown =
+      ?(name, type)
+    ; rules ( UnknownEnv :+ name -> type)
+
+  resolve-unknown =
+      ?Unknown(<UnknownEnv>)
+  resolve-all-unknown =
+      bottomup(try(resolve-unknown))
+
 rules // name binding
   bind-var = 
       ?(name, type)
@@ -188,12 +216,12 @@ rules // name binding
     ; <bind-var> (v, type)
     ; <bind-strats> (vs, types)
 
-  lookup-var = Env
+  lookup-var = Env; resolve-all-unknown
 
 rules // runtime support
 
   set-current-type = rules ( CurrentType := <id> )
-  get-current-type = CurrentType
+  get-current-type = CurrentType; resolve-all-unknown
   with-current-type(s) = 
       where(get-current-type => orig)
     ; set-current-type

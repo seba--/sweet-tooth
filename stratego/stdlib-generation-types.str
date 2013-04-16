@@ -19,8 +19,12 @@ rules
     ; <unknown-or(collect(with-current-type(<extract-generation-type> strat)))> type
 
   stdlib-generation-type = 
-      ?("bottomup_1_0", [strat], [], t)
+      ?("bottomup_1_0", [strat], [], type)
     ; <unknown-or(bottomup(with-current-type(<extract-generation-type> strat)))> type
+
+  stdlib-generation-type = 
+      ?("is_string_0_0", [], [], type)
+    ; <match-type> (Str([<next-unknown-type>]), type)
 
   stdlib-generation-type = 
       ?("foldr_2_0", [nil, cons], [], list)

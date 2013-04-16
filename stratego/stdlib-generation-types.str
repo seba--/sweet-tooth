@@ -8,11 +8,15 @@ rules
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
-    ; <unknown-or(map(unknown-or(with-current-type(<extract-generation-type> strat))))> list
+    ; <unknown-or(type-map(with-current-type(<extract-generation-type> strat)))> list
 
   stdlib-generation-type =
       ?("flatten_list_0_0", [], [], list)
     ; <unknown-or(flatten-list)> list
+
+  stdlib-generation-type =
+      ?("separate_by_0_1", [], [type], list)
+    ; <unknown-or(separate-by(|type))> list
 
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], type)
@@ -32,14 +36,14 @@ rules
 
   stdlib-generation-type = 
       ?("foldr_2_0", [nil, cons], [], list)
-    ; nil-case  :=   Seq( Match(Anno(Op("Nil",[]),[])), nil)
-    ; cons-case :=   Seq( Match(Anno(Op("Cons", [Var("y"), Var("ys")]), []))
+    ; nil-case  :=   Seq( Match(Anno(Op("MNil",[]),[])), nil)
+    ; cons-case :=   Seq( Match(Anno(Op("MCons", [Var("y"), Var("ys")]), []))
                    , Seq( Build(Var("ys"))
                    , Seq( CallT(SVar("foldr_2_0"), [nil, cons], [])
                    , Seq( Match(Var("ys2"))
                    , Seq( Build(Anno(Op("", [Var("y"), Var("ys2")]), []))
                    ,      cons)))))
-    ; body := Scope([Var("y"), Var("ys")], GuardedLChoice(nil-case,Id(),cons-case))
+    ; body := Scope([Var("y"), Var("ys"), Var("ys2")], GuardedLChoice(nil-case,Id(),cons-case))
     ; <with-current-type(<extract-generation-type> body)> list
 
   stdlib-generation-type =
@@ -47,15 +51,50 @@ rules
 
 
 rules
-  concat-string-types = ?[]; !Str([])
-  concat-string-types = ?[Str(ss)]; !Str(ss)
-  concat-string-types = ?[Unknown(v)]; !Str([Unknown(v)])
+  type-map(s) = MNil <+ MCons(s, type-map(s)) <+ Unknown(id) <+ Empty <+ Alt(type-map(s), type-map(s))
+
+  concat-string-types = ?MNil(); !Str([])
+  concat-string-types =
+      ?MCons(Str(ss), list)
+    ; <concat-string-types> list => Str(ss2)
+    ; !Str(<conc> (ss, ss2))
+  concat-string-types =
+      ?MCons(Str(ss), list)
+    ; <concat-string-types> list => Unknown(name)
+    ; !Str(<conc> (ss, [Unknown(name)]))
+  concat-string-types =
+      ?MCons(Unknown(name), list)
+    ; <concat-string-types> list => Str(ss2)
+    ; !Str([Unknown(name) | ss2])
+  concat-string-types =
+      ?MCons(Unknown(name1), list)
+    ; <concat-string-types> list => Unknown(name2)
+    ; !Str([Unknown(name1), Unknown(name2)])
+  concat-string-types =
+      ?MCons(Alt(s1, s2), list)
+    ; <concat-string-types> MCons(s1, list) => res1
+    ; <concat-string-types> MCons(s2, list) => res2
+    ; <alternative-types> (res1, res2)
   concat-string-types = 
-      ?[Str(ss) , Str(ss2) | list]
-    ; <concat-string-types> [Str(<conc> (ss, ss2)) | list]
-  concat-string-types = 
-      ?[Str(ss) , Unknown(v) | list]
-    ; <concat-string-types> [Str(<conc> (ss, [Unknown(v)])) | list]
-  concat-string-types = 
-      ?[Unknown(v) , Str(ss) | list]
-    ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+      ?MCons(x, list)
+    ; <concat-string-types> list => Alt(t1, t2)
+    ; <concat-string-types> MCons(x, MCons(t1, MNil())) => res1
+    ; <concat-string-types> MCons(x, MCons(t2, MNil())) => res2
+    ; <alternative-types> (res1, res2)
+  concat-string-types =
+      fatal-err(|"concat string types is stuck")
+
+  /* concat-string-types = ?MCons(Str(ss), MNil()); !Str(ss) */
+  /* concat-string-types = ?MCons(Unknown(v), MNil); !Str([Unknown(v)]) */
+  /* concat-string-types =  */
+  /*     ?MCons(Str(ss), MCons(Str(ss2) list)) */
+  /*   ; <concat-string-types> MCons(Str(<conc> (ss, ss2)), list) */
+  /* concat-string-types =  */
+  /*     ?MCons(Str(ss), MCons(Unknown(v), list)) */
+  /*   ; <concat-string-types> MCons(Str(<conc> (ss, [Unknown(v)])), list) */
+  /* concat-string-types =  */
+  /*     ?MCons(Unknown(v), MCons(Str(ss), list)) */
+  /*   ; <concat-string-types> MCons(Str([Unknown(v) | ss]), list) */
+  /* concat-string-types =  */
+  /*     ?MCons(Unknown(v), MCons(Unknown, list)) */
+  /*   ; <concat-string-types> MCons(Str([Unknown(v) | ss]), list) */

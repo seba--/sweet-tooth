@@ -48,14 +48,14 @@ rules // extract type
 
   extract-generation-type =
       ?Build(temp)
-    ; <extract-generation-type-from-term> temp
+    ; <build-term> temp
     ; set-current-type
 
   extract-generation-type =
       ?CallT(SVar(name), strats, terms)
     ; <lookup-strategy> name
     ; ?def@SDefT(_, vstrats, vterms, body)
-    ; <map(extract-generation-type-from-term)> terms => types
+    ; <map(build-term)> terms => types
     ; <push-call> (def, strats, types) => maybe-skip
     ; if <?Some(type)> maybe-skip
         then !type
@@ -73,7 +73,7 @@ rules // extract type
   extract-generation-type =
       ?CallT(SVar(name), strats, terms)
     ; <not(lookup-strategy)> name
-    ; <map(extract-generation-type-from-term)> terms => types
+    ; <map(build-term)> terms => types
     ; def := SDefT(name, None(), None(), None())
     ; <push-call> (def, strats, types) => maybe-skip
     ; if <?Some(type)> maybe-skip
@@ -144,7 +144,12 @@ rules // type matching
       ?( Wld()
        , _)
 
-  // explosion only supported for unknowns so far
+  match-pat =
+      ?( Anno(Explode(term1, term2), _)
+       , cons#(kids))
+    ; <match-pat> (term1, Str([cons]))
+    ; <match-pat> (term2, kids)
+
   match-pat =
       ?( Anno(Explode(term1, term2), _)
        , Unknown(_))
@@ -155,28 +160,28 @@ rules // type matching
     fatal-err(|"match pat is stuck")
 
 rules // term typing
-  extract-generation-type-from-term =
+  build-term =
       ?Anno(Op("Nil", []), _)  
     ; ![]
 
-  extract-generation-type-from-term =
+  build-term =
       ?Anno(Op("Cons", [hd, tl]), _)  
-    ; ![<extract-generation-type-from-term> hd | <extract-generation-type-from-term> tl]
+    ; ![<build-term> hd | <build-term> tl]
 
-  extract-generation-type-from-term =
+  build-term =
       ?Anno(Op(cons, kids), _)  
-    ; !cons#(<map(extract-generation-type-from-term)> kids)
+    ; !cons#(<map(build-term)> kids)
 
-  extract-generation-type-from-term =
+  build-term =
       ?Anno(Str(s), _)  
     ; !Str([s])
 
-  extract-generation-type-from-term =
+  build-term =
       ?Var(<id>)
     ; lookup-var
 
-  extract-generation-type-from-term =
-    fatal-err(|"extract-generation-type-from-term is stuck")
+  build-term =
+    fatal-err(|"build-term is stuck")
 
 rules // type matching
   // match-type : (expected, actual) -> true or false

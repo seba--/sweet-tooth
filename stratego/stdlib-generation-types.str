@@ -11,16 +11,20 @@ rules
     ; <unknown-or(map(unknown-or(with-current-type(<extract-generation-type> strat))))> list
 
   stdlib-generation-type =
-      ?("collect_all_1_0", [strat], [], list)
-    ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> list
+      ?("collect_all_1_0", [strat], [], type)
+    ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> type
 
   stdlib-generation-type =
-      ?("collect_1_0", [strat], [], list)
-    ; <unknown-or(collect(with-current-type(<extract-generation-type> strat)))> list
+      ?("collect_1_0", [strat], [], type)
+    ; <unknown-or(collect(with-current-type(<extract-generation-type> strat)))> type
+
+  stdlib-generation-type = 
+      ?("bottomup_1_0", [strat], [], t)
+    ; <unknown-or(bottomup(with-current-type(<extract-generation-type> strat)))> type
 
   stdlib-generation-type = 
       ?("foldr_2_0", [nil, cons], [], list)
-    ; nil-case  := Seq( Match(Anno(Op("Nil",[]),[])), nil)
+    ; nil-case  :=   Seq( Match(Anno(Op("Nil",[]),[])), nil)
     ; cons-case :=   Seq( Match(Anno(Op("Cons", [Var("y"), Var("ys")]), []))
                    , Seq( Build(Var("ys"))
                    , Seq( CallT(SVar("foldr_2_0"), [nil, cons], [])

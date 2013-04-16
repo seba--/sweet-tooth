@@ -11,6 +11,10 @@ rules
     ; <unknown-or(map(unknown-or(with-current-type(<extract-generation-type> strat))))> list
 
   stdlib-generation-type =
+      ?("flatten_list_0_0", [], [], list)
+    ; <unknown-or(flatten-list)> list
+
+  stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], type)
     ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> type
 

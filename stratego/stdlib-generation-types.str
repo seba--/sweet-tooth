@@ -46,6 +46,7 @@ rules
   concat-string-types = ?Unknown(name)
                       ; <bind-unknown> (name, <next-unknown-listtype>)
                       ; !Str([<next-unknown-type>])
+  concat-string-types = Alt(concat-string-types, concat-string-types)
   concat-string-types = ?[]; !Str([])
   concat-string-types = ?[Str(ss)]; !Str(ss)
   concat-string-types = ?[Unknown(v)]; !Str([Unknown(v)])

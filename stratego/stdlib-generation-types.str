@@ -90,8 +90,8 @@ rules
   foldr-types(nil,cons) =
       ?UnknownList(name)
     ; next-unknown-type => t
-    ; <bind-unknown> (name, t)
-    ; <cons> (t, <nil>)
+    ; <bind-unknown> (name, Alt([],[t]))
+    ; foldr-types(nil,cons)
   foldr-types(nil,cons) = 
       ?Unknown(name)
     ; <bind-unknown> (name, <next-unknown-listtype>)

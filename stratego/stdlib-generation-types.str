@@ -12,7 +12,9 @@ rules
 
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
+    ; debug(!"collect-all: ")
     ; <unknown-or(collect-all(with-current-type(<extract-generation-type> strat)))> list
+    ; debug(!"collect-all result: ")
 
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")

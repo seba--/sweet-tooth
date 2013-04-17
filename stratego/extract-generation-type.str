@@ -27,7 +27,7 @@ rules // extract type
     ; extract-generation-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-//  extract-generation-type = get-current-type; debug; fail
+  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -64,7 +64,7 @@ rules // extract type
     ; <map(extract-generation-type-from-term)> terms => types
     ; <push-call> (def, strats, types) => maybe-skip
     ; if <?Some(type)> maybe-skip
-        then !type; where(set-current-type)
+        then !type; set-current-type
         else finally(
                { LocalStrats, Env:
                    <bind-strats> (vstrats, strats)
@@ -86,6 +86,7 @@ rules // extract type
         then !type
         else finally(
                <stdlib-generation-type> (name, strats, types, <get-current-type>)
+             ; set-current-type
              , <pop-call> (def, strats, types)
              )
       end
@@ -251,7 +252,7 @@ rules // auxiliary type functions
       ?(name, type)
     ; where(try(<resolve-unknown> name; <fatal-err(|"rebound unknown: ")> name))
     ; try( may-assign
-//       ; debug(!"bind-unknown: ")
+         ; debug(!"bind-unknown: ")
          ; rules ( UnknownEnv :+ name -> type))
 
   resolve-unknown =
@@ -280,7 +281,7 @@ rules // name binding
 
 rules // runtime support
 
-  set-current-type = rules ( CurrentType := <id> )
+  set-current-type = where(rules ( CurrentType := <id> ))
   get-current-type = CurrentType; resolve-all-unknown
   with-current-type(s) = 
       where(get-current-type => orig)
@@ -289,6 +290,8 @@ rules // runtime support
     ; get-current-type => result
     ; !orig
     ; set-current-type
+    ; !result
+    ; not(?Empty())
   
   try-init-stack = where(Stack <+ rules ( Stack := [] ))
 

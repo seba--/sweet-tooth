@@ -27,7 +27,7 @@ rules // extract type
     ; extract-generation-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-  extract-generation-type = get-current-type; debug; fail
+//  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -252,8 +252,10 @@ rules // auxiliary type functions
       ?(name, type)
     ; where(try(<resolve-unknown> name; <fatal-err(|"rebound unknown: ")> name))
     ; try( may-assign
-         ; debug(!"bind-unknown: ")
-         ; rules ( UnknownEnv :+ name -> type))
+//         ; debug(!"bind-unknown: ")
+//         ; rules ( UnknownEnv :+ name -> type)
+      )
+  UnknownEnv = fail
 
   resolve-unknown =
     ?Unknown(<UnknownEnv>)

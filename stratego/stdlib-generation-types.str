@@ -4,23 +4,19 @@ imports
 rules
   stdlib-generation-type =
       ?("concat_strings_0_0", [], [], list)
-    ; <unknown-or(concat-string-types)> list
+    ; <concat-string-types> list
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
-    ; <unknown-or(map(lift-strat(|strat)))> list
-
-  stdlib-generation-type =
-      ?("collect_1_0", [strat], [], list)
-    ; <unknown-or(collect(lift-strat(|strat)))> list
+    ; <map-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
-    ; <unknown-or(collect-all-types(lift-strat(|strat)))> list
+    ; <collect-all-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-    ; <unknown-or(foldr(lift-strat(|strat1), lift-strat(|strat2)))> list
+    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
 
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")
@@ -28,6 +24,11 @@ rules
   lift-strat(|strat) = unknown-or(with-current-type(<extract-generation-type> strat))
 
 rules
+  concat-string-types = ?UnknownList(_)
+                      ; !Str([<next-unknown-type>])
+  concat-string-types = ?Unknown(name)
+                      ; <bind-unknown> (name, <next-unknown-listtype>)
+                      ; !Str([<next-unknown-type>])
   concat-string-types = ?[]; !Str([])
   concat-string-types = ?[Str(ss)]; !Str(ss)
   concat-string-types = ?[Unknown(v)]; !Str([Unknown(v)])
@@ -40,6 +41,38 @@ rules
   concat-string-types = 
       ?[Unknown(v) , Str(ss) | list]
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+
+  map-types(s) = ?UnknownList(_); next-unknown-listtype
+  map-types(s) = ?Unknown(name)
+               ; <bind-unknown> (name, <next-unknown-listtype>)
+               ; next-unknown-listtype
+  map-types(s) = Empty()
+  map-types(s) = ?Alt(t1,t2)
+               ; <alternative-types> (<map-types(s)> t1, <map-types(s)> t2)
+  map-types(s) = []
+  map-types(s) = [s | map-types(s)]
+  map-types(s) = fatal-err(|"map-types is stuck: ")
+
+  foldr-types(nil,cons) =
+      ?UnknownList(_)
+    ; next-unknown-type
+  foldr-types(nil,cons) = 
+      ?Unknown(name)
+    ; <bind-unknown> (name, <next-unknown-listtype>)
+    ; next-unknown-type
+  foldr-types(nil,cons) = 
+    Empty()
+  foldr-types(nil,cons) = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<foldr-types(nil,cons)> t1, <foldr-types(nil,cons)> t2)
+  foldr-types(nil,cons) = 
+      ?[]
+    ; nil
+  foldr-types(nil,cons) = 
+      ?[x | xs]
+    ; <foldr-types(nil,cons)> xs => ys
+    ; <cons> (x, ys)
+  foldr-types(nil,cons) = fatal-err(|"foldr-types is stuck: ")
 
   collect-all-types(s) = Empty()
   collect-all-types(s) = ?Unknown(name); next-unknown-listtype

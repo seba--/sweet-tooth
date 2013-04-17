@@ -300,6 +300,8 @@ rules // auxiliary type functions
 //         ; debug(!"bind-unknown: ")
          ; rules ( UnknownEnv :+ name -> type)
       )
+    ; !type
+
   UnknownEnv = fail
 
   split-type =

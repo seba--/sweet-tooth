@@ -12,7 +12,8 @@ rules
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
+    ; <ensure-cons-expansion> list => list'
+    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list'
 
   stdlib-generation-type =
       ?("flatten_list_0_0", [], [], list)
@@ -171,3 +172,18 @@ rules
   is-list-type = ?UnknownList(_)
   is-list-type = [id|is-list-type]
   is-list-type = Alt(is-list-type,is-list-type)
+
+rules
+  ensure-cons-expansion =
+      ?[_|_]
+  ensure-cons-expansion =
+      ?UnknownList(name)
+    ; ![<next-unknown-type>, <next-unknown-listtype>] => type
+    ; <bind-unknown> (name, type)
+  ensure-cons-expansion =
+      ?Unknown(name)
+    ; next-unknown-listtype => type
+    ; <bind-unknown> (name, type)
+    ; <ensure-cons-expansion> type
+  ensure-cons-expansion =
+      fatal-err(|"ensure-cons-expansion is stuck: ")

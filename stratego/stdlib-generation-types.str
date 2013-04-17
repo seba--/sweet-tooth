@@ -11,12 +11,12 @@ rules
     ; <unknown-or(map(lift-strat(|strat)))> list
 
   stdlib-generation-type =
-      ?("collect_all_1_0", [strat], [], list)
+      ?("collect_1_0", [strat], [], list)
     ; <unknown-or(collect(lift-strat(|strat)))> list
 
   stdlib-generation-type =
-      ?("collect_1_0", [strat], [], list)
-    ; <unknown-or(collect-all(lift-strat(|strat)))> list
+      ?("collect_all_1_0", [strat], [], list)
+    ; <unknown-or(collect-all-types(lift-strat(|strat)))> list
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
@@ -40,3 +40,29 @@ rules
   concat-string-types = 
       ?[Unknown(v) , Str(ss) | list]
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+
+  collect-all-types(s) = Empty()
+  collect-all-types(s) = ?Unknown(name); (![<s>] <+ ![])
+  collect-all-types(s) = Alt(collect-all-types(s), collect-all-types(s))
+  collect-all-types(s) = where((![<s>] <+ ![]) => xs)
+                       ; ?_#(<map(collect-all-types(s))>); concat-types => ys
+                       ; <conc-types> (xs, ys)
+  collect-all-types(s) = fatal-err(|"collect-all-types is stuck: ")
+
+  concat-types = []
+  concat-types = ?[Empty() | <concat-types>]
+  concat-types = ?[list | rest]
+               ; where(<is-list> list)
+               ; <conc-types> (list, rest)
+  concat-types = ?[Alt(t1,t2) | rest]
+               ; !Alt(<concat-types> [t1 | rest], <concat-types> [t2 | rest])
+  concat-types = fatal-err(|"concat-types is stuck: ")
+
+  conc-types = (is-list,is-list); conc
+  conc-types = ?(Empty(),<id>)
+  conc-types = ?(<id>,Empty())
+  conc-types = ?(Alt(t1,t2),list)
+             ; !Alt(<conc-types> (t1, list), <conc-types> (t2, list))
+  conc-types = ?(list, Alt(t1, t2))
+             ; !Alt(<conc-types> (list, t1), <conc-types> (list, t2))
+  conc-types = fatal-err(|"conc-types is stuck: ")

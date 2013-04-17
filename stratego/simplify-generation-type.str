@@ -1,0 +1,52 @@
+module simplify-generation-type
+imports extract-generation-type
+
+rules
+  simplify-type =
+      ?type
+    ; collect-all(?Unknown(_))
+    ; filter(\ x -> <single-occurrence(|x)> type \ )
+    ; where(!Unknown(<newname> "U") => universal)
+    ; map(?Unknown(<id>); !(<id>,universal); do-bind-unknown)
+    ; <rebuild-type> type
+    ; innermost(reduce-universal(|universal))
+
+  rebuild-type = resolve-all-unknown
+
+//  single-occurrence(|x) = debug(<write-to-string> x); fail
+  single-occurrence(|x) = ?x
+  single-occurrence(|x) = 
+      ?Alt(t1,t2)
+    ; (<collect-one(?x)> t1 + <collect-one(?x)> t2)
+  single-occurrence(|x) = 
+      where(collect-all(?x); not(?[]))
+    ; ?cons#(xs)
+    ; <single-occurrence-list(|x)> xs
+
+//  single-occurrence-list(|x) = debug(<write-to-string> x); fail
+  single-occurrence-list(|x) = 
+      ?[hd | tl]
+    ; <collect-all(?x);?[]> tl
+    ; <single-occurrence(|x)> hd
+  single-occurrence-list(|x) = 
+      ?[hd | tl]
+    ; <not(single-occurrence(|x))> hd
+    ; <single-occurrence-list(|x)> tl
+
+
+  reduce-universal(|universal) : Alt(t,t) -> t
+  reduce-universal(|universal) : Alt(universal,Unknown(_)) -> universal
+  reduce-universal(|universal) : Alt(Unknown(_),universal) -> universal
+  reduce-universal(|universal) : [Unknown(name)] -> Unknown(name)
+  reduce-universal(|universal) = []#(reduce-universal-list(|universal))
+
+  reduce-universal-list(|universal) =
+      ?[universal, Unknown(_) | rest]
+    ; ![universal | rest]
+  reduce-universal-list(|universal) =
+      ?[Unknown(_), universal | rest]
+    ; ![universal | rest]
+  reduce-universal-list(|universal) =
+      ?[x | rest2]
+    ; ![x | <reduce-universal-list(|universal)> rest2]
+  

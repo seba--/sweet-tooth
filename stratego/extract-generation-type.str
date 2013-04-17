@@ -5,6 +5,7 @@ imports
   org/sugarj/languages/Stratego
 imports
   stdlib-generation-types
+  simplify-generation-type
 
 rules
   main = io-wrap(extra-options,
@@ -25,6 +26,7 @@ rules // extract type
     ; <lookup-strategy <+ fatal-err(|"Desugaring strategy undefined: ")> <DesugarName>
     ; ?SDefT(_, [], [], <id>)
     ; extract-generation-type
+    ; simplify-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
   extract-generation-type = get-current-type; debug; fail
@@ -193,11 +195,11 @@ rules // type matching
     ; <match-pat> (type1, t1)
     ; <match-pat> (type2, t2)
 
-//  match-pat =
-//      ?( t
-//       , Alt(t1, t2))
-//    ; <match-pat> (t, t1)
-//    ; <match-pat> (t, t2)
+  match-pat =
+      ?( t
+       , Alt(t1, t2))
+    ; <match-pat> (t, t1)
+    ; <match-pat> (t, t2)
 
   match-pat =
       debug(!"match pat is stuck ")
@@ -246,8 +248,17 @@ rules // auxiliary type functions
 
   alternative-types = ?(t, t); !t
   alternative-types = 
+      ?(Unknown(name1), Unknown(name2))
+    ; !Alt(Unknown(name1), Unknown(name2))
+  alternative-types = 
       ?(c#(kids), c#(kids'))
-    ; !c#(<zip; alternative-types> (kids, kids'))
+    ; !c#(<zip; map(alternative-types)> (kids, kids'))
+  alternative-types =
+      ?(Alt(t1,t2), t1)
+    ; !Alt(t1,t2)
+  alternative-types =
+      ?(Alt(t1,t2), t3)
+    ; !Alt(t1,<alternative-types> (t2, t3))
   alternative-types = ?(t1, t2); !Alt(t1, t2)
 
   bind-unknown =

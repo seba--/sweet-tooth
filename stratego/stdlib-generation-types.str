@@ -11,12 +11,24 @@ rules
     ; <map-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
+      ?("foldr_2_0", [strat1, strat2], [], list)
+    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
+
+  stdlib-generation-type =
+      ?("flatten_list_0_0", [], [], list)
+    ; <flatten-list-types> list
+
+  stdlib-generation-type =
+      ?("separate_by_0_1", [], [type], list)
+    ; <separate-by-types(|type)> list
+
+  stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
     ; <collect-all-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
-      ?("foldr_2_0", [strat1, strat2], [], list)
-    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
+      ?("bottomup_1_0", [strat], [], list)
+    ; <bottomup-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")
@@ -74,6 +86,47 @@ rules
     ; <cons> (x, ys)
   foldr-types(nil,cons) = fatal-err(|"foldr-types is stuck: ")
 
+  flatten-list-types =
+      ?UnknownList(_)
+    ; next-unknown-listtype
+  flatten-list-types = 
+      ?Unknown(name)
+    ; <bind-unknown> (name, <next-unknown-listtype>)
+    ; next-unknown-listtype
+  flatten-list-types = 
+    Empty()
+  flatten-list-types = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<flatten-list-types> t1, <flatten-list-types> t2)
+  flatten-list-types = 
+      ?[]
+  flatten-list-types = 
+      ?[x | xs]
+    ; <is-list-type> x
+    ; <conc-types> (x, <flatten-list-types> xs)
+  flatten-list-types = 
+      [id | flatten-list-types]
+  flatten-list-types = fatal-err(|"flatten-list-types is stuck: ")
+
+  separate-by-types(|type) =
+      ?UnknownList(_)
+    ; next-unknown-listtype
+  separate-by-types(|type) = 
+      ?Unknown(name)
+    ; <bind-unknown> (name, <next-unknown-listtype>)
+    ; next-unknown-listtype
+  separate-by-types(|type) = 
+    Empty()
+  separate-by-types(|type) = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<separate-by-types(|type)> t1, <separate-by-types(|type)> t2)
+  separate-by-types(|type) = 
+      ?[]
+  separate-by-types(|type) = 
+      ?[x | xs]
+    ; ![x , type | <separate-by-types(|type)> xs]
+  separate-by-types(|type) = fatal-err(|"separate-by-types is stuck: ")
+
   collect-all-types(s) = Empty()
   collect-all-types(s) = ?Unknown(name); next-unknown-listtype
   collect-all-types(s) = ?Alt(t1,t2)
@@ -83,6 +136,15 @@ rules
                        ; <conc-types> (xs, ys)
   collect-all-types(s) = fatal-err(|"collect-all-types is stuck: ")
 
+  bottomup-types(s) = Empty()
+  bottomup-types(s) = ?Unknown(name); next-unknown-type
+  bottomup-types(s) = ?Alt(t1,t2)
+                       ; <alternative-types> (<bottomup-types(s)> t1, <bottomup-types(s)> t2)
+  bottomup-types(s) = not(?UnknownList(_))
+                    ; all(bottomup-types(s))
+                    ; s
+  bottomup-types(s) = fatal-err(|"collect-all-types is stuck: ")
+
   concat-types = []
   concat-types = ?[Empty() | <concat-types>]
   concat-types = ?[list | rest]
@@ -90,7 +152,7 @@ rules
                ; <conc-types> (list, rest)
   concat-types = ?[Alt(t1,t2) | rest]
                ; <alternative-types> (<concat-types> [t1 | rest], <concat-types> [t2 | rest])
-  concat-types = fatal-err(|"concat-types is stuck: ")
+  concat-types = fatal-err(|"bottomup-types is stuck: ")
 
   conc-types = (is-list,is-list); conc
   conc-types = ?(Empty(),<id>)

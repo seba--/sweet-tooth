@@ -29,7 +29,7 @@ rules // extract type
     ; simplify-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-  extract-generation-type = get-current-type; debug; fail
+//  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -222,7 +222,8 @@ rules // type matching
     ; <match-pat> (t, t2)
 
   match-pat =
-      debug(!"match pat is stuck ")
+      try( not(?(Anno(Op(cons,_),_), cons2#(_)); <not(equal)> (cons,cons2))
+         ; debug(!"match pat is stuck "))
     ; !Empty()
 
 rules // term typing
@@ -296,7 +297,7 @@ rules // auxiliary type functions
   do-bind-unknown =
       ?(name, type)
     ; try( may-assign
-         ; debug(!"bind-unknown: ")
+//         ; debug(!"bind-unknown: ")
          ; rules ( UnknownEnv :+ name -> type)
       )
   UnknownEnv = fail

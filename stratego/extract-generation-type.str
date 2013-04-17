@@ -27,7 +27,7 @@ rules // extract type
     ; extract-generation-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-//  extract-generation-type = get-current-type; debug; fail
+  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -93,15 +93,17 @@ rules // extract type
 
   extract-generation-type =
       ?GuardedLChoice(cond,s1,s2)
-    ; get-current-type => orig-type
+    ; get-current-type
+    ; split-type /*!(<get-current-type>, <get-current-type>)*/ => (type1, type2)
+    ; <set-current-type> type1
 
     ; <extract-generation-type> cond
     ; if ?Empty()
-        then <set-current-type> orig-type
+        then <set-current-type> type2
            ; <extract-generation-type> s2
         else <extract-generation-type> s1 => t1
            ; get-current-type => pos-type
-           ; <set-current-type> orig-type
+           ; <set-current-type> type2
            ; <extract-generation-type> s2 => t2
            ; get-current-type => neg-type
            // set current as merge of pos and neg
@@ -251,11 +253,23 @@ rules // auxiliary type functions
   bind-unknown =
       ?(name, type)
     ; where(try(<resolve-unknown> name; <fatal-err(|"rebound unknown: ")> name))
+    ; (id, <alternative-types> (type, <next-unknown-type>))
+    ; do-bind-unknown
+
+  do-bind-unknown =
+      ?(name, type)
     ; try( may-assign
-//         ; debug(!"bind-unknown: ")
-//         ; rules ( UnknownEnv :+ name -> type)
+         ; debug(!"bind-unknown: ")
+         ; rules ( UnknownEnv :+ name -> type)
       )
   UnknownEnv = fail
+
+  split-type =
+      ?Unknown(name)
+    ; !(<next-unknown-type>, <next-unknown-type>) => (t1,t2)
+    ; where(<do-bind-unknown> (name, Alt(t1,t2)))
+  split-type =
+    fatal-err(|"split type is stuck")
 
   resolve-unknown =
     ?Unknown(<UnknownEnv>)

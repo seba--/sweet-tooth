@@ -125,12 +125,20 @@ rules // type matching
   match-pat =
       ?( Unknown(name)
        , Unknown(name))
+  match-pat =
+      ?( UnknownList(name)
+       , UnknownList(name))
 
   match-pat =
       ?( Unknown(name1)
        , Unknown(name2))
     ; <not(equal)> (name1, name2)
     ; <bind-unknown> (name1, Unknown(name2))
+  match-pat =
+      ?( UnknownList(name1)
+       , UnknownList(name2))
+    ; <not(equal)> (name1, name2)
+    ; <bind-unknown> (name1, UnknownList(name2))
 
   match-pat =
       ?( Anno(Op(cons, kids), _)
@@ -140,6 +148,14 @@ rules // type matching
   match-pat =
       ?( t@Anno(Op(cons, kids), _)
        , Unknown(name))
+    ; <unknown-not-free-in> (name, t)
+    ; <map(next-unknown-type)> kids => unknown-kids
+    ; <bind-unknown> (name, cons#(unknown-kids))
+    ; <zip; map(match-pat)> (kids, unknown-kids)
+  match-pat =
+      ?( t@Anno(Op(cons, kids), _)
+       , UnknownList(name))
+    ; fatal-err(|"match-pat unknown list: ")
     ; <unknown-not-free-in> (name, t)
     ; <map(next-unknown-type)> kids => unknown-kids
     ; <bind-unknown> (name, cons#(unknown-kids))
@@ -173,6 +189,13 @@ rules // type matching
     ; <unknown-not-free-in> (name, t)
     ; <match-pat> (term1, <next-unknown-type>)
     ; <match-pat> (term2, <next-unknown-type>)
+  match-pat =
+      ?( t@Anno(Explode(term1, term2), _)
+       , UnknownList(name))
+    ; fatal-err(|"match-pat unknown list: ")
+    ; <unknown-not-free-in> (name, t)
+    ; <match-pat> (term1, <next-unknown-type>)
+    ; <match-pat> (term2, <next-unknown-type>)
 
 //  match-pat =
 //      ?( t@Anno(Explode(term1, term2), _)
@@ -185,15 +208,12 @@ rules // type matching
        , t)
     ; <unknown-not-free-in> (name, t)
     ; <bind-unknown> (name, t)
-
   match-pat =
-      ?( Unknown(name)
-       , Alt(t1, t2))
-    ; next-unknown-type => type1
-    ; next-unknown-type => type2
-    ; <bind-unknown> (name, Alt(type1, type2))
-    ; <match-pat> (type1, t1)
-    ; <match-pat> (type2, t2)
+      ?( UnknownList(name)
+       , t)
+    ; fatal-err(|"match-pat unknown list: ")
+    ; <unknown-not-free-in> (name, t)
+    ; <bind-unknown> (name, t)
 
   match-pat =
       ?( t
@@ -233,6 +253,8 @@ rules // explode type
 
   explode-type =
       Unknown(id); resolve-all-unknown
+  explode-type =
+      UnknownList(id); resolve-all-unknown
   explode-type = 
       ?cons#(kids)
     ; !Anno(Op(cons, <map(explode-type)> kids), [])
@@ -244,12 +266,16 @@ rules // explode type
 
 rules // auxiliary type functions
   next-unknown-type = !Unknown(<newname> "X")
+  next-unknown-listtype = !UnknownList(<newname> "L")
   unknown-or(s) = ?Unknown(_) <+ s
 
   alternative-types = ?(t, t); !t
   alternative-types = 
       ?(Unknown(name1), Unknown(name2))
     ; !Alt(Unknown(name1), Unknown(name2))
+  alternative-types = 
+      ?(UnknownList(name1), UnknownList(name2))
+    ; !Alt(UnknownList(name1), UnknownList(name2))
   alternative-types = 
       ?(c#(kids), c#(kids'))
     ; !c#(<zip; map(alternative-types)> (kids, kids'))
@@ -284,12 +310,14 @@ rules // auxiliary type functions
 
   resolve-unknown =
     ?Unknown(<UnknownEnv>)
+  resolve-unknown =
+    ?UnknownList(<UnknownEnv>)
 
   resolve-all-unknown =
       innermost(resolve-unknown)
 
   unknown-not-free-in =
-    ?(name, t); !t; not(collect-one(?Unknown(name)))
+    ?(name, t); !t; not(collect-one(?Unknown(name) + ?UnknownList(name)))
 
 rules // name binding
   bind-var = 
@@ -370,5 +398,8 @@ rules // strategy management
   
 signature constructors
   Unknown : String      -> Type
+  UnknownList : String  -> Type
   Alt     : Type * Type -> Type
   Empty   :                Type
+  Any     :                Type
+  AnyList :                Type

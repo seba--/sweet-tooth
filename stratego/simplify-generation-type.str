@@ -6,10 +6,16 @@ rules
       ?type
     ; collect-all(?Unknown(_))
     ; filter(\ x -> <single-occurrence(|x)> type \ )
-    ; where(!Unknown(<newname> "U") => universal)
-    ; map(?Unknown(<id>); !(<id>,universal); do-bind-unknown)
-    ; <rebuild-type> type
-    ; innermost(reduce-universal(|universal))
+    ; map(?Unknown(<id>); !(<id>,Any()); do-bind-unknown)
+
+    ; !type
+    ; collect-all(?UnknownList(_))
+    ; filter(\ x -> <single-occurrence(|x)> type \ )
+    ; map(?UnknownList(<id>); !(<id>,AnyList()); do-bind-unknown)
+
+    ; !type
+    ; rebuild-type
+    ; innermost(reduce-universal)
 
   rebuild-type = resolve-all-unknown
 
@@ -34,19 +40,33 @@ rules
     ; <single-occurrence-list(|x)> tl
 
 
-  reduce-universal(|universal) : Alt(t,t) -> t
-  reduce-universal(|universal) : Alt(universal,Unknown(_)) -> universal
-  reduce-universal(|universal) : Alt(Unknown(_),universal) -> universal
-  reduce-universal(|universal) : [Unknown(name)] -> Unknown(name)
-  reduce-universal(|universal) = []#(reduce-universal-list(|universal))
+  reduce-universal : Alt(t,t) -> t
+  reduce-universal : Alt(Alt(t1, t2), t3) -> Alt(t1, Alt(t2, t3))
+  reduce-universal : Alt(c#(kids1),c#(kids2)) -> c#(<zip;map(alternative-types)> (kids1,kids2))
+  reduce-universal =
+      (?Alt(AnyList,list) + ?Alt(list,AnyList) + ?Alt([AnyList],[list]) + ?Alt([list],[AnyList]))
+    ; <is-list-type> list
+    ; <not(one(is-significant))> list
+  reduce-universal = []#(reduce-universal-list)
+  reduce-universal : Alt(t1, Alt(t1, t2)) -> Alt(t1, t2)
+  reduce-universal : Alt(t1, Alt(t2, t1)) -> Alt(t1, t2)
 
-  reduce-universal-list(|universal) =
-      ?[universal, Unknown(_) | rest]
-    ; ![universal | rest]
-  reduce-universal-list(|universal) =
-      ?[Unknown(_), universal | rest]
-    ; ![universal | rest]
-  reduce-universal-list(|universal) =
+  reduce-universal-list =
+      ?[AnyList, AnyList | rest]
+    ; ![Any | rest]
+  reduce-universal-list =
+      ?[AnyList, <is-list-type <+ ?Any> | rest]
+    ; ![AnyList | rest]
+  reduce-universal-list =
+      ?[<is-list-type <+ ?Any>, AnyList | rest]
+    ; ![AnyList | rest]
+  reduce-universal-list =
       ?[x | rest2]
-    ; ![x | <reduce-universal-list(|universal)> rest2]
+    ; ![x | <reduce-universal-list> rest2]
   
+
+  is-significant = is-string
+  is-significant = ?Str(_)
+  is-significant = ?[x|xs]; (<is-significant> x + <is-significant> xs)
+  is-significant = ?Alt(t1,t2); (<is-significant> t1 + <is-significant> t2)
+  is-significant = debug(!"is-significant is stuck: "); fail

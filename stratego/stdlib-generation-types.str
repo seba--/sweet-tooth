@@ -42,7 +42,7 @@ rules
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
 
   collect-all-types(s) = Empty()
-  collect-all-types(s) = ?Unknown(name); (![<s>] <+ ![])
+  collect-all-types(s) = ?Unknown(name); next-unknown-listtype
   collect-all-types(s) = ?Alt(t1,t2)
                        ; <alternative-types> (<collect-all-types(s)> t1, <collect-all-types(s)> t2)
   collect-all-types(s) = where((![<s>] <+ ![]) => xs)
@@ -53,7 +53,7 @@ rules
   concat-types = []
   concat-types = ?[Empty() | <concat-types>]
   concat-types = ?[list | rest]
-               ; where(<is-list> list)
+               ; where(<is-list <+ ?UnknownList(_)> list)
                ; <conc-types> (list, rest)
   concat-types = ?[Alt(t1,t2) | rest]
                ; <alternative-types> (<concat-types> [t1 | rest], <concat-types> [t2 | rest])
@@ -62,8 +62,17 @@ rules
   conc-types = (is-list,is-list); conc
   conc-types = ?(Empty(),<id>)
   conc-types = ?(<id>,Empty())
+  conc-types = ?(<id>,Empty())
   conc-types = ?(Alt(t1,t2),list)
              ; <alternative-types> (<conc-types> (t1, list), <conc-types> (t2, list))
   conc-types = ?(list, Alt(t1, t2))
              ; <alternative-types> (<conc-types> (list, t1), <conc-types> (list, t2))
+  conc-types = ?(UnknownList(name),<is-list => rest>); ![UnknownList(name) | rest]
+  conc-types = ?(hd,UnknownList(name)); ![hd, UnknownList(name)]
   conc-types = fatal-err(|"conc-types is stuck: ")
+
+  is-list-type = ?[] 
+  is-list-type = ?AnyList
+  is-list-type = ?UnknownList(_)
+  is-list-type = [id|is-list-type]
+  is-list-type = Alt(is-list-type,is-list-type)

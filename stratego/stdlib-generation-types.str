@@ -8,16 +8,24 @@ rules
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
-    ; <unknown-or(map(<lift-strat> strat))> list
+    ; <unknown-or(map(lift-strat(|strat)))> list
 
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
-    ; <unknown-or(collect-all(<lift-strat> strat))> list
+    ; <unknown-or(collect(lift-strat(|strat)))> list
+
+  stdlib-generation-type =
+      ?("collect_1_0", [strat], [], list)
+    ; <unknown-or(collect-all(lift-strat(|strat)))> list
+
+  stdlib-generation-type =
+      ?("foldr_2_0", [strat1, strat2], [], list)
+    ; <unknown-or(foldr(lift-strat(|strat1), lift-strat(|strat2)))> list
 
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")
 
-  lift-strat = ?strat; unknown-or(with-current-type(<extract-generation-type> strat))
+  lift-strat(|strat) = unknown-or(with-current-type(<extract-generation-type> strat))
 
 rules
   concat-string-types = ?[]; !Str([])

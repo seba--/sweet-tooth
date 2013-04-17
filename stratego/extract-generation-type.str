@@ -29,7 +29,7 @@ rules // extract type
     ; simplify-type
 
 //  extract-generation-type = !(<get-current-type>,<id>); debug; fail
-  extract-generation-type = get-current-type; debug; fail
+//  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)

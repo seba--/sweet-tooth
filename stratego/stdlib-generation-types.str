@@ -7,13 +7,17 @@ rules
     ; <concat-string-types> list
 
   stdlib-generation-type =
+      ?("trim_chars_1_0", [strat], [], list)
+    ; <trim-chars-types(lift-strat(|strat))> list
+
+  stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
     ; <map-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-    ; <ensure-cons-expansion> list => list'
-    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list'
+//    ; <ensure-cons-expansion> list => list'
+    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
 
   stdlib-generation-type =
       ?("flatten_list_0_0", [], [], list)
@@ -54,6 +58,23 @@ rules
   concat-string-types = 
       ?[Unknown(v) , Str(ss) | list]
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+ 
+  trim-chars-types(s) = 
+      ?Unknown(name)
+    ; !Str([<next-unknown-type>]) => t
+    ; <bind-unknown> (name, t)
+    ; !Str([<next-unknown-type>])
+  trim-chars-types(s) = 
+    Empty()
+  trim-chars-types(s) = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<trim-chars-types(s)> t1, <trim-chars-types(s)> t2)
+  trim-chars-types(s) = 
+  // TODO right-hand side
+      ?Str([Unknown(name)|rest])
+    ; !Str([<next-unknown-type>|rest])
+  // TODO actual implementation
+  trim-chars-types(s) = fatal-err(|"trim-chars-types is stuck: ")
 
   map-types(s) = ?UnknownList(_); next-unknown-listtype
   map-types(s) = ?Unknown(name)
@@ -67,8 +88,10 @@ rules
   map-types(s) = fatal-err(|"map-types is stuck: ")
 
   foldr-types(nil,cons) =
-      ?UnknownList(_)
-    ; next-unknown-type
+      ?UnknownList(name)
+    ; next-unknown-type => t
+    ; <bind-unknown> (name, t)
+    ; <cons> (t, <nil>)
   foldr-types(nil,cons) = 
       ?Unknown(name)
     ; <bind-unknown> (name, <next-unknown-listtype>)

@@ -43,22 +43,22 @@ rules
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
-    ; <ensure-cons-expansion> list => list'
+    ; <expand-unknown-list> list => list'
     ; <map-types(lift-strat(|strat))> list'
 
   stdlib-generation-type =
       ?("mapconcat_1_0", [strat], [], list)
-    ; <ensure-cons-expansion> list => list'
+    ; <expand-unknown-list> list => list'
     ; <map-types(lift-strat(|strat)); concat-types> list'
 
   stdlib-generation-type =
       ?("filter_1_0", [strat], [], list)
-    ; <ensure-cons-expansion> list => list'
+    ; <expand-unknown-list> list => list'
     ; <filter-types(lift-strat(|strat))> list'
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-    ; <ensure-cons-expansion> list => list'
+    ; <expand-unknown-list> list => list'
     ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list'
 
   stdlib-generation-type =
@@ -424,20 +424,20 @@ rules
 
 
 rules
-  ensure-cons-expansion =
+  expand-unknown-list =
       ?[]
-  ensure-cons-expansion =
+  expand-unknown-list =
       ?[_|_]
-  ensure-cons-expansion =
+  expand-unknown-list =
       ?UnknownList(name)
-    ; ![<next-unknown-type>, <next-unknown-listtype>] => type
+    ; !Alt([], [<next-unknown-type>, <next-unknown-listtype>]) => type
     ; <bind-unknown> (name, type)
-  ensure-cons-expansion =
+  expand-unknown-list =
       ?Unknown(name)
     ; next-unknown-listtype => type
     ; <bind-unknown> (name, type)
-    ; <ensure-cons-expansion> type
-  ensure-cons-expansion =
-      Alt(ensure-cons-expansion, ensure-cons-expansion)
-  ensure-cons-expansion =
-      fatal-err(|"ensure-cons-expansion is stuck: ")
+    ; <expand-unknown-list> type
+  expand-unknown-list =
+      Alt(expand-unknown-list, expand-unknown-list)
+  expand-unknown-list =
+      fatal-err(|"expand-unknown-list is stuck: ")

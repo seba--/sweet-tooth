@@ -43,18 +43,22 @@ rules
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
+    ; ensure-cons-expansion
     ; <map-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
       ?("mapconcat_1_0", [strat], [], list)
+    ; ensure-cons-expansion
     ; <map-types(lift-strat(|strat)); concat-types> list
 
   stdlib-generation-type =
       ?("filter_1_0", [strat], [], list)
+    ; ensure-cons-expansion
     ; <filter-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
+    ; ensure-cons-expansion
     ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
 
   stdlib-generation-type =
@@ -243,9 +247,7 @@ rules
 
   filter-types(s) = 
       (?UnknownList(name) + ?Unknown(name))
-    ; !Alt([],[<next-unknown-type>]) => t
-    ; <bind-unknown> (name, t)
-    ; <filter-types(s)> t
+    ; next-unknown-type
   filter-types(s) = Empty()
   filter-types(s) = ?Alt(t1,t2)
                   ; <alternative-types> (<filter-types(s)> t1, <filter-types(s)> t2)
@@ -259,9 +261,7 @@ rules
 
   foldr-types(nil,cons) =
       (?UnknownList(name) + ?Unknown(name))
-    ; !Alt([],[<next-unknown-type>]) => t
-    ; <bind-unknown> (name, t)
-    ; <foldr-types(nil,cons)> t
+    ; next-unknown-type
   foldr-types(nil,cons) = 
     Empty()
   foldr-types(nil,cons) = 
@@ -394,7 +394,7 @@ rules
 
 
 
-/*
+
 rules
   ensure-cons-expansion =
       ?[_|_]
@@ -409,4 +409,3 @@ rules
     ; <ensure-cons-expansion> type
   ensure-cons-expansion =
       fatal-err(|"ensure-cons-expansion is stuck: ")
-*/

@@ -2,6 +2,7 @@ module stdlib-generation-types
 imports
   extract-generation-type
 rules
+// ****** string ********
   stdlib-generation-type =
       ?("concat_strings_0_0", [], [], list)
     ; <concat-string-types> list
@@ -26,13 +27,30 @@ rules
       ?("to_upper_0_0", [], [], list)
     ; <to-upper-type> list
 
+
+// ****** list ********
+  stdlib-generation-type =
+      ?("concat_0_0", [], [], list)
+    ; <concat-types> list
+
+  stdlib-generation-type =
+      ?("conc_1_0", [], [], list)
+    ; <conc-types> list
+
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
     ; <map-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
+      ?("mapconcat_1_0", [strat], [], list)
+    ; <map-types(lift-strat(|strat)); concat-types> list
+
+  stdlib-generation-type =
+      ?("filter_1_0", [strat], [], list)
+    ; <filter-types(lift-strat(|strat))> list
+
+  stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-//    ; <ensure-cons-expansion> list => list'
     ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
 
   stdlib-generation-type =
@@ -43,6 +61,8 @@ rules
       ?("separate_by_0_1", [], [type], list)
     ; <separate-by-types(|type)> list
 
+
+// ****** traversal ********
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
     ; <collect-all-types(lift-strat(|strat))> list
@@ -182,15 +202,27 @@ rules
                ; <cons-types> (<s> x, <map-types(s)> xs)
   map-types(s) = fatal-err(|"map-types is stuck: ")
 
+  filter-types(s) = 
+      (?UnknownList(name) + ?Unknown(name))
+    ; !Alt([],[<next-unknown-type>]) => t
+    ; <bind-unknown> (name, t)
+    ; <filter-types(s)> t
+  filter-types(s) = Empty()
+  filter-types(s) = ?Alt(t1,t2)
+                  ; <alternative-types> (<filter-types(s)> t1, <filter-types(s)> t2)
+  filter-types(s) = []
+  filter-types(s) = ?[x|xs]
+                  ; if <s> x => t
+                      then <cons-types> (t, <filter-types(s)> xs)
+                      else <filter-types(s)> xs
+                    end
+  filter-types(s) = fatal-err(|"filter-types is stuck: ")
+
   foldr-types(nil,cons) =
-      ?UnknownList(name)
-    ; next-unknown-type => t
-    ; <bind-unknown> (name, Alt([],[t]))
-    ; foldr-types(nil,cons)
-  foldr-types(nil,cons) = 
-      ?Unknown(name)
-    ; <bind-unknown> (name, <next-unknown-listtype>)
-    ; next-unknown-type
+      (?UnknownList(name) + ?Unknown(name))
+    ; !Alt([],[<next-unknown-type>]) => t
+    ; <bind-unknown> (name, t)
+    ; <foldr-types(nil,cons)> t
   foldr-types(nil,cons) = 
     Empty()
   foldr-types(nil,cons) = 
@@ -265,6 +297,11 @@ rules
                     ; s
   bottomup-types(s) = fatal-err(|"collect-all-types is stuck: ")
 
+  concat-types = ?Unknown(name)
+               ; <bind-unknown> (name, <next-unknown-listtype>)
+               ; next-unknown-listtype
+  concat-types = ?UnknownList(name)
+               ; next-unknown-listtype
   concat-types = []
   concat-types = ?[Empty() | <concat-types>]
   concat-types = ?[list | rest]
@@ -274,6 +311,8 @@ rules
                ; <alternative-types> (<concat-types> [t1 | rest], <concat-types> [t2 | rest])
   concat-types = fatal-err(|"bottomup-types is stuck: ")
 
+  conc-types = ?Unknown(name)
+             ; next-unknown-listtype
   conc-types = (is-list,is-list); conc
   conc-types = ?(Empty(),<id>)
   conc-types = ?(<id>,Empty())

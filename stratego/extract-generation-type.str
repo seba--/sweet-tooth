@@ -28,7 +28,7 @@ rules // extract type
     ; extract-generation-type
     ; simplify-type
 
-//  extract-generation-type = !(<get-current-type>,<id>); debug; fail
+  extract-generation-type = !(<get-current-type>,<write-to-string; try(string-as-chars(take(|100)))>); debug; fail
 //  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =

@@ -133,7 +133,17 @@ rules // type matching
       ?( Unknown(name1)
        , Unknown(name2))
     ; <not(equal)> (name1, name2)
-    ; <bind-unknown> (name1, Unknown(name2))
+    ; <do-bind-unknown> (name1, Unknown(name2))
+  match-pat =
+      ?( UnknownList(name1)
+       , Unknown(name2))
+    ; <not(equal)> (name1, name2)
+    ; <bind-unknown> (name2, UnknownList(name1))
+  match-pat =
+      ?( Unknown(name1)
+       , UnknownList(name2))
+    ; <not(equal)> (name1, name2)
+    ; <bind-unknown> (name1, UnknownList(name2))
   match-pat =
       ?( UnknownList(name1)
        , UnknownList(name2))
@@ -213,10 +223,11 @@ rules // type matching
        , t)
     ; <unknown-not-free-in> (name, t)
     ; <bind-unknown> (name, t)
+
   match-pat =
       ?( UnknownList(name)
        , t)
-    ; fatal-err(|"match-pat unknown list: ")
+    ; <is-list-type> t
     ; <unknown-not-free-in> (name, t)
     ; <bind-unknown> (name, t)
 
@@ -301,6 +312,7 @@ rules // auxiliary type functions
 
   do-bind-unknown =
       ?(name, type)
+    ; not(<resolve-all-unknown> type; collect-one(?Unknown(name) + ?UnknownList(name)))
     ; try( may-assign
          ; where(try(truncate); debug(!"bind-unknown: "))
          ; rules ( UnknownEnv :+ name -> type)
@@ -319,9 +331,10 @@ rules // auxiliary type functions
     ; where(<do-bind-unknown> (name, <alternative-types> (t1,t2)))
   split-type =
       ?Alt(t1, t2)
-    ; <split-type> t1 => (t11,t12)
-    ; <resolve-all-unknown; split-type> t2 => (t21,t22)
-    ; !(<alternative-types> (t11,t12), <alternative-types> (t21, t22))
+    ; !(t1,t2)
+//    ; <split-type> t1 => (t11,t12)
+//    ; <resolve-all-unknown; split-type> t2 => (t21,t22)
+//    ; !(<alternative-types> (t11,t12), <alternative-types> (t21, t22))
   split-type =
       ?c#(kids)
     ; <map(split-type); unzip> kids => (kids1, kids2)
@@ -357,7 +370,14 @@ rules // name binding
 
 rules // runtime support
 
-  set-current-type = where(rules ( CurrentType := <id> ))
+  set-current-type = 
+//      simplify-type
+//    ; where(next-unknown-type => any)
+//    ; where(next-unknown-listtype => anylist)
+//    ; bottomup( try(?Any();!any + ?AnyList();!anylist) )
+//    ; 
+innermost(reduce-universal);
+       where(rules ( CurrentType := <id> ))
   get-current-type = CurrentType; where(truncate;debug(!"get:     ")); resolve-all-unknown; where(truncate;debug(!"reduced: "))
   with-current-type(s) = 
       where(get-current-type => orig)

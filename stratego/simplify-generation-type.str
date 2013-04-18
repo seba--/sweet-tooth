@@ -44,10 +44,15 @@ rules
   reduce-universal : Alt(Alt(t1, t2), t3) -> Alt(t1, Alt(t2, t3))
 //  reduce-universal : Alt(c#(kids1),c#(kids2)) -> c#(<zip;map(alternative-types)> (kids1,kids2))
   reduce-universal =
-      (?Alt(AnyList,list) + ?Alt(list,AnyList) + ?Alt([AnyList],[list]) + ?Alt([list],[AnyList]))
+      (?Alt(AnyList,list) + ?Alt(list,AnyList))
     ; <is-list-type> list
     ; <not(one(is-significant))> list
     ; !AnyList
+  reduce-universal =
+      (?Alt([AnyList],[list]) + ?Alt([list],[AnyList]))
+    ; <is-list-type> list
+    ; <not(one(is-significant))> list
+    ; ![AnyList]
   reduce-universal = []#(reduce-universal-list)
   reduce-universal : Alt(t1, Alt(t1, t2)) -> Alt(t1, t2)
   reduce-universal : Alt(t1, Alt(t2, t1)) -> Alt(t1, t2)
@@ -56,10 +61,10 @@ rules
       ?[AnyList, AnyList | rest]
     ; ![Any | rest]
   reduce-universal-list =
-      ?[AnyList, <is-list-type <+ ?Any> | rest]
+      ?[AnyList, <is-list-type> | rest]
     ; ![AnyList | rest]
   reduce-universal-list =
-      ?[<is-list-type <+ ?Any>, AnyList | rest]
+      ?[<is-list-type>, AnyList | rest]
     ; ![AnyList | rest]
   reduce-universal-list =
       ?[x | rest2]

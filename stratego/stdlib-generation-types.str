@@ -43,23 +43,23 @@ rules
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
-    ; ensure-cons-expansion
-    ; <map-types(lift-strat(|strat))> list
+    ; <ensure-cons-expansion> list => list'
+    ; <map-types(lift-strat(|strat))> list'
 
   stdlib-generation-type =
       ?("mapconcat_1_0", [strat], [], list)
-    ; ensure-cons-expansion
-    ; <map-types(lift-strat(|strat)); concat-types> list
+    ; <ensure-cons-expansion> list => list'
+    ; <map-types(lift-strat(|strat)); concat-types> list'
 
   stdlib-generation-type =
       ?("filter_1_0", [strat], [], list)
-    ; ensure-cons-expansion
-    ; <filter-types(lift-strat(|strat))> list
+    ; <ensure-cons-expansion> list => list'
+    ; <filter-types(lift-strat(|strat))> list'
 
   stdlib-generation-type =
       ?("foldr_2_0", [strat1, strat2], [], list)
-    ; ensure-cons-expansion
-    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list
+    ; <ensure-cons-expansion> list => list'
+    ; <foldr-types(lift-strat(|strat1), lift-strat(|strat2))> list'
 
   stdlib-generation-type =
       ?("flatten_list_0_0", [], [], list)
@@ -107,11 +107,15 @@ rules
   concat-string-types = 
       ?[Unknown(v) , Str(ss) | list]
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+  concat-string-types =
+      ?[Alt(t1,t2) | list]
+    ; <alternative-types> (<concat-string-types> [t1|list], <concat-string-types> [t2|list])
 
   conc-string-types = ?Unknown(name)
                     ; !Str([<next-unknown-type>])
   conc-string-types = Alt(conc-string-types, conc-string-types)
   conc-string-types = ?""#(xs); <concat-string-types> xs
+  conc-string-types = fatal-err(|"conc-string-types is stuck")
   
  
   trim-chars-types(s) = 
@@ -397,6 +401,8 @@ rules
 
 rules
   ensure-cons-expansion =
+      ?[]
+  ensure-cons-expansion =
       ?[_|_]
   ensure-cons-expansion =
       ?UnknownList(name)
@@ -407,5 +413,7 @@ rules
     ; next-unknown-listtype => type
     ; <bind-unknown> (name, type)
     ; <ensure-cons-expansion> type
+  ensure-cons-expansion =
+      Alt(ensure-cons-expansion, ensure-cons-expansion)
   ensure-cons-expansion =
       fatal-err(|"ensure-cons-expansion is stuck: ")

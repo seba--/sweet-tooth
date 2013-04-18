@@ -39,5 +39,5 @@ echo "  $NORM"
 echo
 
 echo "extract type " 
-java -cp $SCRIPTDIR/bin:$STRATEGO_JAR extract_generation_type -i $NORM -desugar ${DESUGARING_NORM}_0_0
+java -Xmx2048m -cp $SCRIPTDIR/bin:$STRATEGO_JAR extract_generation_type -i $NORM -desugar ${DESUGARING_NORM}_0_0
 echo

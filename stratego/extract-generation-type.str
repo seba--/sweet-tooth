@@ -133,7 +133,7 @@ rules // type matching
       ?( Unknown(name1)
        , Unknown(name2))
     ; <not(equal)> (name1, name2)
-    ; <do-bind-unknown> (name1, Unknown(name2))
+    ; <bind-unknown> (name1, Unknown(name2))
   match-pat =
       ?( UnknownList(name1)
        , Unknown(name2))

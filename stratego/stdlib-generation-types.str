@@ -96,8 +96,9 @@ rules
                       ; !Str([<next-unknown-type>])
   concat-string-types = Alt(concat-string-types, concat-string-types)
   concat-string-types = ?[]; !Str([])
+  concat-string-types = ?[Alt(t1,t2) | rest]
+                      ; <alternative-types> (<concat-string-types> [t1|rest], <concat-string-types> [t2|rest])
   concat-string-types = ?[Str(ss)]; !Str(ss)
-  concat-string-types = ?[Unknown(v)]; !Str([Unknown(v)])
   concat-string-types = 
       ?[Str(ss) , Str(ss2) | list]
     ; <concat-string-types> [Str(<conc> (ss, ss2)) | list]
@@ -105,8 +106,9 @@ rules
       ?[Str(ss) , Unknown(v) | list]
     ; <concat-string-types> [Str(<conc> (ss, [Unknown(v)])) | list]
   concat-string-types = 
-      ?[Unknown(v) , Str(ss) | list]
-    ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+      ?[Unknown(v) | list]
+    ; <concat-string-types> list => Str(ss)
+    ; !Str([Unknown(v) | ss])
   concat-string-types =
       ?[Alt(t1,t2) | list]
     ; <alternative-types> (<concat-string-types> [t1|list], <concat-string-types> [t2|list])
@@ -133,6 +135,7 @@ rules
       ?Str([Unknown(name)|rest])
     ; !Str([<next-unknown-type>|rest])
   // TODO actual implementation
+  trim-chars-types(s) = ?UnknownList(_); !Empty
   trim-chars-types(s) = fatal-err(|"trim-chars-types is stuck: ")
 
   explode-string-type = 
@@ -148,6 +151,11 @@ rules
   explode-string-type = 
       ?Str([])
     ; ![]
+  explode-string-type = 
+      ?Str([Alt(t1,t2)|rest])
+    ; <explode-string-type> Str([t1|rest]) => str1
+    ; <explode-string-type> Str([t2|rest]) => str2
+    ; <alternative-types> (str1, str2)
   explode-string-type = 
       ?Str([Unknown(name)|rest])
     ; next-unknown-listtype => t
@@ -243,6 +251,11 @@ rules
   map-types(s) = ?Alt(t1,t2)
                ; <alternative-types> (<map-types(s)> t1, <map-types(s)> t2)
   map-types(s) = []
+  map-types(s) = ?[Alt(t1,t2)|xs]
+               ; <alternative-types> (<map-types(s)> [t1|xs], <map-types(s)> [t2|xs])
+  map-types(s) = ?[x|xs]
+               ; <(s + !Empty) => Empty> x
+               ; !Empty
   map-types(s) = ?[x|xs]
                ; <cons-types> (<s> x, <map-types(s)> xs)
   map-types(s) = ?[UnknownList(name)|xs]
@@ -273,11 +286,11 @@ rules
     ; <alternative-types> (<foldr-types(nil,cons)> t1, <foldr-types(nil,cons)> t2)
   foldr-types(nil,cons) = 
       ?[]
-    ; nil
+    ; (nil <+ !Empty)
   foldr-types(nil,cons) = 
       ?[x | xs]
     ; <foldr-types(nil,cons)> xs => ys
-    ; <cons> (x, ys)
+    ; <cons <+ !Empty> (x, ys)
   foldr-types(nil,cons) = fatal-err(|"foldr-types is stuck: ")
 
   flatten-list-types =

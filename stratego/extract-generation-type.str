@@ -28,7 +28,7 @@ rules // extract type
     ; extract-generation-type
     ; simplify-type
 
-  extract-generation-type = !(<get-current-type>,<write-to-string; try(string-as-chars(take(|100)))>); debug; fail
+  extract-generation-type = where(<debug> ""); truncate; debug; fail
 //  extract-generation-type = get-current-type; debug; fail
 
   extract-generation-type =
@@ -302,7 +302,7 @@ rules // auxiliary type functions
   do-bind-unknown =
       ?(name, type)
     ; try( may-assign
-         ; debug(!"bind-unknown: ")
+         ; where(try(truncate); debug(!"bind-unknown: "))
          ; rules ( UnknownEnv :+ name -> type)
       )
     ; !type
@@ -358,7 +358,7 @@ rules // name binding
 rules // runtime support
 
   set-current-type = where(rules ( CurrentType := <id> ))
-  get-current-type = CurrentType; resolve-all-unknown
+  get-current-type = CurrentType; where(truncate;debug(!"get:     ")); resolve-all-unknown; where(truncate;debug(!"reduced: "))
   with-current-type(s) = 
       where(get-current-type => orig)
     ; set-current-type
@@ -416,6 +416,11 @@ rules // strategy management
   lookup-strategy(|name) = <LocalStrats> name
   lookup-strategy(|name) = ?[strat@SDefT(name, _, _, _) | _]; !strat
   lookup-strategy(|name) = ?[_ | <lookup-strategy(|name)>]
+
+
+rules // debugging
+
+  truncate = write-to-string; try(string-as-chars(take(|100)))
   
 signature constructors
   Unknown : String      -> Type

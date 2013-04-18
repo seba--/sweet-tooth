@@ -30,12 +30,16 @@ rules
 
 // ****** list ********
   stdlib-generation-type =
+      ?("elem_0_0", [], [], pair)
+    ; <elem-types> pair
+
+  stdlib-generation-type =
       ?("concat_0_0", [], [], list)
     ; <concat-types> list
 
   stdlib-generation-type =
-      ?("conc_1_0", [], [], list)
-    ; <conc-types> list
+      ?("conc_1_0", [], [], tuple)
+    ; <conc-types> tuple
 
   stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
@@ -62,7 +66,11 @@ rules
     ; <separate-by-types(|type)> list
 
 
-// ****** traversal ********
+// ****** generic, traversal ********
+  stdlib-generation-type =
+      ?("equal_0_0", [], [], list)
+    ; <equal-types> list
+
   stdlib-generation-type =
       ?("collect_all_1_0", [strat], [], list)
     ; <collect-all-types(lift-strat(|strat))> list
@@ -190,6 +198,35 @@ rules
       is-char; to-upper
   to-upper-type = fatal-err(|"to-upper-type is stuck: ")
 
+
+  elem-types =
+      ?Unknown(name)
+    ; next-unknown-type
+  elem-types = 
+    Empty()
+  elem-types = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<elem-types> t1, <elem-types> t2)
+  elem-types = 
+      ?(el, Unknown(name))
+    ; next-unknown-type
+  elem-types = 
+      ?(el, UnknownList(name))
+    ; next-unknown-type
+  elem-types = 
+      ?(el, Alt(t1,t2))
+    ; <alternative-types> (<elem-types> (el,t1), <elem-types> (el,t2))
+  elem-types = 
+      ?(_,[]); !Empty
+  elem-types = 
+      ?(el, [x | xs])
+    ; <equal-types> (el,x)
+    ; !x
+  elem-types = 
+      ?(el, [_ | xs])
+    ; <elem-types> (el, xs)
+  elem-types = fatal-err(|"elem-types is stuck: ")
+
   map-types(s) = ?UnknownList(_); next-unknown-listtype
   map-types(s) = ?Unknown(name)
                ; <bind-unknown> (name, <next-unknown-listtype>)
@@ -214,7 +251,7 @@ rules
                   ; <alternative-types> (<filter-types(s)> t1, <filter-types(s)> t2)
   filter-types(s) = []
   filter-types(s) = ?[x|xs]
-                  ; if <debug(!"test: "); s; debug(!"ok: ")> x => t
+                  ; if <s> x => t
                       then <cons-types> (t, <filter-types(s)> xs)
                       else <filter-types(s)> xs
                     end
@@ -341,6 +378,21 @@ rules
 
   cons-types = ?(x, xs); <is-list> xs; ![x|xs]
   cons-types = ?(x, t@UnknownList(name)); ![x,t]
+
+  equal-types =
+      ?Unknown(name)
+    ; next-unknown-type
+  equal-types = 
+    Empty()
+  equal-types = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<equal-types> t1, <equal-types> t2)
+  equal-types = 
+      ?(t1, t2)
+    ; <match-pat> (t1, t2)
+  equal-types = fatal-err(|"equal-types is stuck: ")
+
+
 
 /*
 rules

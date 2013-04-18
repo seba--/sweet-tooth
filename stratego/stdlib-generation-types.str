@@ -7,6 +7,10 @@ rules
     ; <concat-string-types> list
 
   stdlib-generation-type =
+      ?("conc_strings_0_0", [], [], list)
+    ; <conc-string-types> list
+
+  stdlib-generation-type =
       ?("trim_chars_1_0", [strat], [], list)
     ; <trim-chars-types(lift-strat(|strat))> list
 
@@ -71,6 +75,12 @@ rules
   concat-string-types = 
       ?[Unknown(v) , Str(ss) | list]
     ; <concat-string-types> [Str(<conc> ([Unknown(v)], ss)) | list]
+
+  conc-string-types = ?Unknown(name)
+                    ; !Str([<next-unknown-type>])
+  conc-string-types = Alt(conc-string-types, conc-string-types)
+  conc-string-types = ?""#(xs); <concat-string-types> xs
+  
  
   trim-chars-types(s) = 
       ?Unknown(name)

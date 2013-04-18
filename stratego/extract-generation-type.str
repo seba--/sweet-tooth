@@ -153,13 +153,18 @@ rules // type matching
     ; <bind-unknown> (name, cons#(unknown-kids))
     ; <zip; map(match-pat)> (kids, unknown-kids)
   match-pat =
-      ?( t@Anno(Op(cons, kids), _)
+      ?( Anno(Op("Nil", []), _)
        , UnknownList(name))
-    ; fatal-err(|"match-pat unknown list: ")
+    ; <bind-unknown> (name, [])
+  match-pat =
+      ?( t@Anno(Op("Cons", [hd,tl]), _)
+       , UnknownList(name))
     ; <unknown-not-free-in> (name, t)
-    ; <map(next-unknown-type)> kids => unknown-kids
-    ; <bind-unknown> (name, cons#(unknown-kids))
-    ; <zip; map(match-pat)> (kids, unknown-kids)
+    ; next-unknown-type => hd-type
+    ; next-unknown-listtype => tl-type
+    ; <bind-unknown> (name, [hd-type, tl-type])
+    ; <match-pat> (hd, hd-type)
+    ; <match-pat> (tl, tl-type)
 
   match-pat =
       ?( Anno(Str(s), _)
@@ -233,7 +238,7 @@ rules // term typing
 
   extract-generation-type-from-term =
       ?Anno(Op("Cons", [hd, tl]), _)  
-    ; ![<extract-generation-type-from-term> hd | <extract-generation-type-from-term> tl]
+    ; <cons-types> (<extract-generation-type-from-term> hd, <extract-generation-type-from-term> tl)
 
   extract-generation-type-from-term =
       ?Anno(Op(cons, kids), _)  
@@ -297,7 +302,7 @@ rules // auxiliary type functions
   do-bind-unknown =
       ?(name, type)
     ; try( may-assign
-//         ; debug(!"bind-unknown: ")
+         ; debug(!"bind-unknown: ")
          ; rules ( UnknownEnv :+ name -> type)
       )
     ; !type

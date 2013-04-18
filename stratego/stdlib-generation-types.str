@@ -254,12 +254,10 @@ rules
   map-types(s) = ?[Alt(t1,t2)|xs]
                ; <alternative-types> (<map-types(s)> [t1|xs], <map-types(s)> [t2|xs])
   map-types(s) = ?[x|xs]
-               ; <(s + !Empty) => Empty> x
+               ; <(s <+ !Empty) => Empty> x
                ; !Empty
   map-types(s) = ?[x|xs]
                ; <cons-types> (<s> x, <map-types(s)> xs)
-  map-types(s) = ?[UnknownList(name)|xs]
-               ; <cons-types> (<next-unknown-listtype>, <map-types(s)> xs)
   map-types(s) = fatal-err(|"map-types is stuck: ")
 
   filter-types(s) = 

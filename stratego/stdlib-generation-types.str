@@ -11,6 +11,18 @@ rules
     ; <trim-chars-types(lift-strat(|strat))> list
 
   stdlib-generation-type =
+      ?("explode_string_0_0", [], [], list)
+    ; <explode-string-type> list
+
+  stdlib-generation-type =
+      ?("implode_string_0_0", [], [], list)
+    ; <implode-string-type> list
+
+  stdlib-generation-type =
+      ?("to_upper_0_0", [], [], list)
+    ; <to-upper-type> list
+
+  stdlib-generation-type =
       ?("map_1_0", [strat], [], list)
     ; <map-types(lift-strat(|strat))> list
 
@@ -77,6 +89,77 @@ rules
   // TODO actual implementation
   trim-chars-types(s) = fatal-err(|"trim-chars-types is stuck: ")
 
+  explode-string-type = 
+      ?Unknown(name)
+    ; !Str([<next-unknown-type>]) => t
+    ; <bind-unknown> (name, t)
+    ; next-unknown-listtype
+  explode-string-type = 
+    Empty()
+  explode-string-type = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<explode-string-type> t1, <explode-string-type> t2)
+  explode-string-type = 
+      ?Str([])
+    ; ![]
+  explode-string-type = 
+      ?Str([Unknown(name)|rest])
+    ; next-unknown-listtype => t
+    ; <bind-unknown> (name, t)  
+    ; !<cons-types> (t, <explode-string-type> Str(rest))
+  explode-string-type = 
+      ?Str([UnknownList(name)|rest])
+    ; <cons-types> (UnknownList(name), <explode-string-type> Str(rest))
+  explode-string-type = 
+      ?Str([ss | rest])
+    ; <is-string> ss
+    ; <conc-types> (<explode-string> ss, <explode-string-type> Str(rest))
+  explode-string-type = fatal-err(|"explode-string-type is stuck: ")
+
+  implode-string-type = 
+      ?Unknown(name)
+    ; next-unknown-listtype => t
+    ; <bind-unknown> (name, t)
+    ; !Str([<next-unknown-type>])
+  implode-string-type = 
+      ?UnknownList(name)
+    ; !Str([<next-unknown-type>]) 
+ implode-string-type = 
+    Empty()
+  implode-string-type = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<implode-string-type> t1, <implode-string-type> t2)
+  implode-string-type = 
+      ?[]
+    ; !Str([])
+  implode-string-type = 
+      ?[Unknown(name)|rest]
+    ; <implode-string-type> rest => Str(rest-str)
+    ; !Str(<cons-types> (Unknown(name), rest-str))
+  implode-string-type = 
+      ?[UnknownList(name)|rest]
+    ; <implode-string-type> rest => Str(rest-str)
+    ; !Str(<cons-types> (UnknownList(name), rest-str))
+  implode-string-type = 
+      split-fetch-keep(not(is-char)) => (chars, r, rest)
+    ; <not(?[])> chars
+    ; <implode-string> chars => ss
+    ; <implode-string-type> [r|rest] => Str(rest-str)
+    ; !Str(<cons-types> (ss, rest-str))
+  implode-string-type = fatal-err(|"implode-string-type is stuck: ")
+
+  to-upper-type = 
+      ?Unknown(name)
+    ; next-unknown-type
+  to-upper-type = 
+    Empty()
+  to-upper-type = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<to-upper-type> t1, <to-upper-type> t2)
+  to-upper-type = 
+      is-char; to-upper
+  to-upper-type = fatal-err(|"to-upper-type is stuck: ")
+
   map-types(s) = ?UnknownList(_); next-unknown-listtype
   map-types(s) = ?Unknown(name)
                ; <bind-unknown> (name, <next-unknown-listtype>)
@@ -85,7 +168,8 @@ rules
   map-types(s) = ?Alt(t1,t2)
                ; <alternative-types> (<map-types(s)> t1, <map-types(s)> t2)
   map-types(s) = []
-  map-types(s) = [s | map-types(s)]
+  map-types(s) = ?[x|xs]
+               ; <cons-types> (<s> x, <map-types(s)> xs)
   map-types(s) = fatal-err(|"map-types is stuck: ")
 
   foldr-types(nil,cons) =
@@ -130,7 +214,8 @@ rules
     ; <is-list-type> x
     ; <conc-types> (x, <flatten-list-types> xs)
   flatten-list-types = 
-      [id | flatten-list-types]
+      ?[x | xs]
+    ; <cons-types> (x, <flatten-list-types> xs)
   flatten-list-types = fatal-err(|"flatten-list-types is stuck: ")
 
   separate-by-types(|type) =
@@ -149,7 +234,7 @@ rules
       ?[]
   separate-by-types(|type) = 
       ?[x | xs]
-    ; ![x , type | <separate-by-types(|type)> xs]
+    ; <cons-types> (x, <cons-types> (type, <separate-by-types(|type)> xs))
   separate-by-types(|type) = fatal-err(|"separate-by-types is stuck: ")
 
   collect-all-types(s) = Empty()
@@ -197,6 +282,10 @@ rules
   is-list-type = [id|is-list-type]
   is-list-type = Alt(is-list-type,is-list-type)
 
+  cons-types = ?(x, xs); <is-list> xs; ![x|xs]
+  cons-types = ?(x, t@UnknownList(name)); ![x,t]
+
+/*
 rules
   ensure-cons-expansion =
       ?[_|_]
@@ -211,3 +300,4 @@ rules
     ; <ensure-cons-expansion> type
   ensure-cons-expansion =
       fatal-err(|"ensure-cons-expansion is stuck: ")
+*/

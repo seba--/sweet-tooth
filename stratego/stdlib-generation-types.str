@@ -382,6 +382,12 @@ rules
 
   cons-types = ?(x, xs); <is-list> xs; ![x|xs]
   cons-types = ?(x, t@UnknownList(name)); ![x,t]
+  cons-types = ?(x, Unknown(name))
+             ; next-unknown-listtype => t
+             ; <bind-unknown> (name, t)
+             ; ![x,t]
+  cons-types = ?(x, Alt(t1, t2))
+             ; <alternative-types> (<cons-types> (x, t1), <cons-types> (x, t2))
 
   equal-types =
       ?Unknown(name)

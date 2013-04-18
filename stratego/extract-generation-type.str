@@ -184,7 +184,13 @@ rules // type matching
       ?( t@Anno(Str(s), _)
        , Unknown(name))
     ; <unknown-not-free-in> (name, t)
-    ; <bind-unknown> (name, Str([<next-unknown-type>]))
+    ; <bind-unknown> (name, Str([s]))
+
+  match-pat =
+      ?( t@Anno(Str(s), _)
+       , Str([Unknown(name)]))
+    ; <unknown-not-free-in> (name, t)
+    ; <bind-unknown> (name, s)
 
   match-pat =
       ?( Var(v)
@@ -287,15 +293,22 @@ rules // auxiliary type functions
   unknown-or(s) = ?Unknown(_) <+ s
 
   alternative-types = ?(t, t); !t
+  alternative-types = ?(Empty,<id>)
+  alternative-types = ?(<id>,Empty)
   alternative-types = 
       ?(Unknown(name1), Unknown(name2))
-    ; !Alt(Unknown(name1), Unknown(name2))
+    ; next-unknown-type => t
+    ; <do-bind-unknown> (name1, t)
+    ; <do-bind-unknown> (name2, t)
+    ; !t
+//    ; !Alt(Unknown(name1), Unknown(name2))
   alternative-types = 
       ?(UnknownList(name1), UnknownList(name2))
-    ; !Alt(UnknownList(name1), UnknownList(name2))
-//  alternative-types = 
-//      ?(c#(kids), c#(kids'))
-//    ; !c#(<zip; map(alternative-types)> (kids, kids'))
+    ; next-unknown-listtype => t
+    ; <do-bind-unknown> (name1, t)
+    ; <do-bind-unknown> (name2, t)
+    ; !t
+//    ; !Alt(UnknownList(name1), UnknownList(name2))
   alternative-types =
       ?(Alt(t1,t2), t1)
     ; !Alt(t1,t2)
@@ -376,7 +389,7 @@ rules // runtime support
 //    ; where(next-unknown-listtype => anylist)
 //    ; bottomup( try(?Any();!any + ?AnyList();!anylist) )
 //    ; 
-//innermost(reduce-universal);
+innermost(reduce-universal);
        where(rules ( CurrentType := <id> ))
   get-current-type = CurrentType; /*where(truncate;debug(!"get:     "));*/ resolve-all-unknown/*; where(truncate;debug(!"reduced: "))*/
   with-current-type(s) = 

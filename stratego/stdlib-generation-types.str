@@ -74,7 +74,7 @@ rules
   stdlib-generation-type =
     fatal-err(|"Unknown stdlib function: ")
 
-  lift-strat(|strat) = unknown-or(with-current-type(<extract-generation-type> strat))
+  lift-strat(|strat) = with-current-type(<extract-generation-type> strat)
 
 rules
   concat-string-types = ?UnknownList(_)
@@ -200,6 +200,8 @@ rules
   map-types(s) = []
   map-types(s) = ?[x|xs]
                ; <cons-types> (<s> x, <map-types(s)> xs)
+  map-types(s) = ?[UnknownList(name)|xs]
+               ; <cons-types> (<next-unknown-listtype>, <map-types(s)> xs)
   map-types(s) = fatal-err(|"map-types is stuck: ")
 
   filter-types(s) = 
@@ -212,7 +214,7 @@ rules
                   ; <alternative-types> (<filter-types(s)> t1, <filter-types(s)> t2)
   filter-types(s) = []
   filter-types(s) = ?[x|xs]
-                  ; if <s> x => t
+                  ; if <debug(!"test: "); s; debug(!"ok: ")> x => t
                       then <cons-types> (t, <filter-types(s)> xs)
                       else <filter-types(s)> xs
                     end
@@ -291,28 +293,35 @@ rules
   bottomup-types(s) = Empty()
   bottomup-types(s) = ?Unknown(name); next-unknown-type
   bottomup-types(s) = ?Alt(t1,t2)
-                       ; <alternative-types> (<bottomup-types(s)> t1, <bottomup-types(s)> t2)
+                    ; <alternative-types> (<bottomup-types(s)> t1, <bottomup-types(s)> t2)
   bottomup-types(s) = not(?UnknownList(_))
                     ; all(bottomup-types(s))
                     ; s
-  bottomup-types(s) = fatal-err(|"collect-all-types is stuck: ")
+  bottomup-types(s) = fatal-err(|"bottomup-types is stuck: ")
 
   concat-types = ?Unknown(name)
                ; <bind-unknown> (name, <next-unknown-listtype>)
                ; next-unknown-listtype
   concat-types = ?UnknownList(name)
                ; next-unknown-listtype
+  concat-types = Alt(concat-types, concat-types)
   concat-types = []
   concat-types = ?[Empty() | <concat-types>]
+  concat-types = 
+      ?[Unknown(name) | rest]
+    ; next-unknown-listtype => t
+    ; <bind-unknown> (name, t)
+    ; <cons-types> (t, <concat-types> rest)
   concat-types = ?[list | rest]
                ; where(<is-list <+ ?UnknownList(_)> list)
                ; <conc-types> (list, rest)
   concat-types = ?[Alt(t1,t2) | rest]
                ; <alternative-types> (<concat-types> [t1 | rest], <concat-types> [t2 | rest])
-  concat-types = fatal-err(|"bottomup-types is stuck: ")
+  concat-types = fatal-err(|"concat-types is stuck: ")
 
   conc-types = ?Unknown(name)
              ; next-unknown-listtype
+  conc-types = Alt(conc-types, conc-types)
   conc-types = (is-list,is-list); conc
   conc-types = ?(Empty(),<id>)
   conc-types = ?(<id>,Empty())
@@ -321,8 +330,7 @@ rules
              ; <alternative-types> (<conc-types> (t1, list), <conc-types> (t2, list))
   conc-types = ?(list, Alt(t1, t2))
              ; <alternative-types> (<conc-types> (list, t1), <conc-types> (list, t2))
-  conc-types = ?(UnknownList(name),<is-list => rest>); ![UnknownList(name) | rest]
-  conc-types = ?(hd,UnknownList(name)); ![hd, UnknownList(name)]
+  conc-types = ?(UnknownList(name),rest); <cons-types> (UnknownList(name), rest)
   conc-types = fatal-err(|"conc-types is stuck: ")
 
   is-list-type = ?[] 

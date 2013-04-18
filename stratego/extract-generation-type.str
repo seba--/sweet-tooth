@@ -282,9 +282,9 @@ rules // auxiliary type functions
   alternative-types = 
       ?(UnknownList(name1), UnknownList(name2))
     ; !Alt(UnknownList(name1), UnknownList(name2))
-  alternative-types = 
-      ?(c#(kids), c#(kids'))
-    ; !c#(<zip; map(alternative-types)> (kids, kids'))
+//  alternative-types = 
+//      ?(c#(kids), c#(kids'))
+//    ; !c#(<zip; map(alternative-types)> (kids, kids'))
   alternative-types =
       ?(Alt(t1,t2), t1)
     ; !Alt(t1,t2)
@@ -312,7 +312,20 @@ rules // auxiliary type functions
   split-type =
       ?Unknown(name)
     ; !(<next-unknown-type>, <next-unknown-type>) => (t1,t2)
-    ; where(<do-bind-unknown> (name, Alt(t1,t2)))
+    ; where(<do-bind-unknown> (name, <alternative-types> (t1,t2)))
+  split-type =
+      ?UnknownList(name)
+    ; !(<next-unknown-listtype>, <next-unknown-listtype>) => (t1,t2)
+    ; where(<do-bind-unknown> (name, <alternative-types> (t1,t2)))
+  split-type =
+      ?Alt(t1, t2)
+    ; <split-type> t1 => (t11,t12)
+    ; <resolve-all-unknown; split-type> t2 => (t21,t22)
+    ; !(<alternative-types> (t11,t12), <alternative-types> (t21, t22))
+  split-type =
+      ?c#(kids)
+    ; <map(split-type); unzip> kids => (kids1, kids2)
+    ; !(c#(kids1), c#(kids2))
   split-type =
     fatal-err(|"split type is stuck")
 

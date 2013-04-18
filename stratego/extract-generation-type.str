@@ -29,7 +29,7 @@ rules // extract type
     ; simplify-type
 
   extract-generation-type = where(<debug> ""); truncate; debug; fail
-//  extract-generation-type = get-current-type; debug; fail
+  extract-generation-type = get-current-type; truncate; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)
@@ -314,7 +314,7 @@ rules // auxiliary type functions
       ?(name, type)
     ; not(<resolve-all-unknown> type; collect-one(?Unknown(name) + ?UnknownList(name)))
     ; try( may-assign
-         ; where(try(truncate); debug(!"bind-unknown: "))
+//         ; where(try(truncate); debug(!"bind-unknown: "))
          ; rules ( UnknownEnv :+ name -> type)
       )
     ; !type
@@ -376,9 +376,9 @@ rules // runtime support
 //    ; where(next-unknown-listtype => anylist)
 //    ; bottomup( try(?Any();!any + ?AnyList();!anylist) )
 //    ; 
-innermost(reduce-universal);
+//innermost(reduce-universal);
        where(rules ( CurrentType := <id> ))
-  get-current-type = CurrentType; where(truncate;debug(!"get:     ")); resolve-all-unknown; where(truncate;debug(!"reduced: "))
+  get-current-type = CurrentType; /*where(truncate;debug(!"get:     "));*/ resolve-all-unknown/*; where(truncate;debug(!"reduced: "))*/
   with-current-type(s) = 
       where(get-current-type => orig)
     ; set-current-type

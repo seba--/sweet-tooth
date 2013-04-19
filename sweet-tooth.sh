@@ -6,6 +6,8 @@
 SRCPATH=$1
 SRCFILE=$2
 DESUGARING=$3
+MATCHPATH=$4
+MATCHFILE=$5
 
 DESUGARING_NORM=`echo $DESUGARING | sed -e "s/\\-/\\_/g"`
 SCRIPTDIR=$(dirname $0)
@@ -19,6 +21,7 @@ STRJ="java -jar $STRATEGO_JAR"
 echo "compile sweet tooth Stratego programs"
 mkdir -p $SCRIPTDIR/bin
 $STRJ -o $SCRIPTDIR/bin/extract_generation_type.java -i $SCRIPTDIR/stratego/extract-generation-type.str -I $SUGARJ_LIB
+$STRJ -o $SCRIPTDIR/bin/matching.java -i $SCRIPTDIR/stratego/matching.str -I $SUGARJ_LIB
 javac -cp $SCRIPTDIR/bin:$STRATEGO_JAR -d $SCRIPTDIR/bin $SCRIPTDIR/bin/*.java
 echo
 
@@ -31,13 +34,20 @@ $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $SRCPATH $SRCF
 echo
 
 echo "normalize resulting Stratego file"
-NORM=/var/folders/n_/ht4vd47d3z7f9t3xzw2y1n1w0000gn/T/desugar.str.ViRqAHrz # <- XML
 NORM=`mktemp -t desugar-XXXXX.str`
 $STRJ -F -o $NORM -i $SUGARJ_BIN/`dirname $SRCFILE`/`basename $SRCFILE .sugj`.str -I $SUGARJ_BIN -I $SUGARJ_LIB -I $SUGARJ_LIB
-echo "Wrote normalized Stratego code"
-echo "  $NORM"
+echo "  Wrote normalized Stratego code"
+echo "    $NORM"
 echo
 
-echo "extract type " 
-java -Xmx2048m -cp $SCRIPTDIR/bin:$STRATEGO_JAR extract_generation_type -i $NORM -desugar ${DESUGARING_NORM}_0_0
+echo "extract type" 
+TYPEFILE=`mktemp -t generation-type-XXXXX.str`
+java -Xmx2048m -cp $SCRIPTDIR/bin:$STRATEGO_JAR extract_generation_type -i $NORM -desugar ${DESUGARING_NORM}_0_0 -o $TYPEFILE
+cat $TYPEFILE
 echo
+
+echo "match pattern against target file" 
+# $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $SRCPATH $TARGETFILE
+java -cp $SCRIPTDIR/bin:$STRATEGO_JAR matching -i $SUGARJ_BIN/`dirname $MATCHFILE`/`basename $MATCHFILE .sugj`.model -t $TYPE -desugar ${DESUGARING_NORM}_0_0
+echo
+

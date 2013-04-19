@@ -1,0 +1,16 @@
+module matching
+
+imports extract-generation-type
+
+rules
+  main = 
+    io-wrap(
+      GenerationType
+    )
+
+  matching-option =
+    ArgOption(
+      "-t"
+    , rules(GenerationType := <id>)
+    , !"-t <type> Generation type to match against"
+    )

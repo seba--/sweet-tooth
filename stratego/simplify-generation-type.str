@@ -56,6 +56,7 @@ rules
   reduce-universal = []#(reduce-universal-list)
   reduce-universal : Alt(t1, Alt(t1, t2)) -> Alt(t1, t2)
   reduce-universal : Alt(t1, Alt(t2, t1)) -> Alt(t1, t2)
+  reduce-universal : Str([]#(list)) -> Str(<prefer-anylist> list)
 
   reduce-universal-list =
       ?[AnyList, AnyList | rest]
@@ -69,10 +70,20 @@ rules
   reduce-universal-list =
       ?[x | rest2]
     ; ![x | <reduce-universal-list> rest2]
-  
+
+  prefer-anylist =
+      ?[]
+    ; fail
+  prefer-anylist =
+      [?Alt(AnyList,other) + ?Alt(other,AnyList) | ?rest]
+    ; <not(is-significant)> other
+    ; ![AnyList | rest]
+  prefer-anylist =
+      [id | prefer-anylist]
 
   is-significant = is-string
   is-significant = ?Str(_)
   is-significant = ?[x|xs]; (<is-significant> x + <is-significant> xs)
   is-significant = ?Alt(t1,t2); (<is-significant> t1 + <is-significant> t2)
+  is-significant = not(?Any + ?AnyList + ?Unknown(_) + ?UnknownList(_))
   is-significant = not(?Any + ?AnyList); debug(!"is-significant is stuck: "); fail

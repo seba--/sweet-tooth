@@ -20,8 +20,8 @@ STRJ="java -jar $STRATEGO_JAR"
 
 echo "compile sweet tooth Stratego programs"
 mkdir -p $SCRIPTDIR/bin
-$STRJ -o $SCRIPTDIR/bin/extract_generation_type.java -i $SCRIPTDIR/stratego/extract-generation-type.str -I $SUGARJ_LIB
-$STRJ -o $SCRIPTDIR/bin/matching.java -i $SCRIPTDIR/stratego/matching.str -I $SUGARJ_LIB
+# $STRJ -o $SCRIPTDIR/bin/extract_generation_type.java -i $SCRIPTDIR/stratego/extract-generation-type.str -I $SUGARJ_LIB
+$STRJ -m matching-main -o $SCRIPTDIR/bin/matching.java -i $SCRIPTDIR/stratego/matching.str -I $SUGARJ_LIB -la stratego-xtc -la stratego-sglr
 javac -cp $SCRIPTDIR/bin:$STRATEGO_JAR -d $SCRIPTDIR/bin $SCRIPTDIR/bin/*.java
 echo
 
@@ -34,8 +34,9 @@ $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $SRCPATH $SRCF
 echo
 
 echo "normalize resulting Stratego file"
-NORM=`mktemp -t desugar-XXXXX.str`
-$STRJ -F -o $NORM -i $SUGARJ_BIN/`dirname $SRCFILE`/`basename $SRCFILE .sugj`.str -I $SUGARJ_BIN -I $SUGARJ_LIB -I $SUGARJ_LIB
+NORM=/var/folders/n_/ht4vd47d3z7f9t3xzw2y1n1w0000gn/T/desugar-XXXXX.str.3Nrd8gY9
+#NORM=`mktemp -t desugar-XXXXX.str`
+#$STRJ -F -o $NORM -i $SUGARJ_BIN/`dirname $SRCFILE`/`basename $SRCFILE .sugj`.str -I $SUGARJ_BIN -I $SUGARJ_LIB -I $SUGARJ_LIB
 echo "  Wrote normalized Stratego code"
 echo "    $NORM"
 echo
@@ -47,7 +48,16 @@ cat $TYPEFILE
 echo
 
 echo "match pattern against target file" 
-# $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $SRCPATH $TARGETFILE
-java -cp $SCRIPTDIR/bin:$STRATEGO_JAR matching -i $SUGARJ_BIN/`dirname $MATCHFILE`/`basename $MATCHFILE .sugj`.model -t $TYPE -desugar ${DESUGARING_NORM}_0_0
+MATCH_PAIR=`mktemp -t match-pair-XXXXX.aterm`
+# $SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $MATCHPATH $MATCHFILE
+MODEL=$SUGARJ_BIN/`dirname $MATCHFILE`/`basename $MATCHFILE .sugj`.model
+
+echo "(" > $MATCH_PAIR
+cat $TYPEFILE >> $MATCH_PAIR
+echo "," >> $MATCH_PAIR
+cat $MODEL >> $MATCH_PAIR
+echo ")" >> $MATCH_PAIR
+
+java -cp $SCRIPTDIR/bin:$STRATEGO_JAR matching -i $MATCH_PAIR
 echo
 

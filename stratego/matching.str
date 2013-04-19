@@ -1,16 +1,112 @@
 module matching
 
-imports extract-generation-type
+imports 
+  extract-generation-type
+imports
+ libstratego-lib
+ libstratego-xtc
 
 rules
-  main = 
-    io-wrap(
-      GenerationType
+  matching-main = 
+    io-wrap(matching-option,
+      strip-annos
+    ; ?(type,main-term)
+    ; !main-term
+    ; collect-all({term,score:
+          ?term
+        ; !(type,<id>)
+        ; match => score
+        ; <gt> (score, 0)
+        ; !(score,term)
+      })
     )
 
   matching-option =
     ArgOption(
       "-t"
-    , rules(GenerationType := <id>)
-    , !"-t <type> Generation type to match against"
+    , debug
+    ; open-stream
+    ; debug
+    ; rules(GenerationType := <id>)
+    , !"-t <file>       File that contains the type to match against"
     )
+
+
+rules
+  match =
+      ?(Unknown(name), t)
+    ; <do-bind-unknown> (name, t)
+    ; !0
+
+  match = 
+      ?(UnknownList(name), t)
+    ; <is-list> t
+    ; <do-bind-unknown> (name, t)
+    ; !0
+
+  match = 
+      ?(Any, t)
+    ; !0
+
+  match =
+      ?(AnyList, t)
+    ; <is-list> t
+    ; !0
+
+  match =
+      ?(Alt(t1, t2), t)
+    ; <match <+ !(-1)> (t1, t) => score1
+    ; <match <+ !(-1)> (t2, t) => score2
+    ; <max; not(?(-1))> (score1,score2) 
+
+  match = 
+      ?(Str([]), "")
+    ; !1
+  match = 
+      ?(Str(ss), str)
+    ; <match-string> (ss, <explode-string> str)
+
+  match =
+      ?(cons#(xs), cons#(ys))
+    ; <zip; map(match); sum> (xs, ys) => kid-score
+    ; <inc> kid-score
+
+  match =
+      not(?(AnyList, <not(is-list)>))
+    ; not(?(Alt(_,_), _))
+    ; not(?(cons1#(_),cons2#(_)); <not(equal)> (cons1,cons2))
+    ; not((is-list,is-list))
+    ; where(?(cons#(xs),cons2#(xs2)); <debug> cons; <debug> xs; <debug> cons2; <debug> xs2)
+    ; fatal-err(|"match is stuck: ")
+
+rules
+  match-string =
+      ?([],[])
+    ; !0
+
+  match-string =
+      ?([Any|ss], [_|chars])
+    ; <match-string> (ss,chars)
+
+  match-string =
+      ?([AnyList|ss], chars)
+    ; <flexible-match-string> (ss,chars)
+
+  match-string =
+      ?([s|ss], chars)
+    ; <is-string> s
+    ; <left-match> (chars, <explode-string> s) => rest
+    ; <match-string> (ss, rest) => score
+    ; <inc> score
+
+  match-string =
+      ?(Alt(_,_), _)
+    ; fatal-err(|"Alt occurs in String (match-string): ")
+
+rules
+  flexible-match-string =
+      match-string
+
+  flexible-match-string =
+      ?(ss, [_|chars])
+    ; <flexible-match-string> (ss,chars)

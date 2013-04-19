@@ -77,7 +77,7 @@ rules
     ; not(?(cons1#(_),cons2#(_)); <not(equal)> (cons1,cons2))
     ; not((is-list,is-list))
     ; where(?(cons#(xs),cons2#(xs2)); <debug> cons; <debug> xs; <debug> cons2; <debug> xs2)
-    ; fatal-err(|"match is stuck: ")
+    ; debug(!"match is stuck: ")
 
 rules
   match-string =

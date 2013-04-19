@@ -28,8 +28,8 @@ rules // extract type
     ; extract-generation-type
     ; simplify-type
 
-  extract-generation-type = where(<debug> ""); truncate; debug; fail
-  extract-generation-type = get-current-type; truncate; debug; fail
+//  extract-generation-type = where(<debug> ""); truncate; debug; fail
+//  extract-generation-type = get-current-type; truncate; debug; fail
 
   extract-generation-type =
       ?Scope(vars, body)

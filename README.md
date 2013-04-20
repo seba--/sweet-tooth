@@ -17,3 +17,13 @@ To this end, sweet tooth expects two more arguments:
 
 4. The source path to some SugarJ or Java files that should be matched.
 5. The path of a specific SugarJ or Java source file relative to the matching path (argument 4).
+
+
+Example call:
+
+    ./sweet-tooth.sh \
+      ~/projects/sugarj/case-studies/java-pet-store/src/java \
+      sugar/Accessors.sugj \
+      genSetters \
+      ~/projects/sugarj/case-studies/java-pet-store/src/java \
+      com/sun/javaee/blueprints/petstore/search/IndexDocument.sugj

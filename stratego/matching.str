@@ -12,13 +12,11 @@ rules
       strip-annos
     ; ?(type,main-term)
     ; !main-term
-    ; collect-all({term,score:
-          ?term
-        ; !(type,<id>)
-        ; match => score
-        ; <gt> (score, 0)
-        ; !(score,term)
-      })
+    ; collect-all(
+          !(type, <id>)
+        ; top-match
+      )
+    ; concat
     )
 
   matching-option =
@@ -31,8 +29,67 @@ rules
     , !"-t <file>       File that contains the type to match against"
     )
 
+rules
+  top-match =
+      ?(type,term)
+    ; <is-list-type> type
+    ; <is-list> term
+    ; <top-match-list> (type,term)
+    ; filter(where(?(<id>,_); gt0))
+
+  top-match = 
+      ?(type,term)
+    ; <not(is-list-type)> type
+    ; <match> (type, term) => score
+    ; if <geq0> score
+        then ![(<id>,term)]
+        else ![]
+      end
+
+
+//  top-match-list = (truncate;debug, truncate;debug);fail
+
+  top-match-list =
+      ?(Alt(t1, t2), t)
+    ; <top-match-list <+ ![]> (t1, t) => resA
+    ; <top-match-list <+ ![]> (t2, t) => resB
+    ; <conc> (resA, resB)
+
+  top-match-list =
+      ?([], list)
+    ; <is-list> list
+    ; ![(0,[])]
+
+  top-match-list =
+      ?(AnyList, list)
+    ; ![(0, [])]
+
+  top-match-list = 
+      ?([AnyList|xs], ys)
+    ; <top-match-list> (xs,ys)
+
+  top-match-list =
+      ?([x|xs], [y|ys])
+    ; <match <+ !(-1)> (x,y) => score1
+    ; if <geq0> score1
+        then <top-match-list <+ ![]> (xs,ys)
+           ; map(cons-top-match-result(|score1,y)) => resA
+        else ![] => resA
+      end
+    ; <top-match-list <+ ![]> ([x|xs], ys) => resB
+    ; <conc> (resA, resB)
+
+//  top-match-list = (truncate;debug, truncate;debug); fail
+
+  cons-top-match-result(|score1,x) =
+//      debug(!"in:  ");
+      ?(score,list)
+    ; !(<add> (score1, score),[x|list])
+//    ; debug(!"out: ")
 
 rules
+//  match = (truncate;debug, truncate;debug);fail
+
   match =
       ?(Unknown(name), t)
     ; <do-bind-unknown> (name, t)
@@ -63,11 +120,18 @@ rules
       ?(Str([]), "")
     ; !1
   match = 
-      ?(Str(ss), str)
+      ?a@(Str(ss), str)
     ; <match-string> (ss, <explode-string> str)
 
   match =
+      ?(xs, ys)
+    ; <is-list> xs
+    ; <is-list> ys
+    ; <match-list> (xs, ys)
+
+  match =
       ?(cons#(xs), cons#(ys))
+    // TODO: use a single fold instead
     ; <zip; map(match); sum> (xs, ys) => kid-score
     ; <inc> kid-score
 
@@ -75,9 +139,36 @@ rules
       not(?(AnyList, <not(is-list)>))
     ; not(?(Alt(_,_), _))
     ; not(?(cons1#(_),cons2#(_)); <not(equal)> (cons1,cons2))
-    ; not((is-list,is-list))
-    ; where(?(cons#(xs),cons2#(xs2)); <debug> cons; <debug> xs; <debug> cons2; <debug> xs2)
-    ; debug(!"match is stuck: ")
+//    ; not((is-list,is-list))
+//    ; where(?(cons#(xs),cons2#(xs2)); <debug> cons; <debug> xs; <debug> cons2; <debug> xs2)
+//    ; debug(!"match is stuck: ")
+    ; fail
+
+rules
+  match-list =
+      ?([], list)
+    ; <is-list> list
+    ; !0
+
+  match-list =
+      ?(AnyList, list)
+    ; <is-list> list
+    ; !0
+
+  match-list = 
+      ?([AnyList|xs], ys)
+    ; <match-list> (xs,ys)
+
+  match-list =
+      ?([x|xs], [y|ys])
+    ; <match <+ !(-1)> (x,y) => score1
+    ; <match-list <+ !(-1)> (xs,ys) => score2
+    ; <add-if-pos> (score1, score2) => scoreA
+
+    ; <match-list <+ !(-1)> ([x|xs], ys) => scoreB
+    ; <max> (scoreA, scoreB) => scoreRes
+    ; <gt> (scoreRes, 0)
+    ; !scoreRes
 
 rules
   match-string =
@@ -105,8 +196,23 @@ rules
 
 rules
   flexible-match-string =
-      match-string
-
+      ?([], [])
+    ; !0
   flexible-match-string =
-      ?(ss, [_|chars])
-    ; <flexible-match-string> (ss,chars)
+      ?(ss, [c|chars])
+    ; <match-string <+ !(-1)> (ss, [c|chars]) => score1
+    ; <flexible-match-string <+ !(-1)> (ss, chars) => score2
+    ; <max; not(?(-1))> (score1,score2) 
+
+
+rules
+  add-if-pos =
+      ?(x,y)
+    ; <gt> (x,-1)
+    ; <gt> (y,-1)
+    ; <add> (x,y)
+  add-if-pos = 
+      !(-1)
+
+  gt0 = where(?n; <gt> (n,0))
+  geq0 = where(?n; <geq> (n,0))

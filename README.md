@@ -16,7 +16,7 @@ Sweet tooth matches the derived pattern against user-provided SugarJ or Java sou
 To this end, sweet tooth expects two more arguments:
 
 4. The source path to some SugarJ or Java files that should be matched.
-5. The path of a specific SugarJ or Java source file relative to the matching path (argument 4).
+5. The path of a specific SugarJ or Java source file relative to the matching path.
 
 
 Example call:

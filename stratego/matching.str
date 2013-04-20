@@ -17,7 +17,10 @@ rules
         ; top-match
       )
     ; concat
+    ; sort-list(LSort(worse-result))
     )
+
+  worse-result = ?((score1,_),(score2,_)); <lt> (score1, score2)
 
   matching-option =
     ArgOption(

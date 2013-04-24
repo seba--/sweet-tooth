@@ -20,7 +20,7 @@ STRJ="java -jar $STRATEGO_JAR"
 
 echo "compile sweet tooth Stratego programs"
 mkdir -p $SCRIPTDIR/bin
-# $STRJ -o $SCRIPTDIR/bin/extract_generation_type.java -i $SCRIPTDIR/stratego/extract-generation-type.str -I $SUGARJ_LIB
+ $STRJ -o $SCRIPTDIR/bin/extract_generation_type.java -i $SCRIPTDIR/stratego/extract-generation-type.str -I $SUGARJ_LIB
 $STRJ -m matching-main -o $SCRIPTDIR/bin/matching.java -i $SCRIPTDIR/stratego/matching.str -I $SUGARJ_LIB -la stratego-xtc -la stratego-sglr
 javac -cp $SCRIPTDIR/bin:$STRATEGO_JAR -d $SCRIPTDIR/bin $SCRIPTDIR/bin/*.java
 echo
@@ -48,8 +48,12 @@ echo
 
 echo "match pattern against target file" 
 MATCH_PAIR=`mktemp -t match-pair-XXXXX.aterm`
-$SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $MATCHPATH $MATCHFILE
-MODEL=$SUGARJ_BIN/`dirname $MATCHFILE`/`basename $MATCHFILE .sugj`.model
+#$SUGARJ --cache $SUGARJ_CACHE -l java -d $SUGARJ_BIN --sourcepath $MATCHPATH $MATCHFILE
+Name1=`basename $MATCHFILE .sugj`
+Name2=`basename $Name1 .java`
+MODEL=$SUGARJ_BIN/`dirname $MATCHFILE`/$Name2.model
+
+echo "Use model $MODEL"
 
 echo "(" > $MATCH_PAIR
 cat $TYPEFILE >> $MATCH_PAIR

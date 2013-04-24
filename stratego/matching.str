@@ -17,6 +17,7 @@ rules
         ; top-match
       )
     ; concat
+    ; filter((gt0,id))
     ; sort-list(LSort(worse-result))
     )
 
@@ -44,7 +45,7 @@ rules
       ?(type,term)
     ; <not(is-list-type)> type
     ; <match> (type, term) => score
-    ; if <geq0> score
+    ; if <gt0> score
         then ![(<id>,term)]
         else ![]
       end
@@ -139,12 +140,13 @@ rules
     ; <inc> kid-score
 
   match =
-      not(?(AnyList, <not(is-list)>))
-    ; not(?(Alt(_,_), _))
-    ; not(?(cons1#(_),cons2#(_)); <not(equal)> (cons1,cons2))
+//      not(?(AnyList, <not(is-list)>))
+//    ; not(?(Alt(_,_), _))
+//    ; not(?(cons1#(_),cons2#(_)); <not(equal)> (cons1,cons2))
 //    ; not((is-list,is-list))
 //    ; where(?(cons#(xs),cons2#(xs2)); <debug> cons; <debug> xs; <debug> cons2; <debug> xs2)
 //    ; debug(!"match is stuck: ")
+      id
     ; fail
 
 rules
@@ -180,7 +182,7 @@ rules
 
   match-string =
       ?([Any|ss], [_|chars])
-    ; <match-string> (ss,chars)
+    ; <flexible-match-string> (ss,chars)
 
   match-string =
       ?([AnyList|ss], chars)

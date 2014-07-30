@@ -1,14 +1,15 @@
 module org/sugarj/stdlib/StdTrans
 imports libstrategolib
 
-imports org/sugarj/transformations/Analyze
+imports org/sugarj/transformations/analysis/Data
+imports org/sugarj/transformations/analysis/SugarAnalyze
 imports org/sugarj/transformations/ATerm
 imports org/sugarj/transformations/GenerateSignatures
 imports org/sugarj/transformations/LayoutSugar
 imports org/sugarj/transformations/Renaming
 
 signature constructors
-  CompilationUnit : NameSpaceDec * List(ImportDec) * List(BodyDec) -> CompilationUnit
+  CompilationUnit : List(Decl) -> CompilationUnit
 
 strategies
   compile-error = ?CompileError(_,_)
@@ -35,26 +36,29 @@ strategies
   generate-desugared :
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      filename := <guarantee-extension(|"desug")> path;
-      result   := <desugar-main; bottomup(strip-annos)> selected // we just return the input term
+      filename := $[[<remove-extension> path]-desug.aterm];
+      result   := <desugar-main> selected
 
   generate-desugared-analysis :
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      filename := <guarantee-extension(|"desug")> path;
-      result   := <desugar-main; nice-analysis-data-term> selected // we just return the input term
+      filename := $[[<remove-extension> path]-desug.aterm];
+      <load-analysis-data <+ warn(|"Could not load analysis data.")> ast;
+      result   := <desugar-main; nice-analysis-data-term> selected;
+      clear-analysis-data
   
   generate-aterm:
-    (selected, position, ast, path, project-path) -> (filename, result)
+    (selected, position, ast, path, project-path) -> (filename, ast)
     with
-      filename := <guarantee-extension(|"aterm")> path;
-      result   := <bottomup(strip-annos)> selected
+      filename := <guarantee-extension(|"aterm")> path
 
   generate-aterm-analysis:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"aterm")> path;
-      result   := <nice-analysis-data-term> selected
+      <load-analysis-data <+ warn(|"Could not load analysis data.")> ast;
+      result   := <nice-analysis-data-term> selected;
+      clear-analysis-data
   
 signature
   constructors

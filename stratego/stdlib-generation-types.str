@@ -27,6 +27,14 @@ rules
       ?("to_upper_0_0", [], [], list)
     ; <to-upper-type> list
 
+  stdlib-generation-type =
+      ?("newname_0_0", [], [], string)
+    ; <newname-type> string
+
+  stdlib-generation-type =
+      ?("new_0_0", [], [], string)
+    ; <new-type> string
+
 
 // ****** list ********
   stdlib-generation-type =
@@ -217,6 +225,23 @@ rules
       is-char; to-upper
   to-upper-type = fatal-err(|"to-upper-type is stuck: ")
 
+  newname-type = 
+      ?Unknown(name)
+    ; !Str([<next-unknown-type>]) => t
+    ; <bind-unknown> (name, t)
+    ; !Str([<next-unknown-type>])
+  newname-type = 
+    Empty()
+  newname-type = 
+      ?Alt(t1,t2)
+    ; <alternative-types> (<newname-type> t1, <newname-type> t2)
+  newname-type = 
+      ?Str(_)
+    ; !Str([<next-unknown-type>])
+  newname-type = fatal-err(|"newname-type is stuck: ")
+
+  new-type = 
+      !Str([<next-unknown-type>])
 
   elem-types =
       ?Unknown(name)

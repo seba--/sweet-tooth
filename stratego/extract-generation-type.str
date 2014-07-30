@@ -267,7 +267,7 @@ rules // term typing
 
   extract-generation-type-from-term =
       ?Var(<id>)
-    ; lookup-var
+    ; (lookup-var <+ next-unknown-type)
 
   extract-generation-type-from-term =
     fatal-err(|"extract-generation-type-from-term is stuck")

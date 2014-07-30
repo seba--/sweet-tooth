@@ -1,1 +1,0 @@
-Module("libstratego-parallel",[Strategies([ExtSDef("parallel-ordered",[DefaultVarDec("s")],[]),ExtSDef("parallel-unordered",[DefaultVarDec("s")],[])])])

@@ -1,5 +1,0 @@
-module org/sugarj/languages/Model
-
-signature constructors
-  TransApp : TransformationExpr * TransformationExpr -> TransformationExpr
-  TransformationDef : x * y -> z

@@ -1,1 +1,0 @@
-Specification([Signature([Constructors([ExtOpDecl("DR_UNDEFINE",FunType([ConstType(Sort("ATerm",[]))],ConstType(Sort("ATerm",[])))),ExtOpDecl("DR_DUMMY",ConstType(Sort("ATerm",[])))])]),Strategies([ExtSDef("SRTS-EXT-fatal-err",[],[VarDec("t_3584",ConstType(Sort("ATerm",[]))),VarDec("u_3584",ConstType(Sort("ATerm",[])))])])])

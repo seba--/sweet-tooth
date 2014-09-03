@@ -38,7 +38,7 @@ object Syntax {
   case class Match(p: Pat) extends Exp
   case class Seq(e1: Exp, e2: Exp) extends Exp
   case class If(cnd: Exp, thn: Exp, els: Exp) extends Exp
-  case class Call(s: Symbol, sargs: List[Exp], targs: List[Trm]) extends Exp
+  case class Call(s: Symbol, sargs: List[Exp], targs: List[Pat]) extends Exp
 
   case class Def(svars: List[Symbol], tvars: List[Symbol], body: Exp)
   type Defs = Map[Symbol, Def]

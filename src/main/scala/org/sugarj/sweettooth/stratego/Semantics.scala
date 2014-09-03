@@ -49,7 +49,7 @@ object Semantics {
           throw new RuntimeException(s"Wrong number of strategy arguments to $f. Expected ${d.tvars}, got $targs")
         if (d.tvars.size != targs.size)
           throw new RuntimeException(s"Wrong number of term arguments to $f. Expected ${d.tvars}, got $targs")
-        val tStore = Map() ++ d.tvars.zip(targs)
+        val tStore = Map() ++ d.tvars.zip(targs map (normalize(_, store)))
         val sStore = Map() ++ d.svars.zip(sargs map (Closure(_, store)))
         val (t, _) = eval(d.body, current, Store(tStore, sStore))
         (t, store)
@@ -59,7 +59,7 @@ object Semantics {
     catch { case e@Fail(_, msg) => println(msg); throw e }
   }
 
-  def normalize(p: Pat, store: Store = emptyStore): Trm = p match {
+  def normalize(p: Pat, store: Store): Trm = p match {
     case Pat.Lit(v) => Trm.Lit(v)
     case Pat.Var(x) =>
       store.lookup(x) match {

@@ -1,23 +1,50 @@
 package org.sugarj.sweettooth.stratego.analysis
 
+import org.sugarj.sweettooth.stratego.Syntax
 
 object Dom extends Domain {
-  type T = Set[Trm]
+  type T = Option[Set[Trm]] // None represents top
+  def bottom = Some(Set())
+  def top = None
+
+  def compare(morePrecise: T, lessPrecise: T): Boolean = (morePrecise, lessPrecise) match {
+    case (_,None) => true
+    case (None,_) => false
+    case (Some(s1), Some(s2)) => s1 subsetOf s2
+  }
+
+  def join(t1: T, t2: T): T = (t1,t2) match {
+    case (None,_) => None
+    case (_,None) => None
+    case (Some(s1), Some(s2)) => Some(s1 union s2)
+  }
+
+  def meet(t1: T, t2: T): T = (t1,t2) match {
+    case (None,_) => t2
+    case (_,None) => t1
+    case (Some(s1), Some(s2)) => Some(s1 intersect s2)
+  }
+
+  def matchAppPat(cons: Symbol, arity: Int, t: T): Set[List[T]] = t match {
+    case None => Set(for (i <- (1 to arity).toList) yield None)
+    case Some(s) => for (App(`cons`, xs) <- s if xs.size == arity) yield xs
+  }
+
+  def liftLit[V](v: V) = Some(Set(Lit(v)))
+  def liftApp(cons: Symbol, xs: List[T]) = Some(Set(App(cons, xs)))
   
   abstract class Trm
   case class Lit[T](v: T) extends Trm
-  case class App(cons: Symbol, xs: List[Trm]) extends Trm {
-    override def toString =
-      cons.name + "(" + listString(xs) + ")"
+  case class App(cons: Symbol, xs: List[T]) extends Trm {
+    override def toString = cons.name + "(" + listString(xs) + ")"
 
-    def listString(xs: List[Trm]): String = xs match {
+    def listString(xs: List[T]): String = xs match {
       case Nil => ""
       case x::Nil => x.toString
       case x::xs => x.toString + ", " + listString(xs)
     }
   }
-  case object Unknown extends Trm
-  
+
   def App(cons: Symbol): App = App(cons, List())
-  def Appl(cons: Symbol, xs: Trm*): App = App(cons, List(xs:_*))
+  def App(cons: Symbol, x: T, xs: T*): App = App(cons, x::List(xs:_*))
 }

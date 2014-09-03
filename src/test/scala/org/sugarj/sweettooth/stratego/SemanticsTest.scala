@@ -37,7 +37,7 @@ class SemanticsTest extends FunSuite {
   test ("plus") {
     for {m <- 1 to 5;
          n <- 1 to 5}
-      assertTrm(m + n)(eval(Call('plus), Trm.App('_, List(m, n)), DEFS))
+      assertTrm(m + n)(eval(Call('plus), Trm.App('_, m, n), DEFS))
   }
 
   test ("app") {

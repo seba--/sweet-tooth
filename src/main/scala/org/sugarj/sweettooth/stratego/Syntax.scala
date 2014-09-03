@@ -22,7 +22,7 @@ object Syntax {
     }
 
     def App(cons: Symbol): App = App(cons, List())
-    def Appl(cons: Symbol, xs: Trm*): App = App(cons, List(xs:_*))
+    def App(cons: Symbol, x:Trm, xs: Trm*): App = App(cons, x::List(xs:_*))
   }
   
   abstract class Pat

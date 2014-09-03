@@ -27,8 +27,8 @@ class ListTest extends FunSuite {
   }
 
   test("cons1") {
-    assertTrm(Trm.Appl('Cons, Trm.App('Foo), Trm.App('Nil)))(
-              eval(Call('cons), Trm.Appl('_, Trm.App('Foo), Trm.App('Nil)), DEFS))
+    assertTrm(Trm.App('Cons, Trm.App('Foo), Trm.App('Nil)))(
+              eval(Call('cons), Trm.App('_, Trm.App('Foo), Trm.App('Nil)), DEFS))
   }
 
   test("mkList"){
@@ -40,7 +40,7 @@ class ListTest extends FunSuite {
   test("cons") {
     for (i <- 1 to 20) {
       val l = mkListOfLength(i)
-      assertTrm(Trm.App('Foo)::l)(eval(Call('cons), Trm.Appl('_, Trm.App('Foo), l), DEFS))
+      assertTrm(Trm.App('Foo)::l)(eval(Call('cons), Trm.App('_, Trm.App('Foo), l), DEFS))
     }
   }
 

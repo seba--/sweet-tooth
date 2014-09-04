@@ -2,8 +2,8 @@ package org.sugarj.sweettooth.stratego.analysis
 
 import org.sugarj.sweettooth.stratego.Syntax
 
-object Dom extends Domain {
-  type T = Option[Set[Trm]] // None represents top
+object PowersetDomain extends Domain {
+  type T = Option[Set[Trm]] // None represents the infinite set, Some represents finite sets
   def bottom = Some(Set())
   def top = None
 

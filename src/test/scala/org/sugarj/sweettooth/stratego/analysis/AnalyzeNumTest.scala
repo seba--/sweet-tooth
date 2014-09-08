@@ -20,37 +20,71 @@ class AnalyzeNumTest extends FunSuite {
 
   def assertDomT(expected: dom.T)(actual: dom.T) = assertResult(expected)(actual)
 
-//  test("zero") {
-//    assertDomT(lift(0))(analysis.analyze(Call('zero), lift(Trm.App('Foo)), DEFS))
-//  }
-//
-//  test("zero top") {
-//    assertDomT(lift(0))(analysis.analyze(Call('zero), dom.top, DEFS))
-//  }
-//
-//  test("succ") {
-//    for (i <- 1 to 20)
-//      assertDomT(lift(i + 1))(analysis.analyze(Call('succ), lift(i), DEFS))
-//  }
-//
-//  test("succ prefix") {
-//    var expected = dom.top
-//    var actual = dom.top
-//
-//    for (i <- 1 to 20) {
-//      expected = dom.liftApp('Succ, List(expected))
-//      actual = analysis.analyze(Call('succ), actual, DEFS)
-//      assertDomT(expected)(actual)
-//    }
-//  }
-//
-//  test(s"plus") {
-//    for {m <- 1 to 5;
-//         n <- 1 to 5}
-//      assertDomT(lift(m + n))(analysis.analyze(Call('plus), lift(Trm.App('_, m, n)), DEFS))
-//  }
+  test("zero") {
+    assertDomT(lift(0))(analysis.analyze(Call('zero), lift(Trm.App('Foo)), DEFS))
+  }
+
+  test("zero top") {
+    assertDomT(lift(0))(analysis.analyze(Call('zero), dom.top, DEFS))
+  }
+
+  test("succ") {
+    for (i <- 1 to 20)
+      assertDomT(lift(i + 1))(analysis.analyze(Call('succ), lift(i), DEFS))
+  }
+
+  test("succ prefix") {
+    var expected = dom.top
+    var actual = dom.top
+
+    for (i <- 1 to 20) {
+      expected = dom.liftApp('Succ, List(expected))
+      actual = analysis.analyze(Call('succ), actual, DEFS)
+      assertDomT(expected)(actual)
+    }
+  }
+
+  test(s"plus") {
+    for {m <- 1 to 5;
+         n <- 1 to 5}
+      assertDomT(lift(m + n))(analysis.analyze(Call('plus), lift(Trm.App('_, m, n)), DEFS))
+  }
 
   test(s"plus top top") {
     assertDomT(dom.top)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, dom.top)), DEFS))
+  }
+
+  test(s"plus zero top") {
+    assertDomT(dom.top)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(0), dom.top)), DEFS))
+  }
+
+  test(s"plus one top") {
+    val atLeastOne = dom.liftApp('Succ, List(dom.top))
+    assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(1), dom.top)), DEFS))
+  }
+
+  test(s"plus >=one top") {
+    val atLeastOne = dom.liftApp('Succ, List(dom.top))
+    assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, dom.top)), DEFS))
+  }
+
+  test(s"plus top one") {
+    val atLeastOne = dom.liftApp('Succ, List(dom.top))
+    assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, lift(1))), DEFS))
+  }
+
+  test(s"plus top >=one") {
+    val atLeastOne = dom.liftApp('Succ, List(dom.top))
+    assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, atLeastOne)), DEFS))
+  }
+
+  test(s"plus >=one >=one") {
+    val atLeastOne = dom.liftApp('Succ, List(dom.top))
+    val atLeastTwo = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
+    assertDomT(atLeastTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, atLeastOne)), DEFS))
+  }
+  test(s"plus two top") {
+    val atLeastTwo = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
+    assertDomT(atLeastTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(2), dom.top)), DEFS))
   }
 }

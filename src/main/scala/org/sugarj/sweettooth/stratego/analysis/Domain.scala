@@ -14,6 +14,7 @@ trait Domain {
 
   def liftLit[V](v: V): T
   def liftApp(cons: Symbol, xs: List[T]): T
+  def liftApp(cons: Symbol, xs: T*): T
 
   def lift(t: Syntax.Trm): T = t match {
     case Syntax.Trm.Lit(v) => liftLit(v)

@@ -53,6 +53,7 @@ object PowersetDomain extends Domain {
 
   def liftLit[V](v: V) = Some(Set(Lit(v)))
   def liftApp(cons: Symbol, xs: List[T]) = Some(Set(App(cons, xs)))
+  def liftApp(cons: Symbol, xs: T*) = Some(Set(App(cons, List(xs:_*))))
   
   abstract class Trm
   case class Lit[T](v: T) extends Trm

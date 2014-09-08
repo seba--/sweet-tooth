@@ -56,7 +56,7 @@ object PowersetDomain extends Domain {
   def liftApp(cons: Symbol, xs: T*) = Some(Set(App(cons, List(xs:_*))))
   
   abstract class Trm
-  case class Lit[T](v: T) extends Trm
+  case class Lit[V](v: V) extends Trm
   case class App(cons: Symbol, xs: List[T]) extends Trm {
     override def toString = cons.name + "(" + listString(xs) + ")"
 

@@ -16,7 +16,28 @@ object PowersetDomain extends Domain {
   def join(t1: T, t2: T): T = (t1,t2) match {
     case (None,_) => None
     case (_,None) => None
-    case (Some(s1), Some(s2)) => Some(s1 union s2)
+    case (Some(s1), Some(s2)) => Some(merge(s1, s2))
+  }
+
+  def merge(s1: Set[Trm], s2: Set[Trm]) = {
+    var lits = Set[Trm]()
+    var apps = Map[Symbol, List[T]]()
+
+    def it(s: Set[Trm]) = s.map(t => t match {
+      case l: Lit[_] => lits += l
+      case App(cons, xs) =>
+        apps.get(cons) match {
+          case None => apps += cons -> xs
+          case Some(ys) =>
+            val args = ys zip xs
+            val joined = args.map(p => join(p._1,p._2))
+            apps += cons -> joined
+        }
+    })
+
+    it(s1)
+    it(s2)
+    lits ++ apps.map(p => App(p._1,p._2))
   }
 
   def meet(t1: T, t2: T): T = (t1,t2) match {

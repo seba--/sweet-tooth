@@ -38,10 +38,12 @@ class Analyze(val dom: Domain) {
   case class Fail(current: Exp, msg: String = "") extends Exception
   def fail(current: Exp, msg: String = "") = throw Fail(current, msg)
 
+  def debug(s: String) {if (false) println(s)}
+
   def analyze(e: Exp, current: dom.T, defs: Defs): dom.T = {
     // use the defs from the surrounding def
     def analyze(e: Exp, current: dom.T, store: AStore, stack: Stack): (dom.T, AStore) = {
-      println(s"analyze $e\n  in $current${
+      debug(s"analyze $e\n  in $current${
         if (!store.store.isEmpty) s"\n  with ${store.store}"
         else if (!store.sstore.isEmpty) s"\n  with ${store.sstore}"
         else ""
@@ -101,10 +103,10 @@ class Analyze(val dom: Domain) {
               (t, store)
             }
         }
-        println(s"  -> ${res._1}")
+        debug(s"  -> ${res._1}")
         res
       } catch {
-        case e: Throwable => println(s"  -> e"); throw e
+        case e: Throwable => debug(s"  -> e"); throw e
       }
     }
 

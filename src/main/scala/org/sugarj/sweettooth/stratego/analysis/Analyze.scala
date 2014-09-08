@@ -16,11 +16,21 @@ class Analyze(val dom: Domain) {
     def +(p1: Symbol, p2: Exp) = AStore(store, sstore + (p1 -> AClosure(p2, this)))
 
     def join(other: AStore): AStore = {
-      if (sstore != other.sstore)
-        throw new IllegalArgumentException(s"Cannot join AStore objects with different sstore\n    ${this.sstore}\n    ${other.sstore}")
+//      if (sstore != other.sstore)
+//        throw new IllegalArgumentException(s"Cannot join AStore objects with different sstore\n    ${this.sstore}\n    ${other.sstore}")
+
+      var sstore = this.sstore
+      for ((x,cl) <- other.sstore)
+        sstore.get(x) match {
+          case None => sstore += (x -> cl)
+          case Some(cl0) =>
+            if (cl.e == cl0.e)
+              sstore += (x -> AClosure(cl.e, cl0.store.join(cl.store)))
+            else
+              throw new IllegalArgumentException(s"Cannot join astores conflicting on strategy definition of $x:\n  ${cl0.e} versus\n ${cl.e}")
+        }
 
       var store = this.store
-
       for ((x,t) <- other.store)
         store.get(x) match {
           case None => store += (x -> t)
@@ -106,7 +116,9 @@ class Analyze(val dom: Domain) {
         debug(s"  -> ${res._1}")
         res
       } catch {
-        case e: Throwable => debug(s"  -> e"); throw e
+        case e: Throwable =>
+//          debug(s"  -> e");
+          throw e
       }
     }
 

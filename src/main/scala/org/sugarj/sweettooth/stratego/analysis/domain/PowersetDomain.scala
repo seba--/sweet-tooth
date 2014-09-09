@@ -71,10 +71,10 @@ object PowersetDomain {
     def meet(t1: T, t2: T): T = (t1,t2) match {
       case (None,_) => t2
       case (_,None) => t1
-      case (Some(s1), Some(s2)) => Some(mergeMeet(s1, s2))
+      case (Some(s1), Some(s2)) => Some(mergeIntersect(s1, s2))
     }
 
-    def mergeMeet(s1: Set[Trm], s2: Set[Trm]) = {
+    def mergeIntersect(s1: Set[Trm], s2: Set[Trm]) = {
       type M = collection.mutable.Map[Symbol, List[T]]
 
       var lits = Set[Trm]()
@@ -98,7 +98,7 @@ object PowersetDomain {
             case Some(ys) =>
               val args = ys zip xs
               val met = args.map(p => meet(p._1,p._2))
-              if (!met.forall(_.isEmpty))
+              if (met.isEmpty || !met.forall(_ == bottom))
                 apps += cons -> met
           }
       })
@@ -115,7 +115,7 @@ object PowersetDomain {
     }
 
     def matchAppPat(cons: Symbol, arity: Int, t: T): Set[List[T]] = t match {
-      case None => Set(for (i <- (1 to arity).toList) yield None)
+      case None => Set(for (i <- (1 to arity).toList) yield top)
       case Some(s) => for (App(`cons`, xs) <- s if xs.size == arity) yield xs
     }
 

@@ -1,4 +1,4 @@
-package org.sugarj.sweettooth.stratego.analysis.v2
+package org.sugarj.sweettooth.stratego.analysis.v2_d1
 
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
@@ -15,7 +15,7 @@ import scala.language.implicitConversions
  * Created by seba on 30/07/14.
  */
 class AnalyzeListTest extends FunSuite {
-   val prefix = "v2"
+  val prefix = getClass.getPackage.getName.substring(getClass.getPackage.getName.lastIndexOf('.') + 1)
 
    type V = d1_PowersetDomain.T
    type D = d1_PowersetDomain.D.type
@@ -94,7 +94,7 @@ class AnalyzeListTest extends FunSuite {
    }
 
    test(s"$prefix: map") {
-     for (i <- 1 to 20) {
+     for (i <- 0 to 20) {
        val l = mkListOfLength(i)
        val s = Seq(Match('x), Build('_@@('Zero@@(), 'x)))
        assertDomT(

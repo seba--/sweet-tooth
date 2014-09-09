@@ -1,10 +1,11 @@
-package org.sugarj.sweettooth.stratego.analysis.v1
+package org.sugarj.sweettooth.stratego.analysis.v1_d1
 
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
 import org.sugarj.sweettooth.stratego.analysis.domain.d1_PowersetDomain
+import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 import org.sugarj.sweettooth.stratego.lib.Num._
 
 import scala.language.implicitConversions
@@ -14,7 +15,7 @@ import scala.language.implicitConversions
  */
 class AnalyzeNumTest extends FunSuite {
 
-  val prefix = "v1"
+  val prefix = getClass.getPackage.getName.substring(getClass.getPackage.getName.lastIndexOf('.') + 1)
 
   type V = d1_PowersetDomain.T
   type D = d1_PowersetDomain.D.type

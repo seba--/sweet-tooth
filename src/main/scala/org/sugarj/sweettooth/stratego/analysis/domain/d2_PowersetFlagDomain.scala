@@ -1,6 +1,6 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
-object PowersetFlagDomain {
+object d2_PowersetFlagDomain {
    type T = (Set[Trm],Boolean) // None represents the infinite set, Some represents finite sets
 
    abstract class Trm

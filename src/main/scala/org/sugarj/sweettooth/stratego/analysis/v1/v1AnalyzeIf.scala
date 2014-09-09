@@ -25,7 +25,7 @@ trait v1AnalyzeIf[V, D <: Domain[V]] extends AnalyzeIf[V,D] {
         }
 
         val (vEls, storeEls) = try {
-          analyze(els, t1, store1, stack)
+          analyze(els, current, store1, stack)
         } catch {
           case f: Fail =>
             if (vThn == dom.bottom)

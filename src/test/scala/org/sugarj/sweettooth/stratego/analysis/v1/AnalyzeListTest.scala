@@ -1,11 +1,10 @@
-package org.sugarj.sweettooth.stratego.analysis
+package org.sugarj.sweettooth.stratego.analysis.v1
 
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.base.{StoreTrait, BasicStack}
+import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
 import org.sugarj.sweettooth.stratego.analysis.domain.PowersetDomain
-import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 import org.sugarj.sweettooth.stratego.lib.List._
 import org.sugarj.sweettooth.stratego.lib.Num
 
@@ -15,6 +14,7 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 class AnalyzeListTest extends FunSuite {
+  val prefix = "v1"
 
   type V = PowersetDomain.T
   type D = PowersetDomain.D.type
@@ -38,17 +38,17 @@ class AnalyzeListTest extends FunSuite {
 
   def assertDomT(expected: V)(actual: V) = assertResult(expected)(actual)
 
-  test("nil") {
+  test(s"$prefix: nil") {
     assertDomT(lift(Trm.App('Nil)))(analysis.analyze(Call('nil), lift(Trm.App('Foo)), DEFS))
   }
 
-  test("cons1") {
+  test(s"$prefix: cons1") {
     assertDomT(
       lift(Trm.App('Cons, Trm.App('Foo), Trm.App('Nil))))(
       analysis.analyze(Call('cons), lift(Trm.App('_, Trm.App('Foo), Trm.App('Nil))), DEFS))
   }
 
-  test("cons") {
+  test(s"$prefix: cons") {
     for (i <- 1 to 20) {
       val l = mkListOfLength(i)
       assertDomT(
@@ -57,19 +57,19 @@ class AnalyzeListTest extends FunSuite {
     }
   }
 
-  test("cons top nil") {
+  test(s"$prefix: cons top nil") {
     assertDomT(
       dom.liftApp('Cons, dom.top, dom.liftApp('Nil)))(
       analysis.analyze(Call('cons), dom.liftApp('_, dom.top, dom.liftApp('Nil)), DEFS))
   }
 
-  test("cons Zero top") {
+  test(s"$prefix: cons Zero top") {
     assertDomT(
       dom.liftApp('Cons, dom.liftApp('Nil), dom.top))(
       analysis.analyze(Call('cons), dom.liftApp('_, dom.liftApp('Nil), dom.top), DEFS))
   }
 
-  test("pair to list") {
+  test(s"$prefix: pair to list") {
     val pairToList = Seqs(
       ??('_@@('x, 'y)),
       !!('_@@('y, 'Nil@@())),

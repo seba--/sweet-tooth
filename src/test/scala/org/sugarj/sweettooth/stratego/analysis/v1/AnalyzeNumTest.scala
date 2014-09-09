@@ -1,11 +1,10 @@
-package org.sugarj.sweettooth.stratego.analysis
+package org.sugarj.sweettooth.stratego.analysis.v1
 
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.base.{StoreTrait, BasicStack}
+import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
 import org.sugarj.sweettooth.stratego.analysis.domain.PowersetDomain
-import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 import org.sugarj.sweettooth.stratego.lib.Num._
 
 import scala.language.implicitConversions
@@ -14,6 +13,8 @@ import scala.language.implicitConversions
  * Created by seba on 30/07/14.
  */
 class AnalyzeNumTest extends FunSuite {
+
+  val prefix = "v1"
 
   type V = PowersetDomain.T
   type D = PowersetDomain.D.type
@@ -32,20 +33,20 @@ class AnalyzeNumTest extends FunSuite {
 
   def assertDomT(expected: V)(actual: V) = assertResult(expected)(actual)
 
-  test("zero") {
+  test(s"$prefix: zero") {
     assertDomT(lift(0))(analysis.analyze(Call('zero), lift(Trm.App('Foo)), DEFS))
   }
 
-  test("zero top") {
+  test(s"$prefix: zero top") {
     assertDomT(lift(0))(analysis.analyze(Call('zero), dom.top, DEFS))
   }
 
-  test("succ") {
+  test(s"$prefix: succ") {
     for (i <- 1 to 20)
       assertDomT(lift(i + 1))(analysis.analyze(Call('succ), lift(i), DEFS))
   }
 
-  test("succ prefix") {
+  test(s"$prefix: succ prefix") {
     var expected = dom.top
     var actual = dom.top
 
@@ -56,46 +57,46 @@ class AnalyzeNumTest extends FunSuite {
     }
   }
 
-  test(s"plus") {
+  test(s"$prefix: plus") {
     for {m <- 1 to 5;
          n <- 1 to 5}
       assertDomT(lift(m + n))(analysis.analyze(Call('plus), lift(Trm.App('_, m, n)), DEFS))
   }
 
-  test(s"plus top top") {
+  test(s"$prefix: plus top top") {
     assertDomT(dom.top)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, dom.top)), DEFS))
   }
 
-  test(s"plus zero top") {
+  test(s"$prefix: plus zero top") {
     assertDomT(dom.top)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(0), dom.top)), DEFS))
   }
 
-  test(s"plus one top") {
+  test(s"$prefix: plus one top") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
     assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(1), dom.top)), DEFS))
   }
 
-  test(s"plus >=one top") {
+  test(s"$prefix: plus >=one top") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
     assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, dom.top)), DEFS))
   }
 
-  test(s"plus top one") {
+  test(s"$prefix: plus top one") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
     assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, lift(1))), DEFS))
   }
 
-  test(s"plus top >=one") {
+  test(s"$prefix: plus top >=one") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
     assertDomT(atLeastOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, atLeastOne)), DEFS))
   }
 
-  test(s"plus >=one >=one") {
+  test(s"$prefix: plus >=one >=one") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
     val atLeastTwo = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
     assertDomT(atLeastTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, atLeastOne)), DEFS))
   }
-  test(s"plus two top") {
+  test(s"$prefix: plus two top") {
     val atLeastTwo = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
     assertDomT(atLeastTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(lift(2), dom.top)), DEFS))
   }

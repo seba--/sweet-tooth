@@ -1,9 +1,8 @@
-package org.sugarj.sweettooth.stratego.analysis
+package org.sugarj.sweettooth.stratego.analysis.domain
 
 import org.sugarj.sweettooth.stratego.Syntax
 
-trait Domain {
-  type T
+trait Domain[T] {
   def top: T
   def bottom: T
   def compare(morePrecise: T, lessPrecise: T): Boolean

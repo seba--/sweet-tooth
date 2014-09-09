@@ -3,6 +3,9 @@ package org.sugarj.sweettooth.stratego.analysis
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
+import org.sugarj.sweettooth.stratego.analysis.base.{StoreTrait, BasicStack}
+import org.sugarj.sweettooth.stratego.analysis.domain.PowersetDomain
+import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 import org.sugarj.sweettooth.stratego.lib.Num._
 
 import scala.language.implicitConversions
@@ -12,13 +15,22 @@ import scala.language.implicitConversions
  */
 class AnalyzeNumTest extends FunSuite {
 
-  val analysis = new Analyze(PowersetDomain)
-  import analysis.dom
+  type V = PowersetDomain.T
+  type D = PowersetDomain.D.type
+  val dom = PowersetDomain.D
+
+  object analysis extends
+    v1Analysis[V, D] with
+    BasicStack[V, D] with
+    StoreTrait[V, D] {
+    val dom = AnalyzeNumTest.this.dom
+  }
+
   def lift(t: Trm) = dom.lift(t)
 
   implicit def mkNatTrm(n: Int) = eval(mkNat(n), Trm.App('Foo), DEFS)
 
-  def assertDomT(expected: dom.T)(actual: dom.T) = assertResult(expected)(actual)
+  def assertDomT(expected: V)(actual: V) = assertResult(expected)(actual)
 
   test("zero") {
     assertDomT(lift(0))(analysis.analyze(Call('zero), lift(Trm.App('Foo)), DEFS))

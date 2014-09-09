@@ -3,18 +3,30 @@ package org.sugarj.sweettooth.stratego.analysis
 import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
+import org.sugarj.sweettooth.stratego.analysis.base.{StoreTrait, BasicStack}
+import org.sugarj.sweettooth.stratego.analysis.domain.PowersetDomain
+import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 import org.sugarj.sweettooth.stratego.lib.List._
 import org.sugarj.sweettooth.stratego.lib.Num
 
 import scala.language.implicitConversions
 
 /**
- * Created by seba on 30/07/14.
- */
+* Created by seba on 30/07/14.
+*/
 class AnalyzeListTest extends FunSuite {
 
-  val analysis = new Analyze(PowersetDomain)
-  import analysis.dom
+  type V = PowersetDomain.T
+  type D = PowersetDomain.D.type
+  val dom = PowersetDomain.D
+
+  object analysis extends
+    v1Analysis[V, D] with
+    BasicStack[V, D] with
+    StoreTrait[V, D] {
+    val dom = AnalyzeListTest.this.dom
+  }
+
   def lift(t: Trm) = dom.lift(t)
 
   implicit def mkListTrm(l: List[Trm]) = eval(mkList(l), Trm.App('Foo, scala.List()), DEFS)
@@ -24,7 +36,7 @@ class AnalyzeListTest extends FunSuite {
     else
       Trm.App(Symbol(s"Elem_${n-1}"))::mkListOfLength(n-1)
 
-  def assertDomT(expected: dom.T)(actual: dom.T) = assertResult(expected)(actual)
+  def assertDomT(expected: V)(actual: V) = assertResult(expected)(actual)
 
   test("nil") {
     assertDomT(lift(Trm.App('Nil)))(analysis.analyze(Call('nil), lift(Trm.App('Foo)), DEFS))

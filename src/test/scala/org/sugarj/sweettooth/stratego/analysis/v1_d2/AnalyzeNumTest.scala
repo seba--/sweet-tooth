@@ -64,7 +64,8 @@ class AnalyzeNumTest extends FunSuite {
   }
 
   test(s"$prefix: plus top top") {
-    assertDomT(dom.join(dom.top, dom.liftApp('Succ, List(dom.top))))(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, dom.top)), DEFS))
+    val maybeOne = dom.join(dom.top, dom.liftApp('Succ, List(dom.top)))
+    assertDomT(maybeOne)(analysis.analyze(Call('plus), dom.liftApp('_, List(dom.top, dom.top)), DEFS))
   }
 
   test(s"$prefix: plus zero top") {
@@ -78,8 +79,8 @@ class AnalyzeNumTest extends FunSuite {
 
   test(s"$prefix: plus >=one top") {
     val atLeastOne = dom.liftApp('Succ, List(dom.top))
-    val atLeastOneorTwo = dom.liftApp('Succ, List(dom.join(dom.top, dom.liftApp('Succ, List(dom.top)))))
-    assertDomT(atLeastOneorTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, dom.top)), DEFS))
+    val atLeastOneOrTwo = dom.liftApp('Succ, List(dom.join(dom.top, dom.liftApp('Succ, List(dom.top)))))
+    assertDomT(atLeastOneOrTwo)(analysis.analyze(Call('plus), dom.liftApp('_, List(atLeastOne, dom.top)), DEFS))
   }
 
   test(s"$prefix: plus top one") {

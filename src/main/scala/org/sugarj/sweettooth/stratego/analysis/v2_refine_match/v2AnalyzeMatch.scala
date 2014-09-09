@@ -10,6 +10,11 @@ import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 trait v2AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
   def analyzeMatch(p: Pat, current: V, store: Store, stack: Stack): (V, Store) = {
     val (refined, mStore) = matchPat(p, current, store)
+
+//    assert (dom.compare(refined, current), s"$refined is not more precise than $current")
+//    if (!dom.compare(current, refined))
+//      println(s"Refined\n  $current to\n  $refined")
+
     (refined, mStore)
   }
 

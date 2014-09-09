@@ -34,7 +34,12 @@ trait v1AnalyzeIf[V, D <: Domain[V]] extends AnalyzeIf[V,D] {
               (dom.bottom, emptyStore)
         }
 
-        (dom.join(vThn, vEls), storeThn.join(storeEls))
+        val joined = dom.join(vThn, vEls)
+
+//        if (dom.compare(vThn, joined) || dom.compare(vEls, joined))
+//          println(s"Joined then\n  $vThn with else\n  $vEls to\n  $joined")
+
+        (joined, storeThn.join(storeEls))
     }
   }
 }

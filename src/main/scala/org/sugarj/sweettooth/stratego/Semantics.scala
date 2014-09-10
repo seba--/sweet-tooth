@@ -6,7 +6,8 @@ import org.sugarj.sweettooth.stratego.Syntax._
  * Created by seba on 30/07/14.
  */
 object Semantics {
-  case class Closure(e: Exp, store: Store)
+  case class ClosureStore(var store: Store)
+  case class Closure(e: Exp, val store: ClosureStore)
 
   case class Fail(current: Exp, msg: String = "") extends Exception
   def fail(current: Exp, msg: String = "") = throw Fail(current, msg)
@@ -17,7 +18,6 @@ object Semantics {
 
     def +(p1: Symbol, p2: Trm) = Store(store + (p1 -> p2), sstore)
     def +(p1: Symbol, p2: Closure) = Store(store, sstore + (p1 -> p2))
-    def +(p1: Symbol, p2: Exp) = Store(store, sstore + (p1 -> Closure(p2, this)))
   }
   def emptyStore = Store(Map(),Map())
 
@@ -26,9 +26,10 @@ object Semantics {
     // use the defs from the surrounding def
     def eval(e: Exp, current: Trm, store: Store): (Trm, Store) = e match {
       case SVar(s) => store.slookup(s) match {
-        case Some(Closure(fe, fstore)) =>
-          val (t,_) = eval(fe, current, fstore)
-          (t, store)
+        case Some(cl@Closure(fe, clStore)) =>
+          val (res, fstore) = eval(fe, current, clStore.store)
+          clStore.store = fstore
+          (res, store)
         case None => fail(e, s"Undefined strategy variable $s")
       }
       case Build(t) => (normalize(t, store), store)
@@ -50,9 +51,10 @@ object Semantics {
         if (d.tvars.size != targs.size)
           throw new RuntimeException(s"Wrong number of term arguments to $f. Expected ${d.tvars}, got $targs")
         val tStore = Map() ++ d.tvars.zip(targs map (normalize(_, store)))
-        val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(x) => store.slookup(x).get; case x => Closure(x, store)})
+        val clStore = ClosureStore(store)
+        val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(x) => store.slookup(x).get; case x => Closure(x, clStore)})
         val (t, _) = eval(d.body, current, Store(tStore, sStore))
-        (t, store)
+        (t, clStore.store)
     }
 
     try { eval(e, current, emptyStore)._1 }

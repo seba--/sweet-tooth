@@ -55,6 +55,13 @@ object Semantics {
         val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(x) => store.slookup(x).get; case x => Closure(x, clStore)})
         val (t, _) = eval(d.body, current, Store(tStore, sStore))
         (t, clStore.store)
+      case Scoped(x, e) =>
+        val orig = store.lookup(x)
+        val (res, subStore) = eval(e, current, Store(store.store - x, store.sstore))
+        orig match {
+          case None => (res, subStore)
+          case Some(t) => (res, Store(subStore.store + (x -> t), subStore.sstore))
+        }
     }
 
     try { eval(e, current, emptyStore)._1 }

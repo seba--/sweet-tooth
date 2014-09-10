@@ -1,5 +1,6 @@
 package org.sugarj.sweettooth.stratego.analysis.base
 
+import org.sugarj.sweettooth.stratego.Semantics.Fail
 import org.sugarj.sweettooth.stratego.Syntax.{Defs, Exp}
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 
@@ -13,6 +14,5 @@ trait AnalyzeBase[V, D <: Domain[V]] extends StoreTrait[V, D] with StackTrait[V,
 
   def analyze(e: Exp, current: V, store: Store, stack: Stack): (V, Store) @throws[Fail]
 
-  case class Fail(current: Exp, msg: String = "") extends Exception
   def fail(current: Exp, msg: String = "") = throw Fail(current, msg)
 }

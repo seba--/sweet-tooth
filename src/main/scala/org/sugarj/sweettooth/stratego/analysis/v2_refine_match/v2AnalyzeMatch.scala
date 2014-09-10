@@ -3,7 +3,7 @@ package org.sugarj.sweettooth.stratego.analysis.v2_refine_match
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.analysis.base._
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
-
+import org.sugarj.sweettooth.stratego.Semantics.Fail
 /**
   * Created by seba on 09/09/14.
   */

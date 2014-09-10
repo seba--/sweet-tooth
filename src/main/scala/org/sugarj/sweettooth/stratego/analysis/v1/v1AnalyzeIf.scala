@@ -3,7 +3,7 @@ package org.sugarj.sweettooth.stratego.analysis.v1
 import org.sugarj.sweettooth.stratego.Syntax.Exp
 import org.sugarj.sweettooth.stratego.analysis.base.AnalyzeIf
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
-
+import org.sugarj.sweettooth.stratego.Semantics.Fail
 /**
   * Created by seba on 09/09/14.
   */

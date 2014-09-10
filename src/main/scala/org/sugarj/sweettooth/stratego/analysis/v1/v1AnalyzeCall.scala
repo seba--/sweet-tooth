@@ -16,14 +16,16 @@ trait v1AnalyzeCall[V, D <: Domain[V]] extends AnalyzeCall[V,D] with v1AnalyzeBa
       throw new RuntimeException(s"Wrong number of term arguments to $f. Expected ${d.tvars}, got $targs")
 
     val tStore = Map() ++ d.tvars.zip(targs map (normalize(_, store)))
-    val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(v) => store.slookup(v).get; case s => Closure(s, store)})
+
+    val clStore = ClosureStore(store)
+    val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(v) => store.slookup(v).get; case s => Closure(s, clStore)})
 
     if (stack.terminate(f, sStore, tStore, current, store))
       (dom.top, store)
     else {
       val extStack = stack.push(f, sStore, tStore, current, store)
       val (t, _) = analyze(d.body, current, Store(tStore, sStore), extStack)
-      (t, store)
+      (t, clStore.store)
     }
   }
 }

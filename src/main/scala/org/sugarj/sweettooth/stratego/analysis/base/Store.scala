@@ -10,13 +10,15 @@ trait StoreTrait[V, D <: Domain[V]] {
   val dom: D
   val emptyStore = Store(Map(), Map())
 
+  case class ClosureStore(var store: Store)
+  case class Closure(e: Exp, store: ClosureStore)
+
   case class Store(store: Map[Symbol, V], sstore: Map[Symbol, Closure]) {
     def lookup(s: Symbol) = store.get(s)
     def slookup(s: Symbol) = sstore.get(s)
 
     def +(p1: Symbol, p2: V) = Store(store + (p1 -> p2), sstore)
     def +(p1: Symbol, p2: Closure) = Store(store, sstore + (p1 -> p2))
-    def +(p1: Symbol, p2: Exp) = Store(store, sstore + (p1 -> Closure(p2, this)))
 
     def join(other: Store): Store = {
       //      if (sstore != other.sstore)
@@ -35,7 +37,7 @@ trait StoreTrait[V, D <: Domain[V]] {
           case None => sstore += (x -> cl)
           case Some(cl0) =>
             if (cl.e == cl0.e)
-              cl0.store.join(cl.store)
+              sstore += (x -> Closure(cl0.e, ClosureStore(cl0.store.store.join(cl.store.store))))
             else
               throw new IllegalArgumentException(s"Cannot join Stores conflicting on strategy definition of $x:\n  ${cl0.e} versus\n ${cl.e}")
         }
@@ -43,7 +45,5 @@ trait StoreTrait[V, D <: Domain[V]] {
       Store(store, sstore)
     }
   }
-
-  case class Closure(e: Exp, store: Store)
 }
 

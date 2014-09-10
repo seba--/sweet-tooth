@@ -14,6 +14,7 @@ trait v2Analysis[V, D <: Domain[V]] extends
   v2AnalyzeMatch[V, D] with
   v1AnalyzeSeq[V, D] with
   v1AnalyzeIf[V, D] with
-  v1AnalyzeCall[V, D] {
+  v1AnalyzeCall[V, D] with
+  v1AnalyzeScoped[V, D] {
 
 }

@@ -50,7 +50,7 @@ object Semantics {
         if (d.tvars.size != targs.size)
           throw new RuntimeException(s"Wrong number of term arguments to $f. Expected ${d.tvars}, got $targs")
         val tStore = Map() ++ d.tvars.zip(targs map (normalize(_, store)))
-        val sStore = Map() ++ d.svars.zip(sargs map (Closure(_, store)))
+        val sStore = Map() ++ d.svars.zip(sargs.map {case SVar(x) => store.slookup(x).get; case x => Closure(x, store)})
         val (t, _) = eval(d.body, current, Store(tStore, sStore))
         (t, store)
     }

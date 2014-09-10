@@ -27,6 +27,16 @@ object List extends Library {
         ??('ts),
         !!('Cons@@('t, 'ts)))))
 
+  val elem = 'elem -> Def(scala.List(), scala.List(),
+    Seqs(
+      ??('_@@('e, 'xs)),
+      !!('xs),
+      ??('Cons@@('y, 'ys)),
+      !!('e),
+      If(??('y),
+        !!('_@@('e, 'xs)),
+        Seq(!!('_@@('e, 'ys)), Call('elem)))
+    ))
 
 
   val DEFS = Map(

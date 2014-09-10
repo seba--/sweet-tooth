@@ -64,8 +64,7 @@ object Semantics {
         }
     }
 
-    try { eval(e, current, emptyStore)._1 }
-    catch { case e@Fail(_, msg) => println(msg); throw e }
+    eval(e, current, emptyStore)._1
   }
 
   def normalize(p: Pat, store: Store): Trm = p match {

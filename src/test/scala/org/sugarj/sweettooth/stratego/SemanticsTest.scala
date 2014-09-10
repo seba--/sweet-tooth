@@ -37,28 +37,28 @@ class SemanticsTest extends FunSuite {
   }
 
   test ("testId") {
-    assertTrm(0)(eval(Call('id), 0, DEFS))
-    assertTrm(1)(eval(Call('id), 1, DEFS))
+    assertTrm(0)(eval(Call('id_0_0), 0, DEFS))
+    assertTrm(1)(eval(Call('id_0_0), 1, DEFS))
   }
 
   test ("zero") {
-    assertTrm(0)(eval(Call('zero), 0, DEFS))
-    assertTrm(0)(eval(Call('zero), 0, DEFS))
+    assertTrm(0)(eval(Call('zero_0_0), 0, DEFS))
+    assertTrm(0)(eval(Call('zero_0_0), 0, DEFS))
   }
 
   test ("succ") {
     for (i <- 1 to 20)
-      assertTrm(i + 1)(eval(Call('succ), i, DEFS))
+      assertTrm(i + 1)(eval(Call('succ_0_0), i, DEFS))
   }
 
   test ("plus") {
     for {m <- 1 to 5;
          n <- 1 to 5}
-      assertTrm(m + n)(eval(Call('plus), Trm.App('_, m, n), DEFS))
+      assertTrm(m + n)(eval(Call('plus_0_0), Trm.App('_, m, n), DEFS))
   }
 
   test ("app") {
-    assertTrm(0)(eval(Call('app, List(Build('Zero@@())), List()), 1, DEFS))
+    assertTrm(0)(eval(Call('app_1_0, List(Build('Zero@@())), List()), 1, DEFS))
   }
 
 
@@ -66,7 +66,7 @@ class SemanticsTest extends FunSuite {
   test ("strategy arg binds") {
     val s = Seqs(
       !!('Foo@@()),
-      Call('app, List(??('x)), List()),
+      Call('app_1_0, List(??('x)), List()),
       !!('x)
     )
     assertTrm(Trm.App('Foo))(eval(s, 1, DEFS))
@@ -74,25 +74,25 @@ class SemanticsTest extends FunSuite {
 
   test ("strategy arg binds/match") {
     val s = Seqs(
-      Call('app, List(??('x)), List()),
+      Call('app_1_0, List(??('x)), List()),
       !!('Foo@@()),
-      Call('app, List(??('x)), List())
+      Call('app_1_0, List(??('x)), List())
     )
     assertTrm(Trm.App('Foo))(eval(s, Trm.App('Foo), DEFS))
   }
 
   test ("strategy arg binds no rebind") {
     val s = Seqs(
-      Call('app, List(??('x)), List()),
+      Call('app_1_0, List(??('x)), List()),
       !!('Bar@@()),
-      Call('app, List(??('x)), List())
+      Call('app_1_0, List(??('x)), List())
     )
     assertFail(eval(s, Trm.App('Foo), DEFS), s"strategy should fail to rebind x")
   }
 
   test ("def: no escape") {
     val s = Seqs(
-      Call('id),
+      Call('id_0_0),
       !!('x)
     )
     assertFail(eval(s, 1, DEFS), "Variable x should not be bound outside of 'id")
@@ -102,7 +102,7 @@ class SemanticsTest extends FunSuite {
     val s = Seqs(
       ??('x),
       !!('Zero@@()),
-      Call('id)
+      Call('id_0_0)
     )
     assertTrm(0)(eval(s, 1, DEFS))
   }
@@ -131,7 +131,7 @@ class SemanticsTest extends FunSuite {
     val s = Seqs(
       ??('x),
       !!('Bar@@()),
-      Call('app, List(Scoped('x, ??('x))), List()),
+      Call('app_1_0, List(Scoped('x, ??('x))), List()),
       !!('x)
     )
     assertTrm(Trm.App('Foo))(eval(s, Trm.App('Foo), DEFS))
@@ -141,7 +141,7 @@ class SemanticsTest extends FunSuite {
     val s = Seqs(
       ??('x),
       !!('Bar@@()),
-      Call('app, List(Scoped('x, !!('x))), List())
+      Call('app_1_0, List(Scoped('x, !!('x))), List())
     )
     assertFail(eval(s, Trm.App('Foo), DEFS))
   }

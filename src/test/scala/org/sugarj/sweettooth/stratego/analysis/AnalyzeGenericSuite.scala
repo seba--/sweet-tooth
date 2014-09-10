@@ -24,51 +24,51 @@ abstract class AnalyzeGenericSuite extends AnalysisSuite {
 
   val id_top: V
   test(s"$prefix: id top") {
-    assertDomT(id_top)(analysis.analyze(Call('id), dom.top, DEFS))
+    assertDomT(id_top)(analysis.analyze(Call('id_0_0), dom.top, DEFS))
   }
 
   val id_Zero: V
   test(s"$prefix: id zero") {
-    assertDomT(id_Zero)(analysis.analyze(Call('id), dom.liftApp('Zero), DEFS))
+    assertDomT(id_Zero)(analysis.analyze(Call('id_0_0), dom.liftApp('Zero), DEFS))
   }
 
   val fail_top: V
   test(s"$prefix: fail top") {
-    assertDomT(fail_top)(analysis.analyze(Call('fail), dom.top, DEFS))
+    assertDomT(fail_top)(analysis.analyze(Call('fail_0_0), dom.top, DEFS))
   }
 
   val fail_Zero: V
   test(s"$prefix: fail zero") {
-    assertDomT(fail_Zero)(analysis.analyze(Call('fail), dom.liftApp('Zero), DEFS))
+    assertDomT(fail_Zero)(analysis.analyze(Call('fail_0_0), dom.liftApp('Zero), DEFS))
   }
 
   val not_id_top: V
   test(s"$prefix: not id top") {
-    assertDomT(not_id_top)(analysis.analyze(Call('not, List(Call('id)), List()), dom.top, DEFS))
+    assertDomT(not_id_top)(analysis.analyze(Call('not_1_0, List(Call('id_0_0)), List()), dom.top, DEFS))
   }
 
   val not_id_Zero: V
   test(s"$prefix: not id zero") {
-    assertDomT(not_id_Zero)(analysis.analyze(Call('not, List(Call('id)), List()), dom.liftApp('Zero), DEFS))
+    assertDomT(not_id_Zero)(analysis.analyze(Call('not_1_0, List(Call('id_0_0)), List()), dom.liftApp('Zero), DEFS))
   }
 
   val not_fail_top: V
   test(s"$prefix: not fail top") {
-    assertDomT(not_fail_top)(analysis.analyze(Call('not, List(Call('fail)), List()), dom.top, DEFS))
+    assertDomT(not_fail_top)(analysis.analyze(Call('not_1_0, List(Call('fail_0_0)), List()), dom.top, DEFS))
   }
 
   val not_fail_Zero: V
   test(s"$prefix: not fail zero") {
-    assertDomT(not_fail_Zero)(analysis.analyze(Call('not, List(Call('fail)), List()), dom.liftApp('Zero), DEFS))
+    assertDomT(not_fail_Zero)(analysis.analyze(Call('not_1_0, List(Call('fail_0_0)), List()), dom.liftApp('Zero), DEFS))
   }
 
   val not_isFoo_Foo: V
   test(s"$prefix: not ?Foo Foo") {
-    assertDomT(not_isFoo_Foo)(analysis.analyze(Call('not, List(??('Foo@@())), List()), dom.liftApp('Foo), DEFS))
+    assertDomT(not_isFoo_Foo)(analysis.analyze(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Foo), DEFS))
   }
 
   val not_isFoo_Bar: V
   test(s"$prefix: not ?Foo Bar") {
-    assertDomT(not_isFoo_Bar)(analysis.analyze(Call('not, List(??('Foo@@())), List()), dom.liftApp('Bar), DEFS))
+    assertDomT(not_isFoo_Bar)(analysis.analyze(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Bar), DEFS))
   }
 }

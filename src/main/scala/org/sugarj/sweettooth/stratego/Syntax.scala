@@ -67,4 +67,10 @@ object Syntax {
     def @@(xs: Pat*) = Pat.App(s, List(xs:_*))
   }
   def Call(s: Symbol): Call = Call(s, List(), List())
+
+  def If_(cnd: Exp, thn: Exp*) = IfThen(cnd, SeqsSeq(thn))
+  def If(cnd: Exp, thn: Exp*) = IfThen(cnd, SeqsSeq(thn))
+  case class IfThen(cnd: Exp, thn: Exp) {
+    def Else(els: Exp*) = If(cnd, thn, SeqsSeq(els))
+  }
 }

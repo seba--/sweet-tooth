@@ -18,17 +18,17 @@ class NumTest extends FunSuite {
   def assertTrm(expected: Trm)(actual: Trm) = assertResult(expected)(actual)
 
   test("zero") {
-    assertTrm(0)(eval(Call('zero), Trm.App('Foo), DEFS))
+    assertTrm(0)(eval(Call('zero_0_0), Trm.App('Foo), DEFS))
   }
 
   test("succ") {
     for (i <- 1 to 20)
-      assertTrm(i + 1)(eval(Call('succ), i, DEFS))
+      assertTrm(i + 1)(eval(Call('succ_0_0), i, DEFS))
   }
 
   test(s"plus") {
     for {m <- 1 to 5;
          n <- 1 to 5}
-      assertTrm(m + n)(eval(Call('plus), Trm.App('_, m, n), DEFS))
+      assertTrm(m + n)(eval(Call('plus_0_0), Trm.App('_, m, n), DEFS))
   }
 }

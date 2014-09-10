@@ -14,7 +14,7 @@ object List extends Library {
     case x::xs => Seqs(mkList(xs, n+1), ??(Symbol(s"xs$n")), !!('_@@(x, Symbol(s"xs$n"))), Call('cons))
   }
 
-  val map = 'map -> Def(scala.List('s), scala.List(),
+  val map = 'map_1_0 -> Def(scala.List('s), scala.List(),
     If(??('Nil@@()),
       !!('Nil@@()),
       Seqs(
@@ -23,26 +23,99 @@ object List extends Library {
         SVar('s),
         ??('t),
         !!('xs),
-        Call('map, scala.List(SVar('s)), scala.List()),
+        Call('map_1_0, scala.List(SVar('s)), scala.List()),
         ??('ts),
         !!('Cons@@('t, 'ts)))))
 
-  val elem = 'elem -> Def(scala.List(), scala.List(),
-    Seqs(
-      ??('_@@('e, 'xs)),
+  val fetch = 'fetch_1_0 -> Def(scala.List('s), scala.List(),
+    ??('Cons@@('x, 'xs)),
+    !!('x),
+    If_(SVar('s),
+      ??('y),
+      !!('Cons@@('y, 'xs)))
+    Else (
       !!('xs),
-      ??('Cons@@('y, 'ys)),
-      !!('e),
-      If(??('y),
-        !!('_@@('e, 'xs)),
-        Seq(!!('_@@('e, 'ys)), Call('elem)))
-    ))
+      Call('fetch_1_0, scala.List(SVar('s)), scala.List()),
+      ??('ys),
+      !!('Cons@@('x, 'ys))
+    )
+  )
 
+  val elem = 'elem_0_0 -> Def(
+    ??('_@@('e, 'xs)),
+    !!('xs),
+    Call('fetch_1_0, scala.List(??('e)), scala.List())
+  )
 
-  val DEFS = Map(
+  val at_end = 'at_end_1_0 -> Def(scala.List('s), scala.List(),
+    If(??('Nil@@()),
+      SVar('s),
+      Seqs(
+        ??('Cons@@('x, 'xs)),
+        !!('xs),
+        Call('at_end_1_0, scala.List(SVar('s)), scala.List()),
+        ??('ys),
+        !!('Cons@@('x, 'ys))))
+  )
+
+  val conc = 'conc_0_0 -> Def(
+    If_(??('_@@('xs, 'ys)),
+      !!('xs),
+      Call('at_end_1_0, scala.List(!!('ys)), scala.List()))
+    Else (
+      If(??('_@@('xs, 'ys, 'zs)),
+        !!('ys),
+        Call('at_end_1_0, scala.List(!!('zs)), scala.List()),
+        ??('ys_zs),
+        !!('xs),
+        Call('at_end_1_0, scala.List(!!('ys_zs)), scala.List()))
+      Else (
+        Call('fail)
+      )
+    )
+  )
+
+  val starts_with = 'starts_with_0_0 -> Def(
+    If(??('_@@('xs, 'Nil@@())),
+      !!('xs),
+      Seqs(
+        ??('_@@('Cons@@('x, 'xs), 'Cons@@('x, 'ys))),
+        !!('_@@('xs, 'ys)),
+        Call('starts_with_0_0)
+      )
+    )
+  )
+
+  val replace = 'replace_0_2 -> Def(scala.List(), scala.List('old, 'new),
+    If(??('Nil@@()),
+      !!('Nil@@()),
+      If(Seqs(??('xs), !!('_@@('xs, 'old)), Call('starts_with_0_0)),
+        Seqs(
+          Call('replace_0_2, scala.List(), scala.List('old, 'new)),
+          ??('rest),
+          !!('_@@('new, 'rest)),
+          Call('conc)
+        ),
+        Seqs(
+          ??('Cons@@('y, 'ys)),
+          !!('ys),
+          Call('replace_0_2, scala.List(), scala.List('old, 'new)),
+          ??('rest),
+          !!('Cons@@('y, 'rest))
+        )
+      )
+    )
+  )
+
+  val DEFS = Generic.DEFS ++ Map(
     nil,
     cons,
     map,
-    elem
+    fetch,
+    elem,
+    at_end,
+    conc,
+    starts_with,
+    replace
   )
 }

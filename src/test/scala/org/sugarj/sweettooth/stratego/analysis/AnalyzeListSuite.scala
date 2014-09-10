@@ -93,14 +93,14 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
       val l = mkListOfLength(i)
       val s = Scoped('x, Seq(Match('x), Build('_@@('Zero@@(), 'x))))
       assertDomT(map(l))(
-        analysis.analyze(Call('map, scala.List(s), scala.List()), lift(l), DEFS ++ Num.DEFS))
+        analysis.analyze(Call('map_1_0, scala.List(s), scala.List()), lift(l), DEFS ++ Num.DEFS))
     }
   }
 
   val map_top: V
   test(s"$prefix: map top") {
     val s = Scoped('x, Seq(Match('x), Build('Zero@@())))
-    val result = analysis.analyze(Call('map, scala.List(s), scala.List()), dom.top, DEFS ++ Num.DEFS)
+    val result = analysis.analyze(Call('map_1_0, scala.List(s), scala.List()), dom.top, DEFS ++ Num.DEFS)
     assertDomT(map_top)(result)
   }
 }

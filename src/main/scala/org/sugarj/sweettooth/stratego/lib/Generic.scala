@@ -6,16 +6,16 @@ import org.sugarj.sweettooth.stratego.Syntax._
  * Created by seba on 04/08/14.
  */
 object Generic extends Library {
-  val id = 'id -> Def(??('x), !!('x))
+  val id = 'id_0_0 -> Def(??('x), !!('x))
 
-  val fail = 'fail -> Def(Seq(!!('Foo), ??('Bar)))
+  val fail = 'fail_0_0 -> Def(!!('Foo), ??('Bar))
 
-  val not = 'not -> Def(scala.List('s), scala.List(),
+  val not = 'not_1_0 -> Def(scala.List('s), scala.List(),
     If(SVar('s),
-      Call('fail),
-      Call('id)))
+      Call('fail_0_0),
+      Call('id_0_0)))
 
-  val app = 'app -> Def(scala.List('s), scala.List(), SVar('s))
+  val app = 'app_1_0 -> Def(scala.List('s), scala.List(), SVar('s))
 
   val DEFS =  Map(
     id,

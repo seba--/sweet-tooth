@@ -102,4 +102,11 @@ class AnalyzeListTest extends FunSuite {
          analysis.analyze(Call('map, scala.List(s), scala.List()), lift(l), DEFS ++ Num.DEFS))
      }
    }
- }
+
+  test(s"$prefix: map top") {
+    val s = Seq(Match('x), Build('Zero@@()))
+    val result = analysis.analyze(Call('map, scala.List(s), scala.List()), dom.top, DEFS ++ Num.DEFS)
+    val expect = dom.join(dom.liftApp('Nil), dom.liftApp('Cons, dom.liftApp('Zero), dom.top))
+    assertDomT(expect)(result)
+  }
+}

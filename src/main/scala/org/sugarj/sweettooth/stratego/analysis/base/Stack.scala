@@ -23,7 +23,7 @@ trait BasicStack[V, D <: Domain[V]] extends StackTrait[V,D] {
 
   case class Stack(st: List[(Call, Current)]) extends super.Stack {
     def terminate(f: Symbol, sargs: Map[Symbol, Closure], targs: Map[Symbol, V], current: V, store: Store): Boolean =
-      st.contains(((f, sargs, targs), current))
+      st.contains(((f, sargs, targs), current)) // || st.size > 10
 
     def push(f: Symbol, sargs: Map[Symbol, Closure], targs: Map[Symbol, V], current: V, store: Store): Stack =
       Stack(((f, sargs, targs), current) :: st)

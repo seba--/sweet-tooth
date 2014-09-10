@@ -6,7 +6,7 @@ import org.sugarj.sweettooth.stratego.Semantics.Fail
 /**
  * Created by seba on 10/09/14.
  */
-class AnalysisSuite extends FunSuite {
+abstract class AnalysisSuite extends FunSuite {
   def assertDomT[V1,V2](expected: V1)(actual: =>V2) {
     try {
       val res = actual

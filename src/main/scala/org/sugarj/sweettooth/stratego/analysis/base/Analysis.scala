@@ -18,7 +18,8 @@ trait Analysis[V, D <: Domain[V]] extends
 
   def analyze(e: Exp, current: V, defs: Defs): V = {
     this.defs = defs
-    analyze(e, current, emptyStore, emptyStack)._1
+    try { analyze(e, current, emptyStore, emptyStack)._1 }
+    catch { case _: Fail => dom.bottom }
   }
 
   def analyze(e: Exp, current: V, store: Store, stack: Stack): (V, Store) = e match {

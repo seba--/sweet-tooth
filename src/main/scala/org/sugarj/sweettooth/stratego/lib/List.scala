@@ -42,6 +42,7 @@ object List extends Library {
   val DEFS = Map(
     nil,
     cons,
-    map
+    map,
+    elem
   )
 }

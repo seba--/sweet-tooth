@@ -59,7 +59,7 @@ object Semantics {
         val orig = store.lookup(x)
         val (res, subStore) = eval(e, current, Store(store.store - x, store.sstore))
         orig match {
-          case None => (res, subStore)
+          case None => (res, Store(subStore.store - x, subStore.sstore))
           case Some(t) => (res, Store(subStore.store + (x -> t), subStore.sstore))
         }
     }

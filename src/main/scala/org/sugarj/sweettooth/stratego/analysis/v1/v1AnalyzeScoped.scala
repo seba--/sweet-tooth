@@ -12,7 +12,7 @@ trait v1AnalyzeScoped[V, D <: Domain[V]] extends AnalyzeScoped[V,D] {
     val orig = store.lookup(x)
     val (res, subStore) = analyze(e, current, Store(store.store - x, store.sstore), stack)
     orig match {
-      case None => (res, subStore)
+      case None => (res, Store(subStore.store - x, subStore.sstore))
       case Some(t) => (res, Store(subStore.store + (x -> t), subStore.sstore))
     }
   }

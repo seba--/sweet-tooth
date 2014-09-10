@@ -99,7 +99,7 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
 
   val map_top: V
   test(s"$prefix: map top") {
-    val s = Seq(Match('x), Build('Zero@@()))
+    val s = Scoped('x, Seq(Match('x), Build('Zero@@())))
     val result = analysis.analyze(Call('map, scala.List(s), scala.List()), dom.top, DEFS ++ Num.DEFS)
     assertDomT(map_top)(result)
   }

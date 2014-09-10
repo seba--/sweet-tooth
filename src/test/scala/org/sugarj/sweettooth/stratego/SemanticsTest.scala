@@ -90,7 +90,7 @@ class SemanticsTest extends FunSuite {
     assertFail(eval(s, Trm.App('Foo), DEFS), s"strategy should fail to rebind x")
   }
 
-  test ("no escape") {
+  test ("def: no escape") {
     val s = Seqs(
       Call('id),
       !!('x)
@@ -98,7 +98,7 @@ class SemanticsTest extends FunSuite {
     assertFail(eval(s, 1, DEFS), "Variable x should not be bound outside of 'id")
   }
 
-  test ("no inbreak") {
+  test ("def: no inbreak") {
     val s = Seqs(
       ??('x),
       !!('Zero@@()),
@@ -125,5 +125,24 @@ class SemanticsTest extends FunSuite {
     val s2 = Call('twice, List(??('x), ??('x)), List())
     assertTrm(Trm.App('_, 0, 0))(eval(s2, Trm.App('_, 0, 0), DEFS + twice))
     assertFail(eval(s2, Trm.App('_, 0, 1), DEFS + twice))
+  }
+
+  test ("scoped: no escape") {
+    val s = Seqs(
+      ??('x),
+      !!('Bar@@()),
+      Call('app, List(Scoped('x, ??('x))), List()),
+      !!('x)
+    )
+    assertTrm(Trm.App('Foo))(eval(s, Trm.App('Foo), DEFS))
+  }
+
+  test ("scoped: no inbreak") {
+    val s = Seqs(
+      ??('x),
+      !!('Bar@@()),
+      Call('app, List(Scoped('x, !!('x))), List())
+    )
+    assertFail(eval(s, Trm.App('Foo), DEFS))
   }
 }

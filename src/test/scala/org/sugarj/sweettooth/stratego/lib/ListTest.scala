@@ -47,8 +47,8 @@ class ListTest extends FunSuite {
   test(s"map") {
     for (i <- 1 to 20) {
       val l = mkListOfLength(i)
-      val s = Build('Zero@@())
-      assertTrm(l.map(_ => Trm.App('Zero)))(
+      val s = Scoped('x, Seq(Match('x), Build('_@@('Zero@@(), 'x))))
+      assertTrm(l.map(t => Trm.App('_, Trm.App('Zero), t)))(
                 eval(Call('map, scala.List(s), scala.List()), l, DEFS ++ Num.DEFS))
     }
   }

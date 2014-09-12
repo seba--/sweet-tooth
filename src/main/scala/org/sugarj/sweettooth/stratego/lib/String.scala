@@ -6,9 +6,9 @@ import org.sugarj.sweettooth.stratego.Syntax._
  * Created by seba on 30/07/14.
  */
 object String extends Library {
-  val empty_string = 'empty_string -> Def(!!('String@@('Nil@@())))
+  val empty_string = 'empty_string_0 -> Def(!!('String@@('Nil@@())))
 
-  val conc_strings = 'conc_strings -> Def(
+  val conc_strings = 'conc_strings_0_0 -> Def(
     If(??('_@@('String@@('xs), 'String@@('ys))),
       !!('_@@('xs,'ys)),
       If(??('_@@('xs, 'ys, 'zs)),
@@ -21,7 +21,7 @@ object String extends Library {
     !!('String@@('chars))
   )
 
-  val string_replace = 'string_replace -> Def(scala.List(), scala.List('old, 'new),
+  val string_replace = 'string_replace_0_2 -> Def(scala.List(), scala.List('old, 'new),
     ??('String@@('xs)),
     !!('old),
     ??('String@@('old_chars)),
@@ -34,6 +34,7 @@ object String extends Library {
 
   val DEFS = Generic.DEFS ++ List.DEFS ++ Map(
     empty_string,
-    conc_strings
+    conc_strings,
+    string_replace
   )
 }

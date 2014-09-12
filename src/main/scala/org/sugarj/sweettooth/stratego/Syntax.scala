@@ -59,7 +59,7 @@ object Syntax {
     case scala.Seq(e, es@_*) => Seq(e, SeqsSeq(es))
   }
   def Def(body: Exp): Def = Def(List(), List(), body)
-  def Def(svars: List[Symbol], tvars: List[Symbol], body: Exp*): Def = Def(svars, tvars, SeqsSeq(body))
+  def Def(svars: List[Symbol], tvars: List[Symbol], e: Exp, body: Exp*): Def = Def(svars, tvars, SeqsSeq(body.+:(e)))
   def Def(body: Exp*): Def = Def(List(), List(), SeqsSeq(body))
   implicit def appcons(s: Symbol) = AppCons(s)
   case class AppCons(s: Symbol) {

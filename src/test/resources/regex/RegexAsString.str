@@ -79,28 +79,35 @@ rules
 
 rules
 
-  ce2str :
+
+  ce2str =
+    ce2str-lit <+
+    ce2str-range <+
+    ce2str-negation <+
+    ce2str-union <+
+    ce2str-intersection <+
+    ce2str-predefined-dot <+
+    ce2str-predefined-other
+
+  ce2str-lit :
     ccexp-lit(lit) -> lit
 
-  ce2str = ce2str-range; bracket
-
   ce2str-range :
-    ccexp-range(from, to) -> <conc-strings> (from, "-", to)
+    ccexp-range(from, to) -> <conc-strings; bracket> (from, "-", to)
 
-
-  ce2str :
+  ce2str-negation :
     ccexp-negation(ce) -> <conc-strings; bracket> ("^", <ce2str> ce)
 
-  ce2str :
-    ccexp-union(ce1, ce2) -> <conc-strings ; bracket> (<ce2str> ce1, <ce2str> ce2)
+  ce2str-union :
+    ccexp-union(ce1, ce2) -> <conc-strings; bracket> (<ce2str> ce1, <ce2str> ce2)
 
-  ce2str :
-    ccexp-intersection(ce1, ce2) -> <conc-strings ; bracket> (<ce2str> ce1, <ce2str> ce2)
+  ce2str-intersection :
+    ccexp-intersection(ce1, ce2) -> <conc-strings; bracket> (<ce2str> ce1, "&&", <ce2str> ce2)
 
-  ce2str :
+  ce2str-predefined-dot :
     ccexp-predefined(".") -> "."
 
-  ce2str :
+  ce2str-predefined-other :
     ccexp-predefined(e) -> <conc-strings> ("\\", e)
 
 

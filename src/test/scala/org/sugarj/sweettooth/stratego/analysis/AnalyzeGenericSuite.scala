@@ -4,6 +4,7 @@ import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.lib.Generic
 import org.sugarj.sweettooth.stratego.lib.Generic._
 
 import scala.language.implicitConversions
@@ -12,63 +13,35 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 abstract class AnalyzeGenericSuite extends AnalysisSuite {
-  val prefix = this.getClass.getPackage.getName.substring(getClass.getPackage.getName.lastIndexOf('.') + 1)
-
-  type V
-  type D <: Domain[V]
-  val dom: D
-
-  val analysis: Analysis[V,D]
-
-  def lift(t: Trm) = dom.lift(t)
+  val lib = Generic
 
   val id_top: V
-  test(s"$prefix: id top") {
-    assertDomT(id_top)(analysis.analyze(Call('id_0_0), dom.top, DEFS))
-  }
-
+  test_analysis("id top")(Call('id_0_0), dom.top)(id_top)
+  
   val id_Zero: V
-  test(s"$prefix: id zero") {
-    assertDomT(id_Zero)(analysis.analyze(Call('id_0_0), dom.liftApp('Zero), DEFS))
-  }
+  test_analysis("id zero")(Call('id_0_0), dom.liftApp('Zero))(id_Zero)
 
   val fail_top: V
-  test(s"$prefix: fail top") {
-    assertDomT(fail_top)(analysis.analyze(Call('fail_0_0), dom.top, DEFS))
-  }
+  test_analysis(s"fail top")(Call('fail_0_0), dom.top)(fail_top)
 
   val fail_Zero: V
-  test(s"$prefix: fail zero") {
-    assertDomT(fail_Zero)(analysis.analyze(Call('fail_0_0), dom.liftApp('Zero), DEFS))
-  }
+  test_analysis("fail zero")(Call('fail_0_0), dom.liftApp('Zero))(fail_Zero)
 
   val not_id_top: V
-  test(s"$prefix: not id top") {
-    assertDomT(not_id_top)(analysis.analyze(Call('not_1_0, List(Call('id_0_0)), List()), dom.top, DEFS))
-  }
+  test_analysis("not id top")(Call('not_1_0, List(Call('id_0_0)), List()), dom.top)(not_id_top)
 
   val not_id_Zero: V
-  test(s"$prefix: not id zero") {
-    assertDomT(not_id_Zero)(analysis.analyze(Call('not_1_0, List(Call('id_0_0)), List()), dom.liftApp('Zero), DEFS))
-  }
+  test_analysis("not id zero")(Call('not_1_0, List(Call('id_0_0)), List()), dom.liftApp('Zero))(not_id_Zero)
 
   val not_fail_top: V
-  test(s"$prefix: not fail top") {
-    assertDomT(not_fail_top)(analysis.analyze(Call('not_1_0, List(Call('fail_0_0)), List()), dom.top, DEFS))
-  }
+  test_analysis("not fail top")(Call('not_1_0, List(Call('fail_0_0)), List()), dom.top)(not_fail_top)
 
   val not_fail_Zero: V
-  test(s"$prefix: not fail zero") {
-    assertDomT(not_fail_Zero)(analysis.analyze(Call('not_1_0, List(Call('fail_0_0)), List()), dom.liftApp('Zero), DEFS))
-  }
+  test_analysis("not fail zero")(Call('not_1_0, List(Call('fail_0_0)), List()), dom.liftApp('Zero))(not_fail_Zero)
 
   val not_isFoo_Foo: V
-  test(s"$prefix: not ?Foo Foo") {
-    assertDomT(not_isFoo_Foo)(analysis.analyze(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Foo), DEFS))
-  }
+  test_analysis("not ?Foo Foo")(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Foo))(not_isFoo_Foo)
 
   val not_isFoo_Bar: V
-  test(s"$prefix: not ?Foo Bar") {
-    assertDomT(not_isFoo_Bar)(analysis.analyze(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Bar), DEFS))
-  }
+  test_analysis("not ?Foo Bar")(Call('not_1_0, List(??('Foo@@())), List()), dom.liftApp('Bar))(not_isFoo_Bar)
 }

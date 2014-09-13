@@ -1,0 +1,30 @@
+module org/sugarj/transformations/analysis/SugarAnalyze
+imports
+  org/sugarj/languages/Stratego
+  org/sugarj/languages/Sugar
+  org/sugarj/stdlib/StdTrans
+  org/sugarj/transformations/analysis/Data
+rules
+  sugarj-analyze:
+    (ast, path, project-path) -> (ast, errors, warnings, notes)
+    with
+      editor-init;
+      <load-analysis-data> ast;
+      finally(
+          errors   := <collect-all(constraint-error; ensure-list, conc)> ast
+        ; warnings := <collect-all(constraint-warning; ensure-list, conc)> ast
+        ; notes    := <collect-all(constraint-note; ensure-list, conc)> ast
+        , id)
+      
+
+    editor-init =
+      // Ensure all dynamic rules are properly scoped
+      try(dr-scope-all-end);
+      dr-scope-all-start
+
+    constraint-error = fail
+    constraint-warning = fail
+    constraint-note = fail
+    
+    ensure-list = is-list <+ ![<id>]
+

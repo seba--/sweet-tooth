@@ -1,7 +1,7 @@
 package org.sugarj.sweettooth.stratego.load
 
 import common.FileCommands
-import common.path.{Path, RelativePath}
+import common.path.{AbsolutePath, Path, RelativePath}
 import org.spoofax.interpreter.terms.{IStrategoString, IStrategoList, IStrategoAppl, IStrategoTerm}
 import org.spoofax.terms.{StrategoConstructor, StrategoList, StrategoAppl, TermFactory}
 import org.spoofax.terms.io.TAFTermReader
@@ -14,17 +14,40 @@ import org.sugarj.sweettooth.stratego.lib.Library
  * Created by seba on 11/09/14.
  */
 object Load {
-  val BASE_DEFS =
-    org.sugarj.sweettooth.stratego.lib.List.DEFS ++
-    org.sugarj.sweettooth.stratego.lib.String.DEFS
+  def makeAbsolute(f: String) =
+    if (AbsolutePath.acceptable(f))
+      new AbsolutePath(f)
+    else
+      new AbsolutePath(s"./$f")
 
-  def load(path: String, cp: List[String]): Library = {
+  def preload(path: String, cp: List[String]): Path = {
+    val preloadDir = makeAbsolute(FileCommands.dropFilename(path))
+    val preloadName = FileCommands.fileName(path) + "-norm." + FileCommands.getExtension(path)
+    val preloadPath = new RelativePath(preloadDir, preloadName)
+    val preloadHashName = FileCommands.fileName(path) + "-hash"
+    val preloadHashPath = new RelativePath(preloadDir, preloadHashName)
+
+    val nowHash = FileCommands.fileHash(makeAbsolute(path))
+
+    if (FileCommands.exists(preloadPath) &&
+        FileCommands.exists(preloadHashPath) &&
+        FileCommands.readFileAsString(preloadHashPath).toInt == nowHash)
+      return preloadPath
+
     val normalizedPath = normalizeStratego(path, cp)
+    FileCommands.copyFile(normalizedPath, preloadPath)
+    FileCommands.writeToFile(preloadHashPath, nowHash.toString)
+
+    preloadPath
+  }
+
+  def load(path: String, cp: List[String], base: Library): Library = {
+    val normalizedPath = preload(path, cp)
     val moduleTree = parseTerm(normalizedPath)
-    val defs = readModuleTree(moduleTree)
-    new Library {
-      override val DEFS: Map[Symbol, Def] = defs ++ BASE_DEFS
-    }
+    val defs = readModuleTree(moduleTree, base)
+    base + (new Library {
+      override val DEFS: Map[Symbol, Def] = defs
+    })
   }
 
   def normalizeStratego(path: String, cp: List[String]): RelativePath = {
@@ -87,21 +110,21 @@ object Load {
     def unapply(t: IStrategoString) = Some(t.stringValue)
   }
 
-  def readModuleTree(tree: IStrategoTerm): Map[Symbol, Def] = tree match {
+  def readModuleTree(tree: IStrategoTerm, base: Library): Map[Symbol, Def] = tree match {
       case STerm("Specification",
             SList(
              STerm("Signature", _),
-             STerm("Strategies", SList(strats@_*)))) => Map() ++ strats.flatMap(readStrategyDef)
+             STerm("Strategies", SList(strats@_*)))) => Map() ++ strats.flatMap(readStrategyDef(_, base))
     }
 
-  def readStrategyDef(tree: IStrategoTerm): Option[(Symbol, Def)] = tree match {
+  def readStrategyDef(tree: IStrategoTerm, base: Library): Option[(Symbol, Def)] = tree match {
     case STerm("SDefT", 
           SString(name),
           SList(sargs@_*), 
           SList(targs@_*),
           body) => Some(Symbol(name) -> Def(sargs.toList map readSArg, targs.toList map readTArg, readStrategy(body)))
     case STerm("ExtSDef", SString(name), _, _) =>
-      if (BASE_DEFS.contains(Symbol(name)))
+      if (base.DEFS.contains(Symbol(name)))
         None
       else
         throw new IllegalArgumentException(s"External strategy $name is undefined in base lib")

@@ -13,7 +13,7 @@ object String extends Library {
       !!('_@@('xs,'ys)),
       If(??('_@@('xs, 'ys, 'zs)),
         !!('_@@('xs, 'ys, 'zs)),
-        Call('fail)
+        Call('fail_0_0)
       )
     ),
     Call('conc),

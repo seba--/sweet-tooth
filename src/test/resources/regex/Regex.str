@@ -1,0 +1,29 @@
+module regex/Regex
+
+ imports org/sugarj/java/init/InitTrans
+
+
+signature
+  constructors
+    ccexp-lit          : lexCCExpLit() -> CCExp()
+    ccexp-range        : lexLCChar() * lexLCChar() -> CCExp()
+    ccexp-range        : lexUCChar() * lexUCChar() -> CCExp()
+    ccexp-range        : lexDigit() * lexDigit() -> CCExp()
+    ccexp-negation     : CCExp() -> CCExp()
+    ccexp-union        : CCExp() * CCExp() -> CCExp()
+    ccexp-intersection : CCExp() * CCExp() -> CCExp()
+    ccexp-predefined   : lexCCPredefined() -> CCExp()
+
+
+signature
+  constructors
+    delimited-regex        : Regex() -> cfRegex()
+    regex-lit              : lexRegexLit() -> Regex()
+    regex-ccexp            : CCExp() -> Regex()
+    regex-ccexp-predefined : lexCCPredefined() -> Regex()
+    regex-option           : Regex() -> Regex()
+    regex-many             : Regex() -> Regex()
+    regex-many1            : Regex() -> Regex()
+    regex-sequence         : Regex() * Regex() -> Regex()
+    regex-alternative      : Regex() * Regex() -> Regex()
+    regex-group            : Regex() -> Regex()

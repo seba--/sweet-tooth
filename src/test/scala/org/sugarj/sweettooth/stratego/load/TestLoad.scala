@@ -9,22 +9,16 @@ import scala.language.implicitConversions
  */
 class TestLoad extends FunSuite {
 
-  val SUGAR_BIN = "/Users/seba/projects/sugar-lang/case-studies/regex/bin"
-  val SUGARJ_STD = "/Users/seba/projects/sugar-lang/stdlib/src"
-  val SUGARJ_JAVA = "/Users/seba/projects/sugar-lang/languages/java/bin/"
+  import org.sugarj.sweettooth.stratego.analysis.AnalyzeRegexToJavaStringSuite.regexLib
 
-  val cp = List(SUGAR_BIN, SUGARJ_STD, SUGARJ_JAVA)
-
-  test ("RegexAsString") {
-    val lib = Load.load(s"$SUGAR_BIN/regex/RegexAsString.str", cp)
-    assert(lib.DEFS.isDefinedAt('regexAsString_0_0))
-    assert(lib.DEFS.isDefinedAt('r2str_0_0))
-    assert(lib.DEFS.isDefinedAt('ce2str_0_0))
-    assert(lib.DEFS.isDefinedAt('bracket_0_0))
-    assert(lib.DEFS.isDefinedAt('conc_strings_0_0))
-    assert(lib.DEFS.isDefinedAt('string_replace_0_2))
-    assert(lib.DEFS.isDefinedAt('elem_0_0))
+  test ("load RegexAsString") {
+    assert(regexLib.DEFS.isDefinedAt('regexAsString_0_0))
+    assert(regexLib.DEFS.isDefinedAt('r2str_0_0))
+    assert(regexLib.DEFS.isDefinedAt('ce2str_0_0))
+    assert(regexLib.DEFS.isDefinedAt('bracket_0_0))
+    assert(regexLib.DEFS.isDefinedAt('conc_strings_0_0))
+    assert(regexLib.DEFS.isDefinedAt('string_replace_0_2))
+    assert(regexLib.DEFS.isDefinedAt('elem_0_0))
   }
-
 
 }

@@ -1,0 +1,55 @@
+module org/sugarj/java/init/InitTrans
+imports org/sugarj/stdlib/StdTrans
+        org/sugarj/languages/SugarJ
+        org/sugarj/java/EditorServiceExtension
+        org/sugarj/java/Renaming
+        org/sugarj/languages/SugarJ
+        org/sugarj/languages/Java
+
+
+rules
+	outline = simple-label-outline(java-outline)
+	
+	java-outline : ExtensionDec(ExtensionDecHead(_, Id(name)), _) -> name
+	java-outline : ClassDec(ClassDecHead(_, Id(name), _, _, _), _) -> name
+	java-outline : InterfaceDec(InterfaceDecHead(_, Id(name), _, _), _) -> name
+	java-outline : MethodDec(head, _) -> <method-signature> head
+	java-outline : FieldDec(_,t,[vardec]) -> <concat-strings> [<show-vardec> vardec, ": ", <show-type> t]
+  // JavaConstrDec
+  // JavaNewInstance
+  // JavaQNewInstance
+
+	method-signature :
+		MethodDecHead(_,_,result,Id(sname),params,_) ->
+		<concat-strings>[sname,"(",sparams,"): ",sresult]
+	where
+		sresult := <show-type> result;
+		sparams := <map(show-param); intersperse(|","); concat-strings> params
+	
+	show-vardec : VarDec(Id(name)) -> name
+	show-vardec : VarDec(Id(name), _) -> name
+	
+	show-param : Param(_,t,_) -> <show-type> t
+	show-param : VarArityParam(_,t,_) -> <show-type> t
+	
+	show-type : Void() -> "void"
+	show-type : Boolean() -> "boolean"
+	show-type : Byte() -> "byte"
+    show-type : Short() -> "short"
+    show-type : Int() -> "int"
+    show-type : Long() -> "long"
+    show-type : Char() -> "char"
+    show-type : Float() -> "float"
+    show-type : Double() -> "double"
+    show-type : ClassType(t, _) -> <show-type> t
+    show-type : InterfaceType(t, _) -> <show-type> t
+    show-type : ClassOrInterfaceType(t, _) -> <show-type> t
+    show-type : TypeName(Id(n)) -> n
+    show-type : TypeName(_, t) -> <show-type> t
+    show-type : ArrayType(t) -> <concat-strings> [<show-type> t, "[]"] 
+
+rules
+  intersperse(|s) : [] -> []
+  intersperse(|s) : [x] -> [x]
+  intersperse(|s) : [x|y] -> [x,s| <intersperse(|s)> y]
+

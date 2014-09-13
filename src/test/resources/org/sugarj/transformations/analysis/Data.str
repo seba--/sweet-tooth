@@ -1,0 +1,55 @@
+module org/sugarj/transformations/analysis/Data
+imports
+  org/sugarj/languages/Stratego
+  org/sugarj/languages/Sugar
+  org/sugarj/stdlib/StdTrans
+rules
+  desugar = changed-tree(desugar-analyze)
+  desugar-analyze : Analyses(strats) -> Rules(<map(strat-to-analysis)> strats)
+  strat-to-analysis = !SDefNoArgs("start-analysis" , Call(SVar("changed-tree-or-analysis-data"), [<id>]))
+  
+  analyze-main = repeat-while-succeeds(start-analysis)
+  analyze-debug = analyze-main; nice-analysis-data-term
+  start-analysis = fail
+  
+  repeat-while-succeeds(s) = try(s; repeat-while-succeeds(s))
+  changed-tree-or-analysis-data(s) = 
+    ?t;
+    where(get-analysis-data-term => old-data);
+    s;
+    (not(equal(|t)) <+ analysis-data-changed(|old-data))
+  
+  external get-analysis-data(|key)
+  external put-analysis-data(|key,val)
+  external remove-analysis-data(|key)
+  external get-analysis-data-term(|)
+  external analysis-data-changed(|old)
+  external get-all-analysis-data-as-list(|)
+  external load-analysis-data(|)
+  external clear-analysis-data(|)
+  
+  // legacy strategies
+  get-anno(|key) = get-analysis-data(|key)
+  put-anno(|key,val) = put-analysis-data(|key,val)
+  rm-anno(|key) = remove-analysis-data(|key)
+  
+  structurally-equal = ?(c#(xs),d#(ys)); <equal> (c,d); <zip(structurally-equal)> (xs, ys)
+  
+  nice-analysis-data-term =
+    topdown({list:
+      try(
+        where(get-all-analysis-data-as-list => list);
+        !(<id>, list); set-annotations
+      )
+    })
+
+  debug-analysis = debug-analysis(id)
+  debug-analysis(s) = where(nice-analysis-data-term; debug(s))
+  write-to-string-analysis = nice-analysis-data-term; write-to-string
+
+rules
+  // desugar =
+  //   changed-tree(desugar-analyses)
+  //   
+  // desugar-analyses : 
+  //   Analyses(strats) -> Strategies()

@@ -14,7 +14,7 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 abstract class AnalyzeListSuite extends AnalysisSuite {
-  val lib = stratego.lib.List
+  val baseLib = stratego.lib.List
 
   implicit def mkListTrm(l: List[Trm]) = eval(mkList(l), Trm.App('Foo, scala.List()), DEFS)
   def mkListOfLength(n: Int): scala.List[Trm] =

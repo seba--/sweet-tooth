@@ -8,6 +8,7 @@ import org.spoofax.terms.io.TAFTermReader
 import org.strategoxt.lang.StrategoExit
 import org.strategoxt.strj.main_strj_0_0
 import org.sugarj.sweettooth.stratego.Syntax._
+import org.sugarj.sweettooth.stratego.lib
 import org.sugarj.sweettooth.stratego.lib.Library
 
 /**
@@ -163,8 +164,9 @@ object Load {
     tree match {
       case STerm("Var", SString(name)) => Pat.Var(Symbol(name))
       case STerm("Anno", t, _) => t
+      case STerm("Op", SString(""), SList(kids@_*)) => Pat.App('_, kids.toList map readPat)
       case STerm("Op", SString(cons), SList(kids@_*)) => Pat.App(Symbol(cons), kids.toList map readPat)
-      case STerm("Str", SString(s)) => Pat.Lit(s)
+      case STerm("Str", SString(s)) => lib.String.makeString(s)
       case _ => ???
     }
   }

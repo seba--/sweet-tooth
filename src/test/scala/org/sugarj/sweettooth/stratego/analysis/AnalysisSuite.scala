@@ -24,14 +24,14 @@ abstract class AnalysisSuite extends FunSuite {
   val dom: D
 
   val analysis: Analysis[V, D]
-  val lib: Library
+  val baseLib: Library
 
   def lift(t: Trm) = dom.lift(t)
 
   def test_analysis(name: String)(e: Exp, input: =>V)(expected: =>V) =
     test(s"$prefix: $name") {
       try {
-        val res = analysis.analyze(e, input, lib.DEFS)
+        val res = analysis.analyze(e, input, baseLib.DEFS)
         assertResult(expected)(res)
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")
@@ -41,7 +41,7 @@ abstract class AnalysisSuite extends FunSuite {
   def test_strat(strat: String, name: String)(input: =>V)(expected: =>V) =
     test(s"$prefix: <$strat> ($name)") {
       try {
-        val res = analysis.analyze(Call(Symbol(s"${strat}_0_0")), input, lib.DEFS)
+        val res = analysis.analyze(Call(Symbol(s"${strat.replace('-','_')}_0_0")), input, baseLib.DEFS)
         assertResult(expected)(res)
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")

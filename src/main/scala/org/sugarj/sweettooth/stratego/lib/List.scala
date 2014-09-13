@@ -6,12 +6,12 @@ import org.sugarj.sweettooth.stratego.Syntax._
  * Created by seba on 04/08/14.
  */
 object List extends Library {
-  val nil = 'nil -> Def(!!('Nil@@()))
-  val cons = 'cons -> Def(??('_@@('x, 'xs)), !!('Cons@@('x, 'xs)))
+  val nil = 'nil_0_0 -> Def(!!('Nil@@()))
+  val cons = 'cons_0_0 -> Def(??('_@@('x, 'xs)), !!('Cons@@('x, 'xs)))
 
   def mkList(l: List[Trm], n: Int = 0): Exp = l match {
-    case Nil => Call('nil)
-    case x::xs => Seqs(mkList(xs, n+1), ??(Symbol(s"xs$n")), !!('_@@(x, Symbol(s"xs$n"))), Call('cons))
+    case Nil => Call('nil_0_0)
+    case x::xs => Seqs(mkList(xs, n+1), ??(Symbol(s"xs$n")), !!('_@@(x, Symbol(s"xs$n"))), Call('cons_0_0))
   }
 
   val map = 'map_1_0 -> Def(scala.List('s), scala.List(),
@@ -70,7 +70,7 @@ object List extends Library {
         !!('xs),
         Call('at_end_1_0, scala.List(!!('ys_zs)), scala.List()))
       Else (
-        Call('fail)
+        Call('fail_0_0)
       )
     )
   )
@@ -94,7 +94,7 @@ object List extends Library {
           Call('replace_0_2, scala.List(), scala.List('old, 'new)),
           ??('rest),
           !!('_@@('new, 'rest)),
-          Call('conc)
+          Call('conc_0_0)
         ),
         Seqs(
           ??('Cons@@('y, 'ys)),

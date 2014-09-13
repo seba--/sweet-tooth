@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 abstract class AnalyzeGenericSuite extends AnalysisSuite {
-  val lib = Generic
+  val baseLib = Generic
 
   val id_top: V
   test_analysis("id top")(Call('id_0_0), dom.top)(id_top)

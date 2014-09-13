@@ -11,7 +11,7 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 abstract class AnalyzeNumSuite extends AnalysisSuite {
-  val lib = Num
+  val baseLib = Num
 
   implicit def mkNatTrm(n: Int) = eval(mkNat(n), Trm.App('Foo), DEFS)
 

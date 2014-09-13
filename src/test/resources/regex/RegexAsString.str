@@ -82,11 +82,14 @@ rules
   ce2str :
     ccexp-lit(lit) -> lit
 
-  ce2str :
-    ccexp-range(from, to) -> <conc-strings ; bracket> (from, "-", to)
+  ce2str = ce2str-range; bracket
+
+  ce2str-range :
+    ccexp-range(from, to) -> <conc-strings> (from, "-", to)
+
 
   ce2str :
-    ccexp-negation(ce) -> <ce2str ; bracket> ce
+    ccexp-negation(ce) -> <conc-strings; bracket> ("^", <ce2str> ce)
 
   ce2str :
     ccexp-union(ce1, ce2) -> <conc-strings ; bracket> (<ce2str> ce1, <ce2str> ce2)

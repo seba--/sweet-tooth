@@ -1,4 +1,4 @@
-package org.sugarj.sweettooth.stratego.analysis.v1_d2
+package org.sugarj.sweettooth.stratego.analysis.v2_d2
 
 import org.sugarj.sweettooth.stratego.analysis.AnalyzeRegexToJavaStringSuite
 

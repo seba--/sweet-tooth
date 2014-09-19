@@ -1,8 +1,6 @@
 package org.sugarj.sweettooth.stratego.analysis.v1_d1
 
-import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.{AnalyzeGenericSuite, AnalyzeListSuite}
-import org.sugarj.sweettooth.stratego.lib.Generic._
+import org.sugarj.sweettooth.stratego.analysis.AnalyzeGenericSuite
 
 import scala.language.implicitConversions
 

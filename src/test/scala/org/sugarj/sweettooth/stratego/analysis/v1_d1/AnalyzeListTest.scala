@@ -1,14 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.v1_d1
 
-import org.scalatest._
-import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.{AnalyzeListSuite, AnalysisSuite}
-import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
-import org.sugarj.sweettooth.stratego.analysis.domain.d1_PowersetDomain
-import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
-import org.sugarj.sweettooth.stratego.lib.List._
-import org.sugarj.sweettooth.stratego.lib.Num
+import org.sugarj.sweettooth.stratego.analysis.AnalyzeListSuite
 
 import scala.language.implicitConversions
 

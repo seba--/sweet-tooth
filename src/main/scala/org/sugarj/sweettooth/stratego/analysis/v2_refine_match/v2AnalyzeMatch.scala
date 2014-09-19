@@ -33,7 +33,7 @@ trait v2AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
       case None => (t, store + (x, t))
     }
     case Pat.App(cons, args) =>
-      val argLists = dom.matchAppPat(cons, args.size, t)
+      val argLists = dom.matchAppPat(cons, t)
       if (argLists.isEmpty)
         fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
 

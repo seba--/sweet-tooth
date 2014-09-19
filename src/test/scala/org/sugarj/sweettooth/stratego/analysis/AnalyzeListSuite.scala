@@ -1,11 +1,8 @@
 package org.sugarj.sweettooth.stratego.analysis
 
+import org.sugarj.sweettooth.stratego
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.base.Analysis
-import org.sugarj.sweettooth.stratego.analysis.domain.{Domain, d1_PowersetDomain}
-import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
-import org.sugarj.sweettooth.stratego
 import org.sugarj.sweettooth.stratego.lib.List._
 
 import scala.language.implicitConversions
@@ -24,22 +21,22 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
       Trm.App(Symbol(s"Elem_${n-1}"))::mkListOfLength(n-1)
 
   val nil: V
-  test_analysis("nil")(Call('nil), lift(Trm.App('Foo)))(nil)
+  test_analysis("nil")(Call('nil_0_0), lift(Trm.App('Foo)))(nil)
 
   val cons1: V
-  test_analysis("cons1")(Call('cons), lift(Trm.App('_, Trm.App('Foo), Trm.App('Nil))))(cons1)
+  test_analysis("cons1")(Call('cons_0_0), lift(Trm.App('_, Trm.App('Foo), Trm.App('Nil))))(cons1)
 
   def cons(l: List[Trm]): V
   for (i <- 1 to 20) {
     val l = mkListOfLength(i)
-    test_analysis(s"cons $i")(Call('cons), lift(Trm.App('_, Trm.App('Foo), l)))(cons(l))
+    test_analysis(s"cons $i")(Call('cons_0_0), lift(Trm.App('_, Trm.App('Foo), l)))(cons(l))
   }
 
   val cons_top_Nil: V
-  test_analysis("cons top nil")(Call('cons), dom.liftApp('_, dom.top, dom.liftApp('Nil)))(cons_top_Nil)
+  test_analysis("cons top nil")(Call('cons_0_0), dom.liftApp('_, dom.top, dom.liftApp('Nil)))(cons_top_Nil)
 
   val cons_Zero_top: V
-  test_analysis("cons Zero top")(Call('cons), dom.liftApp('_, dom.liftApp('Nil), dom.top))(cons_Zero_top)
+  test_analysis("cons Zero top")(Call('cons_0_0), dom.liftApp('_, dom.liftApp('Nil), dom.top))(cons_Zero_top)
 
   val pair_to_list_top_top: V
   val pair_to_list_top_Zero: V
@@ -49,10 +46,10 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   val pairToList = Seqs(
     ??('_@@('x, 'y)),
     !!('_@@('y, 'Nil@@())),
-    Call('cons),
+    Call('cons_0_0),
     ??('xs),
     !!('_@@('x, 'xs)),
-    Call('cons))
+    Call('cons_0_0))
   test_analysis("pair to list top top")(pairToList, dom.liftApp('_, dom.top, dom.top))(pair_to_list_top_top)
   test_analysis("pair to list top zero")(pairToList, dom.liftApp('_, dom.top, dom.liftApp('Zero)))(pair_to_list_top_Zero)
   test_analysis("pair to list zero top")(pairToList, dom.liftApp('_, dom.liftApp('Zero), dom.top))(pair_to_list_Zero_top)

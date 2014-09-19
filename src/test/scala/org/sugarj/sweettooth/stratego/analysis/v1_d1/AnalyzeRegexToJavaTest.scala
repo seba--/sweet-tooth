@@ -1,6 +1,6 @@
 package org.sugarj.sweettooth.stratego.analysis.v1_d1
 
-import org.sugarj.sweettooth.stratego.analysis.{AnalyzeRegexToJavaStringSuite, AnalyzeNumSuite}
+import org.sugarj.sweettooth.stratego.analysis.AnalyzeRegexToJavaStringSuite
 
 import scala.language.implicitConversions
 

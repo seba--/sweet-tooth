@@ -1,6 +1,6 @@
 package org.sugarj.sweettooth.stratego.analysis.v2_d2
 
-import org.sugarj.sweettooth.stratego.analysis.base.{StoreTrait, BasicStack}
+import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
 import org.sugarj.sweettooth.stratego.analysis.domain.d2_PowersetFlagDomain
 import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2Analysis
 

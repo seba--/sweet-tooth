@@ -2,12 +2,10 @@ package org.sugarj.sweettooth.stratego.analysis
 
 import org.scalatest.FunSuite
 import org.sugarj.sweettooth.stratego.Semantics.Fail
-import org.sugarj.sweettooth.stratego.Syntax.{Exp, Call, Trm}
+import org.sugarj.sweettooth.stratego.Syntax.{Call, Exp, Trm}
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 import org.sugarj.sweettooth.stratego.lib.Library
-
-import org.sugarj.sweettooth.stratego.lib
 
 /**
  * Created by seba on 10/09/14.
@@ -32,7 +30,7 @@ abstract class AnalysisSuite extends FunSuite {
     test(s"$prefix: $name") {
       try {
         val res = analysis.analyze(e, input, baseLib.DEFS)
-        assertResult(expected)(res)
+        assertResult(expected /*, dom.Explodable(res)*/)(res)
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")
       }
@@ -41,8 +39,9 @@ abstract class AnalysisSuite extends FunSuite {
   def test_strat(strat: String, name: String)(input: =>V)(expected: =>V) =
     test(s"$prefix: <$strat> ($name)") {
       try {
-        val res = analysis.analyze(Call(Symbol(s"${strat.replace('-','_')}_0_0")), input, baseLib.DEFS)
-        assertResult(expected)(res)
+        val normStrat = s"${strat.replace('-','_')}_0_0"
+        val res = analysis.analyze(Call(Symbol(normStrat)), input, baseLib.DEFS)
+        assertResult(expected, dom.Explodable(res))(res)
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")
       }

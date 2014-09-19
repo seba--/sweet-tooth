@@ -1,20 +1,53 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
+import org.sugarj.sweettooth.stratego.Syntax.{Cons, Pat}
+
+import scala.collection.IterableLike
+
 object d2_PowersetFlagDomain {
-  def listString[T](xs: List[T]): String = xs match {
-    case Nil => ""
-    case x::Nil => x.toString
-    case x::xs => x.toString + ", " + listString(xs)
+  case class TS(lits: Set[Lit[_]], apps: Map[Cons, List[T]]) {
+    def isEmpty = lits.isEmpty && apps.isEmpty
+    def size = lits.size + apps.size
+
+    override def toString: String = {
+      val litString = intersperse(lits, ", ")
+      val appString = interspersePairs(apps, ", ")
+
+      if (litString.isEmpty || appString.isEmpty)
+        litString + appString
+      else
+        litString + "; " + appString
+    }
+
+    def interspersePairs[T, U](xs: Iterable[(T,List[U])], s: String): String =
+      if (xs.isEmpty)
+        ""
+      else if (xs.tail.isEmpty) {
+        val p = xs.head
+        p._1 + "->(" + intersperse(p._2, ", ") + ")"
+      }
+      else {
+        val p = xs.head
+        p._1 + "->(" + intersperse(p._2, ", ") + ")" + s + intersperse(xs.tail, s)
+      }
+
+    def intersperse[T](xs: Iterable[T], s: String): String =
+      if (xs.isEmpty)
+        ""
+      else if (xs.tail.isEmpty)
+        xs.head.toString
+      else
+        xs.head.toString + s + intersperse(xs.tail, s)
   }
 
-  case class T(fin: Set[Trm], inf: Boolean) {
+  case class T(fin: TS, inf: Boolean) {
     override def toString =
       if (inf && fin.isEmpty)
-        "{?}"
+        "?"
       else if (inf)
-        fin.size + "{?, " + listString(fin.toList) + "}"
+        "?{" + fin.toString + "}"
       else
-        fin.size + "{" + listString(fin.toList) + "}"
+        "{" + fin.toString + "}"
 
   }
 
@@ -22,115 +55,74 @@ object d2_PowersetFlagDomain {
   case class Lit[V](v: V) extends Trm {
     override def toString = "\"" + v.toString + "\""
   }
-  case class App(cons: Symbol, xs: List[T]) extends Trm {
-   override def toString = cons.name + "(" + listString(xs) + ")"
-  }
-
-  def App(cons: Symbol): App = App(cons, List())
-  def App(cons: Symbol, x: T, xs: T*): App = App(cons, x::List(xs:_*))
-
 
   object D extends Domain[T] {
-   def bottom = T(Set(), false)
-   def top = T(Set(), true)
+   def bottom = T(TS(Set(), Map()), false)
+   def top = T(TS(Set(), Map()), true)
 
-   def compare(morePrecise: T, lessPrecise: T): Boolean = (morePrecise, lessPrecise) match {
-     case (_,T(_,true)) => true
-     case (T(_,true),_) => false
-     case (T(s1,_), T(s2,_)) =>
-       def findInS2(t1: Trm): Boolean = t1 match {
-         case t1: Lit[_] => s2.contains(t1)
-         case App(cons1, args1) =>
-           s2 map {
-             case App(`cons1`, args2) if args1.size == args2.size =>
-               if (args1.zip(args2).forall{case (a1, a2) => compare(a1, a2)})
-                 return true
-           }
-           false
-       }
+    def compare(morePrecise: T, lessPrecise: T): Boolean = (morePrecise, lessPrecise) match {
+      case (_,T(_,true)) => true
+      case (T(_,true),_) => false
+      case (T(s1,_), T(s2,_)) =>
 
-       s1.forall(findInS2(_))
+        def findInS2(t1: (Cons, List[T])): Boolean = s2.apps.get(t1._1) match {
+          case None => false
+          case Some(args2) => t1._2.zip(args2).forall{p => compare(p._1, p._2)}
+        }
+
+        s1.lits.forall(s2.lits.contains(_)) && s1.apps.forall(findInS2)
+    }
+
+
+    def join(t1: T, t2: T) = T(TS(t1.fin.lits ++ t2.fin.lits, mergeUnion(t1.fin.apps, t2.fin.apps)), t1.inf || t2.inf)
+    def meet(t1: T, t2: T) = T(TS(t1.fin.lits intersect t2.fin.lits, mergeIntersect(t1.fin.apps, t2.fin.apps)), t1.inf || t2.inf)
+    def diff(t1: T, t2: T): T = T(TS(t1.fin.lits -- t2.fin.lits, mergeDiff(t1.fin.apps, t2.fin.apps)), t1.inf)
+
+    def matchAppPat(cons: Cons, t: T): Set[List[T]] = {
+      val args: Set[List[T]] = t.fin.apps.get(cons) match {
+        case None => Set()
+        case Some(xs) => Set(xs)
+      }
+
+      if (t.inf) {
+        val topArgList = for (i <- (1 to cons.ar).toList) yield top
+        args + topArgList
+      }
+      else
+        args
    }
 
-   def join(t1: T, t2: T) = T(mergeUnion(t1.fin, t2.fin), t1.inf || t2.inf)
+   def liftLit[V](v: V) = T(TS(Set(Lit(v)), Map()), false)
+   def liftApp(cons: Cons, xs: List[T]) = T(TS(Set(), Map(cons -> xs)), false)
 
+    def explode(t: T, depth: Int): List[Pat] = {
+      val litExplode = t.fin.lits.toList map {case Lit(l) => Pat.Lit(l)}
+      val appExplode = t.fin.apps flatMap(p => explodeApp(p._1, p._2, depth))
+      val ls = litExplode ++ appExplode
+      if (t.inf)
+        Pat.Var('?)::ls
+      else
+        ls
+    }
 
-   def mergeUnion(s1: Set[Trm], s2: Set[Trm]) = {
-     var lits = Set[Trm]()
-     var apps = Map[Symbol, List[T]]()
+    def explodeApp(cons: Cons, args: List[T], depth: Int): List[Pat] =
+      if (depth <= 1)
+        List(Pat.Var('_ooo))
+      else {
+        val ls = args map (explode(_, depth-1))
+        crossProduct(ls) map (args => Pat.App(cons, args))
+      }
 
-     def it(s: Set[Trm]) = s.map(t => t match {
-       case l: Lit[_] => lits += l
-       case App(cons, xs) =>
-         apps.get(cons) match {
-           case None => apps += cons -> xs
-           case Some(ys) =>
-             val args = ys zip xs
-             val joined = args.map(p => join(p._1,p._2))
-             apps += cons -> joined
-         }
-     })
-
-     it(s1)
-     it(s2)
-     lits ++ apps.map(p => App(p._1,p._2))
-   }
-
-   def meet(t1: T, t2: T) = T(mergeIntersect(t1.fin, t2.fin), t1.inf && t2.inf)
-
-   def mergeIntersect(s1: Set[Trm], s2: Set[Trm]) = {
-     type M = collection.mutable.Map[Symbol, List[T]]
-
-     var lits = Set[Trm]()
-     def makeJoinedMap(s: Set[Trm], m: M) = s.map(t => t match {
-       case l: Lit[_] => lits += l
-       case App(cons, xs) =>
-         m.get(cons) match {
-           case None => m += cons -> xs
-           case Some(ys) =>
-             val args = ys zip xs
-             val joined = args.map(p => join(p._1,p._2))
-             m += cons -> joined
-         }
-     })
-
-     var apps = Map[Symbol, List[T]]()
-     def makedMetMap(m1: M, m2: M) = m2.map(t => t match {
-       case (cons, xs) =>
-         m1.get(cons) match {
-           case None => // no meet
-           case Some(ys) =>
-             val args = ys zip xs
-             val met = args.map(p => meet(p._1,p._2))
-             if (met.isEmpty || !met.forall(_ == bottom))
-               apps += cons -> met
-         }
-     })
-
-     var apps1 = collection.mutable.Map[Symbol, List[T]]()
-     makeJoinedMap(s1, apps1)
-
-     lits = Set()
-     var apps2 = collection.mutable.Map[Symbol, List[T]]()
-     makeJoinedMap(s2, apps2)
-
-     makedMetMap(apps1, apps2)
-     lits ++ apps.map(p => App(p._1,p._2))
-   }
-
-   def matchAppPat(cons: Symbol, arity: Int, t: T): Set[List[T]] = {
-     val args = for (App(`cons`, xs) <- t.fin if xs.size == arity) yield xs
-     if (t.inf) {
-       val topArgList = for (i <- (1 to arity).toList) yield top
-       args + topArgList
-     }
-     else
-       args
-   }
-
-
-   def liftLit[V](v: V) = T(Set(Lit(v)), false)
-   def liftApp(cons: Symbol, xs: List[T]) = T(Set(App(cons, xs)), false)
-   def liftApp(cons: Symbol, xs: T*) = T(Set(App(cons, List(xs:_*))), false)
+    def crossProduct[T](tss: List[List[T]]): List[List[T]] =
+      if (tss.isEmpty)
+        List(List())
+      else if (tss.tail.isEmpty)
+        tss.head map (List(_))
+      else {
+        val rest = crossProduct(tss.tail)
+        for (prod <- rest;
+             ts <- tss.head)
+        yield ts :: prod
+      }
   }
 }

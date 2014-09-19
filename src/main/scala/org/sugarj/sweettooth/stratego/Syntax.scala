@@ -7,10 +7,15 @@ import language.implicitConversions
  */
 object Syntax {
 
+  case class Cons(c: Symbol, ar: Int) {
+    def name = c.toString
+    override def toString = c.toString
+  }
+
   abstract class Trm
   object Trm {
     case class Lit[T](v: T) extends Trm
-    case class App(cons: Symbol, xs: List[Trm]) extends Trm {
+    case class App(cons: Cons, xs: List[Trm]) extends Trm {
       override def toString =
         cons.name + "(" + listString(xs) + ")"
 
@@ -21,6 +26,7 @@ object Syntax {
       }
     }
 
+    def App(cons: Symbol, xs: List[Trm]): App = App(Cons(cons, xs.size), xs)
     def App(cons: Symbol): App = App(cons, List())
     def App(cons: Symbol, x:Trm, xs: Trm*): App = App(cons, x::List(xs:_*))
   }
@@ -29,7 +35,9 @@ object Syntax {
   object Pat {
     case class Lit[T](v: T) extends Pat
     case class Var(x: Symbol) extends Pat
-    case class App(cons: Symbol, xs: List[Pat]) extends Pat
+    case class App(cons: Cons, xs: List[Pat]) extends Pat
+
+    def App(cons: Symbol, xs: List[Pat]): App = App(Cons(cons, xs.size), xs)
   }
 
   abstract class Exp

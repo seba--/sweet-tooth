@@ -4,9 +4,8 @@ import org.scalatest._
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.lib.List._
-import org.sugarj.sweettooth.stratego.{Semantics, Syntax}
 
-import language.implicitConversions
+import scala.language.implicitConversions
 
 /**
  * Created by seba on 30/07/14.
@@ -23,12 +22,12 @@ class ListTest extends FunSuite {
   def assertTrm(expected: Trm)(actual: Trm) = assertResult(expected)(actual)
 
   test("nil") {
-    assertTrm(Trm.App('Nil))(eval(Call('nil), Trm.App('Foo), DEFS))
+    assertTrm(Trm.App('Nil))(eval(Call('nil_0_0), Trm.App('Foo), DEFS))
   }
 
   test("cons1") {
     assertTrm(Trm.App('Cons, Trm.App('Foo), Trm.App('Nil)))(
-              eval(Call('cons), Trm.App('_, Trm.App('Foo), Trm.App('Nil)), DEFS))
+              eval(Call('cons_0_0), Trm.App('_, Trm.App('Foo), Trm.App('Nil)), DEFS))
   }
 
   test("mkList"){
@@ -40,7 +39,7 @@ class ListTest extends FunSuite {
   test("cons") {
     for (i <- 1 to 20) {
       val l = mkListOfLength(i)
-      assertTrm(Trm.App('Foo)::l)(eval(Call('cons), Trm.App('_, Trm.App('Foo), l), DEFS))
+      assertTrm(Trm.App('Foo)::l)(eval(Call('cons_0_0), Trm.App('_, Trm.App('Foo), l), DEFS))
     }
   }
 

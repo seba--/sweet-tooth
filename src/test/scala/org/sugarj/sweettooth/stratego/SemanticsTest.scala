@@ -1,12 +1,11 @@
 package org.sugarj.sweettooth.stratego
 
 import org.scalatest._
-
-import Syntax._
-import Semantics._
+import org.sugarj.sweettooth.stratego.Semantics._
+import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.lib.{Generic, Num}
 
-import language.implicitConversions
+import scala.language.implicitConversions
 
 /**
  * Created by seba on 30/07/14.

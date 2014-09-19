@@ -1,11 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis
 
-import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
-import org.sugarj.sweettooth.stratego.analysis.base.Analysis
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 import org.sugarj.sweettooth.stratego.lib.Generic
-import org.sugarj.sweettooth.stratego.lib.Generic._
 
 import scala.language.implicitConversions
 

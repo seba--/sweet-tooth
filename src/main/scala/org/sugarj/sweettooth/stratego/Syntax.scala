@@ -8,13 +8,23 @@ import language.implicitConversions
 object Syntax {
 
   case class Cons(c: Symbol, ar: Int) {
+    if (c=='Cons && ar==1)
+      println("HHHH")
     def name = c.toString
     override def toString = c.toString
   }
 
   abstract class Trm
   object Trm {
-    case class Lit[T](v: T) extends Trm
+    case class Lit[T](v: T) extends Trm {
+      override def toString =
+        if (v.isInstanceOf[Char])
+          s"'${v.toString}'"
+        else if (v.isInstanceOf[String])
+          "\"" + v.toString + "\""
+        else
+          v.toString
+    }
     case class App(cons: Cons, xs: List[Trm]) extends Trm {
       override def toString =
         cons.name + "(" + listString(xs) + ")"
@@ -38,6 +48,7 @@ object Syntax {
     case class App(cons: Cons, xs: List[Pat]) extends Pat
 
     def App(cons: Symbol, xs: List[Pat]): App = App(Cons(cons, xs.size), xs)
+    def App(cons: Symbol, xs: Pat*): App = App(Cons(cons, xs.size), List(xs:_*))
   }
 
   abstract class Exp
@@ -80,5 +91,21 @@ object Syntax {
   def If(cnd: Exp, thn: Exp*) = IfThen(cnd, SeqsSeq(thn))
   case class IfThen(cnd: Exp, thn: Exp) {
     def Else(els: Exp*) = If(cnd, thn, SeqsSeq(els))
+  }
+
+  def pLT[T](a: (Cons, T), b: (Cons, T)) = a._1.c.name < b._1.c.name
+
+  def litLT(a: Trm.Lit[_], b: Trm.Lit[_]): Boolean = {
+    val x = a.v
+    val y = b.v
+
+    if (x.isInstanceOf[String] && y.isInstanceOf[String])
+      x.asInstanceOf[String] < y.asInstanceOf[String]
+    else if (x.isInstanceOf[Char] && y.isInstanceOf[Char])
+      x.asInstanceOf[Char] < y.asInstanceOf[Char]
+    else if (x.isInstanceOf[Int] && y.isInstanceOf[Int])
+      x.asInstanceOf[Int] < y.asInstanceOf[Int]
+    else
+      throw new MatchError(s"No order defined for literals $x and $y")
   }
 }

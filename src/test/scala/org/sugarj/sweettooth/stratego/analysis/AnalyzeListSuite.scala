@@ -65,4 +65,28 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   val map_top: V
   val s = Scoped('x, Seq(Match('x), Build('Zero@@())))
   test_analysis("map top")(Call('map_1_0, scala.List(s), scala.List()), dom.top)(map_top)
+
+  val conc_top: V
+  test_strat("conc", "top")(dom.top)(conc_top)
+
+  val conc_FooBar_top: V
+  test_strat("conc", "[Foo,Bar] top")(dom.liftApp('_, lift(List(Trm.App('Foo), Trm.App('Bar))), dom.top))(conc_FooBar_top)
+
+  val conc_top_FooBar: V
+  test_strat("conc", "top [Foo,Bar]")(dom.liftApp('_, dom.top, lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_top_FooBar)
+
+  lazy val conc_topBaz_FooBar: V = dom.liftApp('Cons, dom.top, lift(List(Trm.App('Baz), Trm.App('Foo), Trm.App('Bar))))
+  test_strat("conc", "[top, Baz] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('Cons, dom.top, lift(List(Trm.App('Baz)))), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaz_FooBar)
+
+  lazy val conc_topBaztop_FooBar: V = dom.liftApp('Cons, dom.top, dom.liftApp('Cons, dom.liftApp('Baz), dom.liftApp('Cons, dom.mliftApp('Foo), dom.mliftApp('Cons, dom.liftApp('Bar), dom.liftApp('Nil)))))
+  test_strat("conc", "[top, Baz | top] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('Cons, dom.top, dom.liftApp('Cons, dom.liftApp('Baz), dom.top)), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaztop_FooBar)
+
+  lazy val atend_top_FooBar : V = dom.join(dom.liftApp('Cons, dom.liftApp('Foo), dom.liftApp('Cons, dom.liftApp('Bar), dom.liftApp('Nil))), dom.liftApp('Cons, dom.top, dom.top))
+  val arg = Pat.App('Cons, Pat.App('Foo), Pat.App('Cons, Pat.App('Bar), Pat.App('Nil)))
+  test_analysis("<at-end(|[Foo,Bar])> top")(Call('at_end_1_0, List(Build(arg)), List()), dom.top)(atend_top_FooBar)
+
+  lazy val atend_top_FooBarBaz : V = dom.join(dom.liftApp('Cons, dom.liftApp('Foo), dom.liftApp('Cons, dom.liftApp('Bar), dom.liftApp('Cons, dom.liftApp('Baz), dom.liftApp('Nil)))), dom.liftApp('Cons, dom.top, dom.top))
+  val arg2 = Pat.App('Cons, Pat.App('Foo), Pat.App('Cons, Pat.App('Bar), Pat.App('Cons, Pat.App('Baz), Pat.App('Nil))))
+  test_analysis("<at-end(|[Foo,Bar,Baz])> top")(Call('at_end_1_0, List(Build(arg2)), List()), dom.top)(atend_top_FooBarBaz)
+
 }

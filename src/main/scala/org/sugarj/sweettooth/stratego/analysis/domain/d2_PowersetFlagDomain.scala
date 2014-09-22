@@ -1,22 +1,26 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
-import org.sugarj.sweettooth.stratego.Syntax.{Cons, Pat}
+import org.sugarj.sweettooth.stratego.Syntax.{Cons, Pat, litLT, pLT, Trm}
 
 import scala.collection.IterableLike
 
 object d2_PowersetFlagDomain {
+  import Trm.Lit
+
   case class TS(lits: Set[Lit[_]], apps: Map[Cons, List[T]]) {
     def isEmpty = lits.isEmpty && apps.isEmpty
     def size = lits.size + apps.size
 
     override def toString: String = {
-      val litString = intersperse(lits, ", ")
-      val appString = interspersePairs(apps, ", ")
+      val slits = lits.toList.sortWith(litLT)
+      val litString = intersperse(slits, ", ")
+      val sapps = apps.toList.sortWith(pLT)
+      val appString = interspersePairs(sapps, ", ")
 
       if (litString.isEmpty || appString.isEmpty)
         litString + appString
       else
-        litString + "; " + appString
+        litString + ", " + appString
     }
 
     def interspersePairs[T, U](xs: Iterable[(T,List[U])], s: String): String =
@@ -28,7 +32,7 @@ object d2_PowersetFlagDomain {
       }
       else {
         val p = xs.head
-        p._1 + "->(" + intersperse(p._2, ", ") + ")" + s + intersperse(xs.tail, s)
+        p._1 + "->(" + intersperse(p._2, ", ") + ")" + s + interspersePairs(xs.tail, s)
       }
 
     def intersperse[T](xs: Iterable[T], s: String): String =
@@ -51,11 +55,6 @@ object d2_PowersetFlagDomain {
 
   }
 
-  abstract class Trm
-  case class Lit[V](v: V) extends Trm {
-    override def toString = "\"" + v.toString + "\""
-  }
-
   object D extends Domain[T] {
    def bottom = T(TS(Set(), Map()), false)
    def top = T(TS(Set(), Map()), true)
@@ -76,7 +75,7 @@ object d2_PowersetFlagDomain {
 
     def join(t1: T, t2: T) = T(TS(t1.fin.lits ++ t2.fin.lits, mergeUnion(t1.fin.apps, t2.fin.apps)), t1.inf || t2.inf)
     def meet(t1: T, t2: T) = T(TS(t1.fin.lits intersect t2.fin.lits, mergeIntersect(t1.fin.apps, t2.fin.apps)), t1.inf || t2.inf)
-    def diff(t1: T, t2: T): T = T(TS(t1.fin.lits -- t2.fin.lits, mergeDiff(t1.fin.apps, t2.fin.apps)), t1.inf)
+//    def diff(t1: T, t2: T): T = T(TS(t1.fin.lits -- t2.fin.lits, mergeDiff(t1.fin.apps, t2.fin.apps)), t1.inf)
 
     def matchAppPat(cons: Cons, t: T): Set[List[T]] = {
       val args: Set[List[T]] = t.fin.apps.get(cons) match {

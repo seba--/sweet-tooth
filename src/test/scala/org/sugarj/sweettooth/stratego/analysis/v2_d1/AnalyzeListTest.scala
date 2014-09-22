@@ -20,4 +20,7 @@ class AnalyzeListTest extends AnalyzeListSuite with Config {
   val pair_to_list_Zero_One = dom.liftApp('Cons, dom.liftApp('Zero), dom.liftApp('Cons, dom.liftApp('One), dom.liftApp('Nil)))
   def map(l: List[Trm]) = lift(l.map(elem => Trm.App('_, Trm.App('Zero), Trm.App(Symbol(s"Elem_${l.length - l.indexOf(elem) - 1}")))))
   val map_top = dom.join(dom.liftApp('Nil), dom.liftApp('Cons, dom.liftApp('Zero), dom.top))
+  val conc_top = dom.top
+  val conc_FooBar_top = dom.liftApp('Cons, dom.liftApp('Foo), dom.liftApp('Cons, dom.liftApp('Bar), dom.top))
+  val conc_top_FooBar = dom.liftApp('Cons, dom.top, dom.top)
 }

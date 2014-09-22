@@ -9,7 +9,10 @@ trait Domain[T] {
   def compare(morePrecise: T, lessPrecise: T): Boolean
   def join(t1: T, t2: T): T
   def meet(t1: T, t2: T): T
-  def diff(t1: T, t2: T): T
+//  def diff(t1: T, t2: T): T
+
+  def join(t1: T, t2: T, t3: T, ts: T*): T =
+    join(t1, join(t2, List(ts:_*) :+ t3 reduce(join)))
 
   def matchAppPat(cons: Cons, t: T): Set[List[T]]
 
@@ -18,6 +21,7 @@ trait Domain[T] {
   def liftApp(cons: Symbol, xs: List[T]):T = liftApp(Cons(cons, xs.size), xs)
   def liftApp(cons: Cons, xs: T*): T = liftApp(cons, List(xs:_*))
   def liftApp(cons: Symbol, xs: T*): T = liftApp(Cons(cons, xs.size), List(xs:_*))
+  def mliftApp(cons: Symbol, xs: T*): T = join(top, liftApp(Cons(cons, xs.size), List(xs:_*)))
 
   def lift(t: Syntax.Trm): T = t match {
     case Syntax.Trm.Lit(v) => liftLit(v)
@@ -57,19 +61,23 @@ trait Domain[T] {
     apps
   }
 
-  def mergeDiff(m1: Map[Cons, List[T]], m2: Map[Cons, List[T]]): Map[Cons, List[T]] = {
-    var apps = Map[Cons, List[T]]()
-    for ((c, xs) <- m1)
-      m2.get(c) match {
-        case None => apps += c -> xs
-        case Some(ys) =>
-          val d = (xs.zip(ys).map(p => diff(p._1,p._2)))
-          val nonbottom = d.count(x => x != bottom)
-          if (!d.isEmpty && nonbottom == 1)
-            apps += c -> d.zip(xs).map(p => if (p._1 == bottom) p._2 else p._1)
-          else if (!d.isEmpty && nonbottom > 1)
-            apps += c -> xs
-      }
-    apps
-  }
+//  def mergeDiff(m1: Map[Cons, List[T]], m2: Map[Cons, List[T]]): Map[Cons, List[T]] = {
+//    var apps = Map[Cons, List[T]]()
+//    for ((c, xs) <- m1)
+//      m2.get(c) match {
+//        case None => apps += c -> xs
+//        case Some(ys) =>
+//          val d = (xs.zip(ys).map(p => diff(p._1,p._2)))
+//          val nonBottomTop = d.count(x => x!=bottom && x!=top)
+//          if (nonBottomTop == 1) {
+//            val diff = d.zip(xs).map(p => if (p._1 != bottom) p._1 else p._2)
+//            apps += c -> diff
+//          }
+//          else if (nonBottomTop > 1)
+//            apps += c -> xs
+//          else
+//            apps.size
+//      }
+//    apps
+//  }
 }

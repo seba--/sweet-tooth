@@ -6,6 +6,7 @@ import org.sugarj.sweettooth.stratego.Syntax.{Call, Exp, Trm}
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
 import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 import org.sugarj.sweettooth.stratego.lib.Library
+import scala.language.implicitConversions
 
 /**
  * Created by seba on 10/09/14.
@@ -26,22 +27,47 @@ abstract class AnalysisSuite extends FunSuite {
 
   def lift(t: Trm) = dom.lift(t)
 
-  def test_analysis(name: String)(e: Exp, input: =>V)(expected: =>V) =
+  abstract class Spec
+  case class Equals(v: V) extends Spec
+  case class BoundBy(lower: V, upper: V) extends Spec
+  implicit def equalsSpec(v: V): Spec = Equals(v)
+
+  def test_analysis(name: String)(e: Exp, input: =>V)(expected: =>Spec): Unit =
     test(s"$prefix: $name") {
       try {
         val res = analysis.analyze(e, input, baseLib.DEFS)
-        assertResult(expected /*, dom.Explodable(res)*/)(res)
+        expected match {
+          case Equals(v) => assertResult(v)(res)
+          case BoundBy(low, up) =>
+            assert(dom.compare(low, res), s"Result\n\n    $res\ndoes not satisfy lower bound\n\n    $low")
+            assert(dom.compare(res, up), s"Result $res does not satisfy upper bound $up")
+        }
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")
       }
     }
 
-  def test_strat(strat: String, name: String)(input: =>V)(expected: =>V) =
+  def test_strat(strat: String, name: String)(input: =>V)(expected: =>Spec) =
     test(s"$prefix: <$strat> ($name)") {
       try {
         val normStrat = s"${strat.replace('-','_')}_0_0"
         val res = analysis.analyze(Call(Symbol(normStrat)), input, baseLib.DEFS)
-        assertResult(expected, dom.Explodable(res))(res)
+        val expectedV = expected match {case Equals(v)=>v;case BoundBy(v,_)=>v}
+        lazy val hint = "\n\n" +
+                        s"exp = $expectedV\n\n" +
+                        s"res = $res\n\n"
+                        s"    res <= expected: ${dom.compare(res, expectedV)}\n" +
+                        s"    expected <= res: ${dom.compare(expectedV, res)}\n"
+//                        +
+//                        s"    res && expected: ${dom.meet(res, expected)}\n" +
+//                        s"    res -- expected: ${dom.diff(res, expected)}\n" +
+//                        s"    expected -- res: ${dom.diff(expected, res)}"
+        expected match {
+          case Equals(v) => assertResult(v, hint)(res)
+          case BoundBy(low, up) =>
+            assert(dom.compare(low, res), s"Result does not satisfy lower bound$hint")
+            assert(dom.compare(res, up), s"Result does not satisfy upper bound$hint")
+        }
       } catch {
         case Fail(s, msg) => assert(false, s"Execution failed:\n  Message: $msg\n  Strategy: $s\n  Expected: $expected")
       }

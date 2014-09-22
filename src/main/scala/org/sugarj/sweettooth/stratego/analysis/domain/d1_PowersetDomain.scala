@@ -1,8 +1,10 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
-import org.sugarj.sweettooth.stratego.Syntax.{Pat,Cons}
+import org.sugarj.sweettooth.stratego.Syntax.{Trm, Pat, Cons, litLT}
 
 object d1_PowersetDomain {
+  import Trm.Lit
+
   type T = Option[TS] // None represents the infinite set, Some represents finite sets
 
   case class TS(lits: Set[Lit[_]], apps: Map[Cons, List[T]]) {
@@ -10,7 +12,8 @@ object d1_PowersetDomain {
     def size = lits.size + apps.size
 
     override def toString = {
-      var litString = lits.toString
+      val slits = lits.toList.sortWith(litLT)
+      var litString = slits.toString
       if (lits.isEmpty)
         litString = "Set("
       else
@@ -29,9 +32,6 @@ object d1_PowersetDomain {
       case x::xs => x.toString + ", " + listString(xs)
     }
   }
-
-  abstract class Trm
-  case class Lit[V](v: V) extends Trm
 
   object D extends Domain[T] {
     def bottom: T = Some(TS(Set(), Map()))
@@ -63,11 +63,11 @@ object d1_PowersetDomain {
       case (Some(s1), Some(s2)) => Some(TS(s1.lits.intersect(s2.lits), mergeIntersect(s1.apps, s2.apps)))
     }
 
-    def diff(t1: T, t2: T): T = (t1,t2) match {
-      case (None,_) => None
-      case (_,None) => t1
-      case (Some(s1), Some(s2)) => Some(TS(s1.lits -- s2.lits, mergeDiff(s1.apps, s2.apps)))
-    }
+//    def diff(t1: T, t2: T): T = (t1,t2) match {
+//      case (None,_) => None
+//      case (_,None) => t1
+//      case (Some(s1), Some(s2)) => Some(TS(s1.lits -- s2.lits, mergeDiff(s1.apps, s2.apps)))
+//    }
 
     def matchAppPat(cons: Cons, t: T): Set[List[T]] = t match {
       case None => Set(for (i <- (1 to cons.ar).toList) yield top)

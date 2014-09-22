@@ -60,6 +60,7 @@ object Load {
     cmd ++= List("-i", path)
     cmd ++= List("-o", outdir.getAbsolutePath)
     cmd ++= List("-F")
+    cmd ++= List("-O", "0")
 
     for (p <- cp)
       cmd ++= List("-I", p)

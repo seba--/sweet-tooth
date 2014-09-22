@@ -46,7 +46,7 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   def ce2str_negation_top_rec(v: V) = bracket_top_rec(dom.liftApp('Cons, dom.liftLit('^'), unstring(v)))
   lazy val ce2str_negation_top = {
     val skip = (v:V) => ce2str_negation_top_rec(v)
-    Equals(ce2str_negation_top_rec(ce2str_top_rec_skip(skip)(dom.top)))
+    ce2str_negation_top_rec(ce2str_top_rec_skip(skip)(dom.top))
   }
 
   def ce2str_union_top_rec(v1: V, v2: V) = bracket_top_rec(a_at_end(unstring(v1), unstring(v2)))
@@ -65,7 +65,7 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   lazy val ce2str_intersection_top = {
     val skip = (v:V) => ce2str_intersection_top_rec(v, v)
     val rec = ce2str_top_rec_skip(skip)(dom.top)
-    Equals(ce2str_intersection_top_rec(rec, rec))
+    ce2str_intersection_top_rec(rec, rec)
   }
 
   val ce2str_predefined_dot_top = string(dom.liftApp('Cons, dom.liftLit('.'), dom.liftApp('Nil)))

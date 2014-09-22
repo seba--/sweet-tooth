@@ -9,9 +9,7 @@ import scala.language.implicitConversions
  */
 class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
 
-
-
-  val bracket_top = // [??*
+  val bracket_top =
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('['),
         dom.liftApp('Cons, dom.top, dom.top)))
@@ -24,20 +22,20 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
       dom.liftApp('Cons, dom.liftLit('['),
         dom.liftApp('Cons, dom.top,
           dom.liftApp('Cons, dom.top, dom.top))))
-  val ce2str_negation_top = Equals(
+  val ce2str_negation_top =
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('['),
         dom.liftApp('Cons, dom.liftLit('^'),
-          dom.liftApp('Cons, dom.top, dom.top)))))
+          dom.liftApp('Cons, dom.top, dom.top))))
   val ce2str_union_top =
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('['),
         dom.liftApp('Cons, dom.top, dom.top)))
-  val ce2str_intersection_top = Equals(
+  val ce2str_intersection_top =
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('['),
         dom.liftApp('Cons, dom.top,
-          dom.liftApp('Cons, dom.top, dom.top)))))
+          dom.liftApp('Cons, dom.top, dom.top))))
   val ce2str_predefined_dot_top =
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('.'), dom.liftApp('Nil)))
@@ -45,7 +43,7 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
     dom.liftApp('String,
       dom.liftApp('Cons, dom.liftLit('\\'), dom.top))
 
-  val ce2str_top = dom.bottom
+  val ce2str_top = List(ce2str_lit_top, ce2str_range_top, ce2str_negation_top, ce2str_union_top, ce2str_intersection_top, ce2str_predefined_dot_top, ce2str_predefined_other_top).reduce(dom.join)
 
   // Lit(String([Chars(<r2str> e)]))
   val regex_top =

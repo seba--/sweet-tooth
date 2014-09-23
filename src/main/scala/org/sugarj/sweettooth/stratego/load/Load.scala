@@ -143,7 +143,7 @@ object Load {
       case STerm("Match", t) => Match(readPat(t))
       case STerm("Build", t) => Build(readPat(t))
       case STerm("Id") => Scoped('x, Seq(Match('x), Build('x)))
-      case STerm("Fail") => Seq(Build('Fail0@@()), Match('Fail1@@()))
+      case STerm("Fail") => Call('fail_0_0)
       case STerm("Seq", e1, e2) => Seq(e1, e2)
       case STerm("GuardedLChoice", cnd, thn, els) => If(cnd, thn, els)
       case STerm("CallT",

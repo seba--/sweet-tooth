@@ -37,6 +37,7 @@ object String extends Library {
     ??('String@@('new_chars)),
     !!('xs),
     Call('replace_0_2, scala.List(), scala.List('old_chars, 'new_chars)),
+    ??('ys),
     !!('String@@('ys))
   )
 

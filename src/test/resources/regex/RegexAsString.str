@@ -23,6 +23,8 @@ rules
 
 rules
 
+main = r2str-alt
+
   r2str =
     r2str-lit <+
     r2str-ccexp <+

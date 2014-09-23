@@ -88,6 +88,9 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
   val r2str_predef_top: V
   test_strat("r2str-predef", "top")(dom.top)(r2str_predef_top)
 
+  val r2str_top: V
+  test_strat("r2str", "top")(dom.top)(r2str_top)
+
 
   val regex_top: V
 //  test_strat("main", "top")(dom.top)(regex_top)

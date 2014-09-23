@@ -17,6 +17,7 @@ trait Domain[T] {
   def matchAppPat(cons: Cons, t: T): Set[List[T]]
 
   def liftLit[V](v: V): T
+  def mliftLit[V](v: V): T = join(top, liftLit(v))
   def liftApp(cons: Cons, xs: List[T]): T
   def liftApp(cons: Symbol, xs: List[T]):T = liftApp(Cons(cons, xs.size), xs)
   def liftApp(cons: Cons, xs: T*): T = liftApp(cons, List(xs:_*))

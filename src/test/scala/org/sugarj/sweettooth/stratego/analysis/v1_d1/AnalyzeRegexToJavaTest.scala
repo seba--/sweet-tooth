@@ -56,7 +56,7 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   val r2str_alt_top = dom.liftApp('String, dom.liftApp('Cons, dom.top, dom.top))
   val r2str_group_top = dom.liftApp('String, dom.liftApp('Cons, dom.liftLit('('), dom.liftApp('Cons, dom.top, dom.top)))
   val r2str_predef_top = dom.liftApp('String, dom.liftApp('Cons, dom.liftLit('\\'), dom.top))
-
+  val r2str_top = dom.top
 
 
 

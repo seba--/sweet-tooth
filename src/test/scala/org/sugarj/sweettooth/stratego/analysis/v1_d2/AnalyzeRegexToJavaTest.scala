@@ -16,9 +16,6 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
     res
   }
 
-  def string(v: V) = dom.liftApp('_String, v)
-  def unstring(t: V): V = dom.matchAppPat(Cons('_String, 1), t).map(_.head).reduce(dom.join)
-
   val bracket_c = lift("[c]")
 
   def bracket_top_rec(v: V) =

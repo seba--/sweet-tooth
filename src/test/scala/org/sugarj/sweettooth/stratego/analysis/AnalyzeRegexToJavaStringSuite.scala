@@ -96,6 +96,8 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
   test_strat("regexAsString", "top")(dom.top)(regexAsString_top)
 
 
+  def string(v: V) = dom.liftApp('_String, v)
+  def unstring(t: V): V = dom.matchAppPat(Cons('_String, 1), t).map(_.head).reduce(dom.join)
 
   def a_at_end(current: V, end: V, stack:List[(V,V)]=List()): V = {
     if (stack.contains((current, end)))

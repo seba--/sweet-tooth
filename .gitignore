@@ -1,2 +1,5 @@
 stratego-core-stratego-analysis/bin
 stratego-core-stratego-analysis/lib
+target/
+project/
+.idea/

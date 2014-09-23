@@ -24,12 +24,12 @@ trait v3AnalyzeCall[V, D <: Domain[V]] extends v1AnalyzeCall[V,D] {
 
   def at_end(s: Exp, current: V, store: Store, stack: Stack): (V, Store) = {
     // must be `Nil` or `Cons(?,?)`
-    if (dom.compare(current, dom.liftApp('Nil)) ||
-        dom.compare(current, dom.liftApp('Cons, dom.top, dom.top)))
+    if (dom.compare(current, dom.liftApp('_Nil)) ||
+        dom.compare(current, dom.liftApp('_Cons, dom.top, dom.top)))
       super.analyzeCall('at_end_1_0, List(s), List(), current, store, stack)
     else {
-      val (sres,st) = analyze(s, dom.liftApp('Nil), store, stack)
-      (dom.liftApp('Conc, current, sres), st)
+      val (sres,st) = analyze(s, dom.liftApp('_Nil), store, stack)
+      (dom.liftApp('_Conc, current, sres), st)
     }
   }
 }

@@ -75,17 +75,17 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   val conc_top_FooBar: V
   test_strat("conc", "top [Foo,Bar]")(dom.liftApp('_, dom.top, lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_top_FooBar)
 
-  lazy val conc_topBaz_FooBar: V = dom.liftApp('_Cons, dom.top, lift(List(Trm.App('Baz), Trm.App('Foo), Trm.App('Bar))))
+  val conc_topBaz_FooBar: V
   test_strat("conc", "[top, Baz] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('_Cons, dom.top, lift(List(Trm.App('Baz)))), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaz_FooBar)
 
-  lazy val conc_topBaztop_FooBar: V = dom.liftApp('_Cons, dom.top, dom.liftApp('_Cons, dom.liftApp('Baz), dom.liftApp('_Cons, dom.mliftApp('Foo), dom.mliftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Nil)))))
+  val conc_topBaztop_FooBar: V
   test_strat("conc", "[top, Baz | top] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('_Cons, dom.top, dom.liftApp('_Cons, dom.liftApp('Baz), dom.top)), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaztop_FooBar)
 
-  lazy val atend_top_FooBar : V = dom.join(dom.liftApp('_Cons, dom.liftApp('Foo), dom.liftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Nil))), dom.liftApp('_Cons, dom.top, dom.top))
+  val atend_top_FooBar : V
   val arg = Pat.App('_Cons, Pat.App('Foo), Pat.App('_Cons, Pat.App('Bar), Pat.App('_Nil)))
   test_analysis("<at-end(|[Foo,Bar])> top")(Call('at_end_1_0, List(Build(arg)), List()), dom.top)(atend_top_FooBar)
 
-  lazy val atend_top_FooBarBaz : V = dom.join(dom.liftApp('_Cons, dom.liftApp('Foo), dom.liftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Cons, dom.liftApp('Baz), dom.liftApp('_Nil)))), dom.liftApp('_Cons, dom.top, dom.top))
+  val atend_top_FooBarBaz : V
   val arg2 = Pat.App('_Cons, Pat.App('Foo), Pat.App('_Cons, Pat.App('Bar), Pat.App('_Cons, Pat.App('Baz), Pat.App('_Nil))))
   test_analysis("<at-end(|[Foo,Bar,Baz])> top")(Call('at_end_1_0, List(Build(arg2)), List()), dom.top)(atend_top_FooBarBaz)
 

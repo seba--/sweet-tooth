@@ -102,16 +102,16 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
       return dom.top
 
     var res = dom.bottom
-    if (!dom.matchAppPat(Cons('Nil, 0), current).isEmpty)
+    if (!dom.matchAppPat(Cons('_Nil, 0), current).isEmpty)
       res = dom.join(res, end)
 
     var args = List(dom.bottom, dom.bottom)
-    for (argList <- dom.matchAppPat(Cons('Cons, 2), current))
+    for (argList <- dom.matchAppPat(Cons('_Cons, 2), current))
       args = args.zip(argList).map(p => dom.join(p._1, p._2))
     val hd = args(0)
     val tl = args(1)
 
-    val cons = dom.liftApp('Cons, hd, a_at_end(tl, end, (current,end)::stack))
+    val cons = dom.liftApp('_Cons, hd, a_at_end(tl, end, (current,end)::stack))
     val res2 = dom.join(res, cons)
     res2
   }

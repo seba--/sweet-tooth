@@ -8,7 +8,7 @@ import language.implicitConversions
 object Syntax {
 
   case class Cons(c: Symbol, ar: Int) {
-    if (c=='Cons && ar==1)
+    if (c=='_Cons && ar==1)
       println("HHHH")
     def name = c.toString
     override def toString = c.toString

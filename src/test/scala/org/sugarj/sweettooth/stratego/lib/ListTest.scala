@@ -22,12 +22,12 @@ class ListTest extends FunSuite {
   def assertTrm(expected: Trm)(actual: Trm) = assertResult(expected)(actual)
 
   test("nil") {
-    assertTrm(Trm.App('Nil))(eval(Call('nil_0_0), Trm.App('Foo), DEFS))
+    assertTrm(Trm.App('_Nil))(eval(Call('nil_0_0), Trm.App('Foo), DEFS))
   }
 
   test("cons1") {
-    assertTrm(Trm.App('Cons, Trm.App('Foo), Trm.App('Nil)))(
-              eval(Call('cons_0_0), Trm.App('_, Trm.App('Foo), Trm.App('Nil)), DEFS))
+    assertTrm(Trm.App('_Cons, Trm.App('Foo), Trm.App('_Nil)))(
+              eval(Call('cons_0_0), Trm.App('_, Trm.App('Foo), Trm.App('_Nil)), DEFS))
   }
 
   test("mkList"){

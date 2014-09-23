@@ -6,8 +6,8 @@ import org.sugarj.sweettooth.stratego.Syntax._
  * Created by seba on 04/08/14.
  */
 object List extends Library {
-  val nil = 'nil_0_0 -> Def(!!('Nil@@()))
-  val cons = 'cons_0_0 -> Def(??('_@@('x, 'xs)), !!('Cons@@('x, 'xs)))
+  val nil = 'nil_0_0 -> Def(!!('_Nil@@()))
+  val cons = 'cons_0_0 -> Def(??('_@@('x, 'xs)), !!('_Cons@@('x, 'xs)))
 
   def mkList(l: List[Trm], n: Int = 0): Exp = l match {
     case Nil => Call('nil_0_0)
@@ -15,29 +15,29 @@ object List extends Library {
   }
 
   val map = 'map_1_0 -> Def(scala.List('s), scala.List(),
-    If(??('Nil@@()),
-      !!('Nil@@()),
+    If(??('_Nil@@()),
+      !!('_Nil@@()),
       Seqs(
-        ??('Cons@@('x, 'xs)),
+        ??('_Cons@@('x, 'xs)),
         !!('x),
         SVar('s),
         ??('t),
         !!('xs),
         Call('map_1_0, scala.List(SVar('s)), scala.List()),
         ??('ts),
-        !!('Cons@@('t, 'ts)))))
+        !!('_Cons@@('t, 'ts)))))
 
   val fetch = 'fetch_1_0 -> Def(scala.List('s), scala.List(),
-    ??('Cons@@('x, 'xs)),
+    ??('_Cons@@('x, 'xs)),
     !!('x),
     If_(SVar('s),
       ??('y),
-      !!('Cons@@('y, 'xs)))
+      !!('_Cons@@('y, 'xs)))
     Else (
       !!('xs),
       Call('fetch_1_0, scala.List(SVar('s)), scala.List()),
       ??('ys),
-      !!('Cons@@('x, 'ys))
+      !!('_Cons@@('x, 'ys))
     )
   )
 
@@ -48,14 +48,14 @@ object List extends Library {
   )
 
   val at_end = 'at_end_1_0 -> Def(scala.List('s), scala.List(),
-    If(??('Nil@@()),
+    If(??('_Nil@@()),
       SVar('s),
       Seqs(
-        ??('Cons@@('x, 'xs)),
+        ??('_Cons@@('x, 'xs)),
         !!('xs),
         Call('at_end_1_0, scala.List(SVar('s)), scala.List()),
         ??('ys),
-        !!('Cons@@('x, 'ys))))
+        !!('_Cons@@('x, 'ys))))
   )
 
   val conc = 'conc_0_0 -> Def(
@@ -76,10 +76,10 @@ object List extends Library {
   )
 
   val starts_with = 'starts_with_0_0 -> Def(
-    If(??('_@@('xs, 'Nil@@())),
+    If(??('_@@('xs, '_Nil@@())),
       !!('xs),
       Seqs(
-        ??('_@@('Cons@@('x, 'xs), 'Cons@@('x, 'ys))),
+        ??('_@@('_Cons@@('x, 'xs), '_Cons@@('x, 'ys))),
         !!('_@@('xs, 'ys)),
         Call('starts_with_0_0)
       )
@@ -87,8 +87,8 @@ object List extends Library {
   )
 
   val replace = 'replace_0_2 -> Def(scala.List(), scala.List('old, 'new),
-    If(??('Nil@@()),
-      !!('Nil@@()),
+    If(??('_Nil@@()),
+      !!('_Nil@@()),
       If(Seqs(??('xs), !!('_@@('xs, 'old)), Call('starts_with_0_0)),
         Seqs(
           Call('replace_0_2, scala.List(), scala.List('old, 'new)),
@@ -97,11 +97,11 @@ object List extends Library {
           Call('conc_0_0)
         ),
         Seqs(
-          ??('Cons@@('y, 'ys)),
+          ??('_Cons@@('y, 'ys)),
           !!('ys),
           Call('replace_0_2, scala.List(), scala.List('old, 'new)),
           ??('rest),
-          !!('Cons@@('y, 'rest))
+          !!('_Cons@@('y, 'rest))
         )
       )
     )

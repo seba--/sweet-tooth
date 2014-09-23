@@ -10,11 +10,11 @@ object String extends Library {
   def makeString(s: String) = '_String@@(makeCharList(s))
   def makeCharList(s: String): Pat =
     if (s.isEmpty)
-      'Nil@@()
+      '_Nil@@()
     else
-      'Cons@@(Pat.Lit(s.head), makeCharList(s.tail))
+      '_Cons@@(Pat.Lit(s.head), makeCharList(s.tail))
 
-  val empty_string = 'empty_string_0 -> Def(!!('_String@@('Nil@@())))
+  val empty_string = 'empty_string_0 -> Def(!!('_String@@('_Nil@@())))
 
   val conc_strings = 'conc_strings_0_0 -> Def(
     If(??('_@@('_String@@('xs), '_String@@('ys))),

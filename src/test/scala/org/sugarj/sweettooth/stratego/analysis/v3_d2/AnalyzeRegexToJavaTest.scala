@@ -1,6 +1,5 @@
-package org.sugarj.sweettooth.stratego.analysis.v2_d2
+package org.sugarj.sweettooth.stratego.analysis.v3_d2
 
-import org.sugarj.sweettooth.stratego.Syntax.Cons
 import org.sugarj.sweettooth.stratego.analysis.AnalyzeRegexToJavaStringSuite
 
 import scala.language.implicitConversions
@@ -9,6 +8,14 @@ import scala.language.implicitConversions
 * Created by seba on 30/07/14.
 */
 class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
+
+  override def a_at_end(current: V, end: V, stack:List[(V,V)]=List()): V = {
+    if (dom.compare(current, dom.liftApp('_Nil)) ||
+      dom.compare(current, dom.liftApp('_Cons, dom.top, dom.top)))
+      super.a_at_end(current, end, stack)
+    else
+      dom.liftApp('_Conc, current, end)
+  }
 
   val bracket_c = lift("[c]")
   def closing_bracket_rec(v: V) = dom.liftApp('_Cons, dom.join(dom.liftLit(']'), dom.top), v)

@@ -73,7 +73,6 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   val r2str_predef_top = dom.liftApp('_String, dom.liftApp('_Cons, dom.liftLit('\\'), dom.top))
   val r2str_top = dom.top
 
-
   val regexAsString_top =
     dom.liftApp('Lit,
       dom.liftApp('String,

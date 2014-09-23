@@ -10,12 +10,6 @@ import scala.language.implicitConversions
 */
 class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
 
-  def loop(f: V => V, v: V, n: Int) = {
-    var res = v
-    (1 to n) foreach (_ => res = f(res))
-    res
-  }
-
   val bracket_c = lift("[c]")
 
   def bracket_top_rec(v: V) =

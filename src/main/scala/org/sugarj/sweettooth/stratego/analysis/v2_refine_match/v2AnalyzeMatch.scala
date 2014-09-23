@@ -28,7 +28,7 @@ trait v2AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
       case Some(t1) =>
         val meet = dom.meet(t1, t)
         if (meet != dom.bottom)
-          (meet, store)
+          (meet, store + (x, meet))
         else fail(Match(p), s"Could not match pattern $p against term $t, expected $t1")
       case None => (t, store + (x, t))
     }

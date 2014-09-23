@@ -7,7 +7,7 @@ import org.sugarj.sweettooth.stratego.analysis.domain.Domain
 /**
   * Created by seba on 09/09/14.
   */
-trait v1AnalyzeCall[V, D <: Domain[V]] extends AnalyzeCall[V,D] with v1AnalyzeBase[V,D] {
+trait v1AnalyzeCall[V, D <: Domain[V]] extends AnalyzeCall[V,D] {
   def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: V, store: Store, stack: Stack): (V, Store) = {
     val d = defs.getOrElse(f, throw new RuntimeException(s"Undefined function $f"))
     if (d.svars.size != sargs.size)

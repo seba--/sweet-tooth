@@ -92,8 +92,8 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
   test_strat("r2str", "top")(dom.top)(r2str_top)
 
 
-  val regex_top: V
-//  test_strat("main", "top")(dom.top)(regex_top)
+  val regexAsString_top: V
+  test_strat("regexAsString", "top")(dom.top)(regexAsString_top)
 
 
 

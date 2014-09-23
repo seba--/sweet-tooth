@@ -157,11 +157,10 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   val r2str_top = r2str_top_rec(dom.top)
 
 
-  val regex_top =
+  val regexAsString_top =
     dom.liftApp('Lit,
       dom.liftApp('String,
         dom.liftApp('Cons,
-          dom.liftApp('Chars,
-            dom.liftApp('String, dom.top)),
+          dom.liftApp('Chars, r2str_top),
           dom.liftApp('Nil))))
 }

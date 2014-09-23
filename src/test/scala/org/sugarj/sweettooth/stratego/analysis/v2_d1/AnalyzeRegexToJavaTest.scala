@@ -59,11 +59,10 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   val r2str_top = dom.top
 
 
-  // Lit(String([Chars(<r2str> e)]))
-  val regex_top =
+  val regexAsString_top =
     dom.liftApp('Lit,
       dom.liftApp('String,
         dom.liftApp('Cons,
-          dom.liftApp('Chars, dom.top),
+          dom.liftApp('Chars, r2str_top),
           dom.liftApp('Nil))))
 }

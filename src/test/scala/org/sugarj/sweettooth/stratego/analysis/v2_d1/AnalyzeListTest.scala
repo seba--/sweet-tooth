@@ -28,8 +28,8 @@ class AnalyzeListTest extends AnalyzeListSuite with Config {
   val conc_topBaztop_FooBar = dom.liftApp('_Cons, dom.top, dom.liftApp('_Cons, dom.liftApp('Baz), dom.liftApp('_Cons, dom.mliftApp('Foo), dom.mliftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Nil)))))
   val atend_top_FooBar = dom.join(dom.liftApp('_Cons, dom.liftApp('Foo), dom.liftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Nil))), dom.liftApp('_Cons, dom.top, dom.top))
   val atend_top_FooBarBaz = dom.join(dom.liftApp('_Cons, dom.liftApp('Foo), dom.liftApp('_Cons, dom.liftApp('Bar), dom.liftApp('_Cons, dom.liftApp('Baz), dom.liftApp('_Nil)))), dom.liftApp('_Cons, dom.top, dom.top))
-  val isempty_conc_top = dom.liftApp('Nil)
-  val isempty_conc_toptop = dom.liftApp('Nil)
+  val isempty_conc_top = dom.liftApp('_Nil)
+  val isempty_conc_toptop = dom.liftApp('_Nil)
   val isempty_conc_FooBar_top = dom.bottom
   val isempty_conc_top_FooBar = dom.bottom
 }

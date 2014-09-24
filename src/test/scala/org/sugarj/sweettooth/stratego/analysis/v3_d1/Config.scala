@@ -1,7 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.v3_d1
 
 import org.sugarj.sweettooth.stratego.analysis.base.{BasicStack, StoreTrait}
-import org.sugarj.sweettooth.stratego.analysis.domain.d1_PowersetDomain
+import org.sugarj.sweettooth.stratego.analysis.domain.{d3_ConcDomain, d1_PowersetDomain}
 import org.sugarj.sweettooth.stratego.analysis.v3_struct_lists.v3Analysis
 
 /**
@@ -9,8 +9,8 @@ import org.sugarj.sweettooth.stratego.analysis.v3_struct_lists.v3Analysis
  */
 trait Config {
   type V = d1_PowersetDomain.T
-  type D = d1_PowersetDomain.D.type
-  val dom = d1_PowersetDomain.D
+  object dom extends d1_PowersetDomain.D with d3_ConcDomain[V]
+  type D = dom.type
 
   object analysis extends
   v3Analysis[V, D] with

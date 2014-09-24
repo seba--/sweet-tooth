@@ -55,7 +55,7 @@ object d2_PowersetFlagDomain {
 
   }
 
-  object D extends Domain[T] {
+  trait D extends Domain[T] {
    def bottom = T(TS(Set(), Map()), false)
    def top = T(TS(Set(), Map()), true)
 

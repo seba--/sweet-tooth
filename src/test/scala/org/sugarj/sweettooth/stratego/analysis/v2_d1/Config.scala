@@ -8,9 +8,9 @@ import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2Analysis
  * Created by seba on 10/09/14.
  */
 trait Config {
+  object dom extends d1_PowersetDomain.D
   type V = d1_PowersetDomain.T
-  type D = d1_PowersetDomain.D.type
-  val dom = d1_PowersetDomain.D
+  type D = dom.type
 
   object analysis extends
   v2Analysis[V, D] with

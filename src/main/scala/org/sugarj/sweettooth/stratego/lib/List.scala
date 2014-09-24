@@ -107,7 +107,7 @@ object List extends Library {
     )
   )
 
-  val is_empty = 'is_empty_0_0 -> Def(??('Nil@@()))
+  val is_empty = 'is_empty_0_0 -> Def(??('_Nil@@()))
   val head = 'head_0_0 -> Def(??('_Cons@@('x, 'xs)), !!('x))
   val tail = 'tail_0_0 -> Def(??('_Cons@@('x, 'xs)), !!('xs))
 

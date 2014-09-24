@@ -33,7 +33,7 @@ object d1_PowersetDomain {
     }
   }
 
-  object D extends Domain[T] {
+  trait D extends Domain[T] {
     def bottom: T = Some(TS(Set(), Map()))
     def top: T = None
 

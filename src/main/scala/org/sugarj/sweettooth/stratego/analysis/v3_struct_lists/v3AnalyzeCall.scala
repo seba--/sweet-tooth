@@ -2,13 +2,13 @@ package org.sugarj.sweettooth.stratego.analysis.v3_struct_lists
 
 import org.sugarj.sweettooth.stratego.Syntax.{SVar, Exp, Pat}
 import org.sugarj.sweettooth.stratego.analysis.base.AnalyzeCall
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{d3_ConcDomain, Domain}
 import org.sugarj.sweettooth.stratego.analysis.v1.v1AnalyzeCall
 
 /**
   * Created by seba on 09/09/14.
   */
-trait v3AnalyzeCall[V, D <: Domain[V]] extends v1AnalyzeCall[V,D] {
+trait v3AnalyzeCall[V, D <: d3_ConcDomain[V]] extends v1AnalyzeCall[V,D] {
   override def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: V, store: Store, stack: Stack): (V, Store) = {
     val d = defs.getOrElse(f, throw new RuntimeException(s"Undefined function $f"))
     if (d.svars.size != sargs.size)

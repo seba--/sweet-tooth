@@ -12,7 +12,7 @@ class BasicTests extends FunSuite {
 
 //  type V
 //  type D <: Domain[V]
-  val dom = d2_PowersetFlagDomain.D
+  object dom extends d2_PowersetFlagDomain.D
 
 //  test (s"$prefix: diff 1") {
 //    val x = dom.liftApp('Foo, dom.join(dom.liftLit(1), dom.liftLit(2)), dom.join(dom.liftLit(3), dom.liftLit(4)))

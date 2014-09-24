@@ -69,6 +69,9 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   val conc_top: V
   test_strat("conc", "top")(dom.top)(conc_top)
 
+  val conc_toptop: V
+  test_strat("conc", "top,top")(dom.liftApp('_, dom.top, dom.top))(conc_toptop)
+
   val conc_FooBar_top: V
   test_strat("conc", "[Foo,Bar] top")(dom.liftApp('_, lift(List(Trm.App('Foo), Trm.App('Bar))), dom.top))(conc_FooBar_top)
 
@@ -89,4 +92,15 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   val arg2 = Pat.App('_Cons, Pat.App('Foo), Pat.App('_Cons, Pat.App('Bar), Pat.App('_Cons, Pat.App('Baz), Pat.App('_Nil))))
   test_analysis("<at-end(|[Foo,Bar,Baz])> top")(Call('at_end_1_0, List(Build(arg2)), List()), dom.top)(atend_top_FooBarBaz)
 
+  val isempty_conc_top: V
+  test_strat("is-empty", "<conc> top")(dom.top)(isempty_conc_top)
+
+  val isempty_conc_toptop: V
+  test_strat("is-empty", "<conc> (top,top)")(conc_toptop)(isempty_conc_toptop)
+
+  val isempty_conc_FooBar_top: V
+  test_strat("is-empty", "<conc> ([Foo,Bar], top)")(conc_FooBar_top)(isempty_conc_FooBar_top)
+
+  val isempty_conc_top_FooBar: V
+  test_strat("is-empty", "<conc> (top, [Foo,Bar])")(conc_top_FooBar)(isempty_conc_top_FooBar)
 }

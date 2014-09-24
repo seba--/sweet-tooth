@@ -161,4 +161,38 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
         dom.liftApp('_Cons,
           dom.liftApp('Chars, r2str_top),
           dom.liftApp('_Nil))))
+
+
+//  {'Lit->(
+//    {'String->(
+//      {'_Cons->(
+//        {'Chars->(
+//          ?{'_String->(
+//            {'_Conc->(
+//              ?,
+//              ?{'_Cons->(
+//                {'*', '+', '|'},
+//                ?{'_Nil->()})}),
+//             '_Cons->(
+//               ?{'(', '?', '[', '\'},
+//               ?{'_Conc->(
+//                   ?{'_Cons->(
+//                     {'.', '[', '\'},
+//                     ?{'_Conc->(
+//                       {'_Conc->(
+//                         ?,
+//                         ?{'_Cons->(
+//                           {'&', '-'},
+//                           ?{'_Cons->({'&'}, ?)})})},
+//                       {'_Cons->({']'}, {'_Nil->()})}),
+//                       '_Cons->(
+//                         {'^'},
+//                         {'_Conc->(
+//                           ?,
+//                           {'_Cons->({']'}, {'_Nil->()})})}),
+//                       '_Nil->()})},
+//                   {'_Cons->({')', ']'}, {'_Nil->()})}),
+//                 '_Cons->({'\'}, ?)}),
+//             '_Nil->()})})},
+//        {'_Nil->()})})})}
 }

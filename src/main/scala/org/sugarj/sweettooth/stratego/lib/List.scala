@@ -107,6 +107,10 @@ object List extends Library {
     )
   )
 
+  val is_empty = 'is_empty_0_0 -> Def(??('Nil@@()))
+  val head = 'head_0_0 -> Def(??('_Cons@@('x, 'xs)), !!('x))
+  val tail = 'tail_0_0 -> Def(??('_Cons@@('x, 'xs)), !!('xs))
+
   val DEFS = Generic.DEFS ++ Map(
     nil,
     cons,
@@ -116,6 +120,9 @@ object List extends Library {
     at_end,
     conc,
     starts_with,
-    replace
+    replace,
+    is_empty,
+    head,
+    tail
   )
 }

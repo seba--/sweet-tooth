@@ -78,7 +78,7 @@ object d1_PowersetDomain {
     }
 
     def liftLit[V](v: V) = Some(TS(Set(Lit(v)), Map()))
-    def liftApp(cons: Cons, xs: List[T]) = Some(TS(Set(), Map(cons -> xs)))
+    def liftApp(cons: Cons, xs: List[T]): T = Some(TS(Set(), Map(cons -> xs)))
 
     def explode(t: T, depth: Int): List[Pat] = t match {
       case None => List(Pat.Var('?))

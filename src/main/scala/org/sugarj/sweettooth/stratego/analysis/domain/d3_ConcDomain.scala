@@ -5,6 +5,12 @@ import org.sugarj.sweettooth.stratego.Syntax.{Cons, Pat, litLT, pLT, Trm}
 import scala.collection.IterableLike
 
 trait d3_ConcDomain[T] extends Domain[T] {
+
+//  abstract override def liftApp(cons: Cons, xs: List[T]): T = cons match {
+//    case Cons('_Cons, 2) => super.liftApp('_Conc, super.liftApp('_Elem, xs(0)), xs(1))
+//    case _ => super.liftApp(cons, xs)
+//  }
+
   abstract override def matchAppPat(cons: Cons, t: T): Set[List[T]] = {
     if (compare(top, t)) // It indeed is safe to run this.matchAppPat even for `top <= t`. But does this improve precision?
       super.matchAppPat(cons, t)

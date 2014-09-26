@@ -6,6 +6,6 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
   * Created by seba on 09/09/14.
   */
-trait AnalyzeSeq[D <: Domain] extends AnalyzeBase[D] {
-  def analyzeSeq(e1: Exp, e2: Exp, current: Val, store: Store, stack: Stack): (Val, Store)
+trait AnalyzeSeq[V <: Val[V], D <: Domain[V]] extends AnalyzeBase[V,D] {
+  def analyzeSeq(e1: Exp, e2: Exp, current: V, store: Store, stack: Stack): (V, Store)
 }

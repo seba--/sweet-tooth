@@ -6,6 +6,6 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
   * Created by seba on 09/09/14.
   */
-trait AnalyzeScoped[D <: Domain] extends AnalyzeBase[D] {
-  def analyzeScoped(x: Symbol, e: Exp, current: Val, store: Store, stack: Stack): (Val, Store)
+trait AnalyzeScoped[V <: Val[V], D <: Domain[V]] extends AnalyzeBase[V,D] {
+  def analyzeScoped(x: Symbol, e: Exp, current: V, store: Store, stack: Stack): (V, Store)
 }

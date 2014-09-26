@@ -6,18 +6,18 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
  * Created by seba on 09/09/14.
  */
-trait StoreTrait[D <: Domain] {
+trait StoreTrait[V <: Val[V], D <: Domain[V]] {
   val dom: D
   val emptyStore = Store(Map(), Map())
 
   case class ClosureStore(var store: Store)
   case class Closure(e: Exp, store: ClosureStore)
 
-  case class Store(store: Map[Symbol, Val], sstore: Map[Symbol, Closure]) {
+  case class Store(store: Map[Symbol, V], sstore: Map[Symbol, Closure]) {
     def lookup(s: Symbol) = store.get(s)
     def slookup(s: Symbol) = sstore.get(s)
 
-    def +(p1: Symbol, p2: Val) = Store(store + (p1 -> p2), sstore)
+    def +(p1: Symbol, p2: V) = Store(store + (p1 -> p2), sstore)
     def +(p1: Symbol, p2: Closure) = Store(store, sstore + (p1 -> p2))
 
     def join(other: Store): Store = {
@@ -28,7 +28,7 @@ trait StoreTrait[D <: Domain] {
       for ((x, t) <- other.store)
         store.get(x) match {
           case None => store += (x -> t)
-          case Some(t0) => store += (x -> dom.join(t0, t))
+          case Some(t0) => store += (x -> (t0 || t))
         }
 
       var sstore = this.sstore

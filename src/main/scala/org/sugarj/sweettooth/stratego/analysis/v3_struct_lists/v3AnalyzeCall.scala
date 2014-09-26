@@ -8,8 +8,8 @@ import org.sugarj.sweettooth.stratego.analysis.v1.v1AnalyzeCall
 /**
   * Created by seba on 09/09/14.
   */
-trait v3AnalyzeCall[D <: ConcatenableDomain] extends v1AnalyzeCall[D] {
-  override def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: Val, store: Store, stack: Stack): (Val, Store) = {
+trait v3AnalyzeCall[V <: ConcatenableVal[V], D <: Domain[V]] extends v1AnalyzeCall[V, D] {
+  override def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: V, store: Store, stack: Stack): (V, Store) = {
     val d = defs.getOrElse(f, throw new RuntimeException(s"Undefined function $f"))
     if (d.svars.size != sargs.size)
       throw new RuntimeException(s"Wrong number of strategy arguments to $f. Expected ${d.tvars}, got $targs")
@@ -22,10 +22,10 @@ trait v3AnalyzeCall[D <: ConcatenableDomain] extends v1AnalyzeCall[D] {
       super.analyzeCall(f, sargs, targs, current, store, stack)
   }
 
-  def at_end(s: Exp, current: Val, store: Store, stack: Stack): (Val, Store) = {
+  def at_end(s: Exp, current: V, store: Store, stack: Stack): (V, Store) = {
     // `Nil` or `Cons(?,?)`
-    if (dom.compare(current, dom.liftApp('_Nil)) ||
-        dom.compare(current, dom.liftApp('_Cons, dom.top, dom.top)))
+    if (current <= dom.liftApp('_Nil) ||
+        current <= dom.liftApp('_Cons, dom.top, dom.top))
       super.analyzeCall('at_end_1_0, List(s), List(), current, store, stack)
     else {
       val (sres,st) = analyze(s, dom.liftApp('_Nil), store, stack)

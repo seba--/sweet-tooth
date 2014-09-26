@@ -7,8 +7,8 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
   * Created by seba on 09/09/14.
   */
-trait v1AnalyzeScoped[D <: Domain] extends AnalyzeScoped[D] {
-  def analyzeScoped(x: Symbol, e: Exp, current: Val, store: Store, stack: Stack): (Val, Store) = {
+trait v1AnalyzeScoped[V <: Val[V], D <: Domain[V]] extends AnalyzeScoped[V,D] {
+  def analyzeScoped(x: Symbol, e: Exp, current: V, store: Store, stack: Stack): (V, Store) = {
     val orig = store.lookup(x)
     val (res, subStore) = analyze(e, current, Store(store.store - x, store.sstore), stack)
     orig match {

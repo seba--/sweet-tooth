@@ -8,8 +8,8 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
   * Created by seba on 09/09/14.
   */
-trait v1AnalyzeCall[D <: Domain] extends AnalyzeCall[D] {
-  def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: Val, store: Store, stack: Stack): (Val, Store) = {
+trait v1AnalyzeCall[V <: Val[V], D <: Domain[V]] extends AnalyzeCall[V,D] {
+  def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: V, store: Store, stack: Stack): (V, Store) = {
     val d = defs.getOrElse(f, throw new RuntimeException(s"Undefined function $f"))
     if (d.svars.size != sargs.size)
       throw new RuntimeException(s"Wrong number of strategy arguments to $f. Expected ${d.tvars}, got $targs")

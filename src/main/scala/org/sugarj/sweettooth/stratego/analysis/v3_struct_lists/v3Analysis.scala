@@ -8,14 +8,14 @@ import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2AnalyzeMatch
 /**
  * Created by seba on 09/09/14.
  */
-trait v3Analysis[D <: ConcatenableDomain] extends
-  Analysis[D] with
-  v1AnalyzeSVar[D] with
-  v1AnalyzeBuild[D] with
-  v2AnalyzeMatch[D] with
-  v1AnalyzeSeq[D] with
-  v1AnalyzeIf[D] with
-  v3AnalyzeCall[D] with
-  v1AnalyzeScoped[D] {
+trait v3Analysis[V <: ConcatenableVal[V], D <: Domain[V]] extends
+  Analysis[V,D] with
+  v1AnalyzeSVar[V,D] with
+  v1AnalyzeBuild[V,D] with
+  v2AnalyzeMatch[V,D] with
+  v1AnalyzeSeq[V,D] with
+  v1AnalyzeIf[V,D] with
+  v3AnalyzeCall[V,D] with
+  v1AnalyzeScoped[V,D] {
 
 }

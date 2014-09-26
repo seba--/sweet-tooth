@@ -6,6 +6,6 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
   * Created by seba on 09/09/14.
   */
-trait AnalyzeMatch[D <: Domain] extends AnalyzeBase[D] {
-  def analyzeMatch(matchPat: Pat, current: Val, store: Store, stack: Stack): (Val, Store)
+trait AnalyzeMatch[V <: Val[V], D <: Domain[V]] extends AnalyzeBase[V, D] {
+  def analyzeMatch(matchPat: Pat, current: V, store: Store, stack: Stack): (V, Store)
 }

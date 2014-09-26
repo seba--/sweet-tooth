@@ -1,14 +1,15 @@
 package org.sugarj.sweettooth.stratego.analysis.v1
 
+import org.sugarj.sweettooth.stratego.Semantics.Fail
 import org.sugarj.sweettooth.stratego.Syntax.{SVar, Exp, Pat}
 import org.sugarj.sweettooth.stratego.analysis.base.AnalyzeCall
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 
 /**
   * Created by seba on 09/09/14.
   */
-trait v1AnalyzeCall[V, D <: Domain[V]] extends AnalyzeCall[V,D] {
-  def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: V, store: Store, stack: Stack): (V, Store) = {
+trait v1AnalyzeCall[D <: Domain] extends AnalyzeCall[D] {
+  def analyzeCall(f: Symbol, sargs: List[Exp], targs: List[Pat], current: Val, store: Store, stack: Stack): (Val, Store) = {
     val d = defs.getOrElse(f, throw new RuntimeException(s"Undefined function $f"))
     if (d.svars.size != sargs.size)
       throw new RuntimeException(s"Wrong number of strategy arguments to $f. Expected ${d.tvars}, got $targs")
@@ -23,9 +24,16 @@ trait v1AnalyzeCall[V, D <: Domain[V]] extends AnalyzeCall[V,D] {
     stack.terminate(f, sStore, tStore, current, store) match {
       case Some(v) => (v, store)
       case None =>
-        val extStack = stack.push(f, sStore, tStore, current, store)
-        val (t, _) = analyze(d.body, current, Store(tStore, sStore), extStack)
-        (t, clStore.store)
+        stack.push(f, sStore, tStore, current, store)
+        try {
+          val (t,_) = analyze(d.body, current, Store(tStore, sStore), stack)
+          stack.popSuccess(f, sStore, tStore, current, store, t)
+          (t, clStore.store)
+        } catch {
+          case fail:Fail =>
+            stack.popFail(f, sStore, tStore, current, store)
+            throw fail
+        }
     }
   }
 }

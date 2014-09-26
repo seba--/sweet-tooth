@@ -2,13 +2,13 @@ package org.sugarj.sweettooth.stratego.analysis.v2_refine_match
 
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.analysis.base._
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 import org.sugarj.sweettooth.stratego.Semantics.Fail
 /**
   * Created by seba on 09/09/14.
   */
-trait v2AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
-  def analyzeMatch(p: Pat, current: V, store: Store, stack: Stack): (V, Store) = {
+trait v2AnalyzeMatch[D <: Domain] extends AnalyzeMatch[D] {
+  def analyzeMatch(p: Pat, current: Val, store: Store, stack: Stack): (Val, Store) = {
     val (refined, mStore) = matchPat(p, current, store)
 
 //    assert (dom.compare(refined, current), s"$refined is not more precise than $current")
@@ -18,7 +18,7 @@ trait v2AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
     (refined, mStore)
   }
 
-  def matchPat(p: Pat, t: V, store: Store): (V, Store) = p match {
+  def matchPat(p: Pat, t: Val, store: Store): (Val, Store) = p match {
     case Pat.Lit(v) =>
       val lit = dom.liftLit(v)
       if (dom.compare(lit, t)) // v maybe matches t

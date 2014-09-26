@@ -9,13 +9,12 @@ import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2Analysis
  */
 trait Config {
   object dom extends d1_PowersetDomain.D
-  type V = d1_PowersetDomain.T
   type D = dom.type
 
   object analysis extends
-  v2Analysis[V, D] with
-  BasicStack[V, D] with
-  StoreTrait[V, D] {
+  v2Analysis[D] with
+  BasicStack[D] with
+  StoreTrait[D] {
     val dom = Config.this.dom
   }
 }

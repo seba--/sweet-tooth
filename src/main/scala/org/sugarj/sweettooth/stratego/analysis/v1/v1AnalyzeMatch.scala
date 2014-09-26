@@ -2,18 +2,18 @@ package org.sugarj.sweettooth.stratego.analysis.v1
 
 import org.sugarj.sweettooth.stratego.Syntax._
 import org.sugarj.sweettooth.stratego.analysis.base._
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 import org.sugarj.sweettooth.stratego.Semantics.Fail
 /**
   * Created by seba on 09/09/14.
   */
-trait v1AnalyzeMatch[V, D <: Domain[V]] extends AnalyzeMatch[V,D] {
-  def analyzeMatch(p: Pat, current: V, store: Store, stack: Stack): (V, Store) = {
+trait v1AnalyzeMatch[D <: Domain] extends AnalyzeMatch[D] {
+  def analyzeMatch(p: Pat, current: Val, store: Store, stack: Stack): (Val, Store) = {
     val mStore = matchPat(p, current, store)
     (current, mStore)
   }
 
-  def matchPat(p: Pat, t: V, store: Store): Store = p match {
+  def matchPat(p: Pat, t: Val, store: Store): Store = p match {
     case Pat.Lit(v) =>
       if (dom.compare(dom.liftLit(v), t)) // v maybe matches t
         store

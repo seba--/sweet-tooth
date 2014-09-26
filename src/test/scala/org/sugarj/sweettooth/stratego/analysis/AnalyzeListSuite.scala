@@ -3,6 +3,7 @@ package org.sugarj.sweettooth.stratego.analysis
 import org.sugarj.sweettooth.stratego
 import org.sugarj.sweettooth.stratego.Semantics._
 import org.sugarj.sweettooth.stratego.Syntax._
+import org.sugarj.sweettooth.stratego.analysis.domain.Val
 import org.sugarj.sweettooth.stratego.lib.List._
 
 import scala.language.implicitConversions
@@ -20,28 +21,28 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
     else
       Trm.App(Symbol(s"Elem_${n-1}"))::mkListOfLength(n-1)
 
-  val nil: V
+  val nil: Val
   test_analysis("nil")(Call('nil_0_0), lift(Trm.App('Foo)))(nil)
 
-  val cons1: V
+  val cons1: Val
   test_analysis("cons1")(Call('cons_0_0), lift(Trm.App('_, Trm.App('Foo), Trm.App('_Nil))))(cons1)
 
-  def cons(l: List[Trm]): V
+  def cons(l: List[Trm]): Val
   for (i <- 1 to 20) {
     val l = mkListOfLength(i)
     test_analysis(s"cons $i")(Call('cons_0_0), lift(Trm.App('_, Trm.App('Foo), l)))(cons(l))
   }
 
-  val cons_top_Nil: V
+  val cons_top_Nil: Val
   test_analysis("cons top nil")(Call('cons_0_0), dom.liftApp('_, dom.top, dom.liftApp('_Nil)))(cons_top_Nil)
 
-  val cons_Zero_top: V
+  val cons_Zero_top: Val
   test_analysis("cons Zero top")(Call('cons_0_0), dom.liftApp('_, dom.liftApp('_Nil), dom.top))(cons_Zero_top)
 
-  val pair_to_list_top_top: V
-  val pair_to_list_top_Zero: V
-  val pair_to_list_Zero_top: V
-  val pair_to_list_Zero_One: V
+  val pair_to_list_top_top: Val
+  val pair_to_list_top_Zero: Val
+  val pair_to_list_Zero_top: Val
+  val pair_to_list_Zero_One: Val
 
   val pairToList = Seqs(
     ??('_@@('x, 'y)),
@@ -55,52 +56,52 @@ abstract class AnalyzeListSuite extends AnalysisSuite {
   test_analysis("pair to list zero top")(pairToList, dom.liftApp('_, dom.liftApp('Zero), dom.top))(pair_to_list_Zero_top)
   test_analysis("pair to list zero one")(pairToList, dom.liftApp('_, dom.liftApp('Zero), dom.liftApp('One)))(pair_to_list_Zero_One)
 
-  def map(l: List[Trm]): V
+  def map(l: List[Trm]): Val
   for (i <- 0 to 20) {
     val s = Scoped('x, Seq(Match('x), Build('_ @@('Zero @@(), 'x))))
     val l = mkListOfLength(i)
     test_analysis(s"map $i")(Call('map_1_0, scala.List(s), scala.List()), lift(l))(map(l))
   }
 
-  val map_top: V
+  val map_top: Val
   val s = Scoped('x, Seq(Match('x), Build('Zero@@())))
   test_analysis("map top")(Call('map_1_0, scala.List(s), scala.List()), dom.top)(map_top)
 
-  val conc_top: V
+  val conc_top: Val
   test_strat("conc", "top")(dom.top)(conc_top)
 
-  val conc_toptop: V
+  val conc_toptop: Val
   test_strat("conc", "top,top")(dom.liftApp('_, dom.top, dom.top))(conc_toptop)
 
-  val conc_FooBar_top: V
+  val conc_FooBar_top: Val
   test_strat("conc", "[Foo,Bar] top")(dom.liftApp('_, lift(List(Trm.App('Foo), Trm.App('Bar))), dom.top))(conc_FooBar_top)
 
-  val conc_top_FooBar: V
+  val conc_top_FooBar: Val
   test_strat("conc", "top [Foo,Bar]")(dom.liftApp('_, dom.top, lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_top_FooBar)
 
-  val conc_topBaz_FooBar: V
+  val conc_topBaz_FooBar: Val
   test_strat("conc", "[top, Baz] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('_Cons, dom.top, lift(List(Trm.App('Baz)))), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaz_FooBar)
 
-  val conc_topBaztop_FooBar: V
+  val conc_topBaztop_FooBar: Val
   test_strat("conc", "[top, Baz | top] [Foo,Bar]")(dom.liftApp('_, dom.liftApp('_Cons, dom.top, dom.liftApp('_Cons, dom.liftApp('Baz), dom.top)), lift(List(Trm.App('Foo), Trm.App('Bar)))))(conc_topBaztop_FooBar)
 
-  val atend_top_FooBar : V
+  val atend_top_FooBar : Val
   val arg = Pat.App('_Cons, Pat.App('Foo), Pat.App('_Cons, Pat.App('Bar), Pat.App('_Nil)))
   test_analysis("<at-end(|[Foo,Bar])> top")(Call('at_end_1_0, List(Build(arg)), List()), dom.top)(atend_top_FooBar)
 
-  val atend_top_FooBarBaz : V
+  val atend_top_FooBarBaz : Val
   val arg2 = Pat.App('_Cons, Pat.App('Foo), Pat.App('_Cons, Pat.App('Bar), Pat.App('_Cons, Pat.App('Baz), Pat.App('_Nil))))
   test_analysis("<at-end(|[Foo,Bar,Baz])> top")(Call('at_end_1_0, List(Build(arg2)), List()), dom.top)(atend_top_FooBarBaz)
 
-  val isempty_conc_top: V
+  val isempty_conc_top: Val
   test_strat("is-empty", "<conc> top")(dom.top)(isempty_conc_top)
 
-  val isempty_conc_toptop: V
+  val isempty_conc_toptop: Val
   test_strat("is-empty", "<conc> (top,top)")(conc_toptop)(isempty_conc_toptop)
 
-  val isempty_conc_FooBar_top: V
+  val isempty_conc_FooBar_top: Val
   test_strat("is-empty", "<conc> ([Foo,Bar], top)")(conc_FooBar_top)(isempty_conc_FooBar_top)
 
-  val isempty_conc_top_FooBar: V
+  val isempty_conc_top_FooBar: Val
   test_strat("is-empty", "<conc> (top, [Foo,Bar])")(conc_top_FooBar)(isempty_conc_top_FooBar)
 }

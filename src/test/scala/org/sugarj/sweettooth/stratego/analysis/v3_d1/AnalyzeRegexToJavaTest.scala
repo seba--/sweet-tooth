@@ -2,6 +2,7 @@ package org.sugarj.sweettooth.stratego.analysis.v3_d1
 
 import org.sugarj.sweettooth.stratego.Syntax.Cons
 import org.sugarj.sweettooth.stratego.analysis.AnalyzeRegexToJavaStringSuite
+import org.sugarj.sweettooth.stratego.analysis.domain.Val
 
 import scala.language.implicitConversions
 
@@ -10,7 +11,7 @@ import scala.language.implicitConversions
 */
 class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
 
-  override def a_at_end(current: V, end: V, stack:List[(V,V)]=List()): V = {
+  override def a_at_end(current: Val, end: Val, stack:List[(Val,Val)]=List()): Val = {
     if (dom.compare(current, dom.liftApp('_Nil)) ||
         dom.compare(current, dom.liftApp('_Cons, dom.top, dom.top)))
       super.a_at_end(current, end, stack)
@@ -18,7 +19,7 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
       dom.liftApp('_Conc, current, end)
   }
 
-  def bracket_top_rec(v: V) =
+  def bracket_top_rec(v: Val) =
     dom.liftApp('_String,
       dom.liftApp('_Cons, dom.liftLit('['),
         a_at_end(v, dom.liftApp('_Cons, dom.liftLit(']'), dom.liftApp('_Nil)))))

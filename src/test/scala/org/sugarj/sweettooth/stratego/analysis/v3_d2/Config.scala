@@ -8,14 +8,13 @@ import org.sugarj.sweettooth.stratego.analysis.v3_struct_lists.{ConcatenableDoma
  * Created by seba on 10/09/14.
  */
 trait Config {
-  type V = d2_PowersetFlagDomain.T
-  object dom extends d2_PowersetFlagDomain.D with ConcatenableDomain[V]
+  object dom extends d2_PowersetFlagDomain.D with ConcatenableDomain
   type D = dom.type
 
   object analysis extends
-  v3Analysis[V, D] with
-  BasicStack[V, D] with
-  StoreTrait[V, D] {
+  v3Analysis[D] with
+  BasicStack[D] with
+  StoreTrait[D] {
     val dom = Config.this.dom
   }
 }

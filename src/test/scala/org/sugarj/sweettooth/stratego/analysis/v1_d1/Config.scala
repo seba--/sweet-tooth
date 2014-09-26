@@ -10,12 +10,11 @@ import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 trait Config {
   object dom extends d1_PowersetDomain.D
   type D = dom.type
-  type V = d1_PowersetDomain.T
 
   object analysis extends
-  v1Analysis[V, D] with
-  BasicStack[V, D] with
-  StoreTrait[V, D] {
+  v1Analysis[D] with
+  BasicStack[D] with
+  StoreTrait[D] {
     val dom = Config.this.dom
   }
 }

@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 import org.sugarj.sweettooth.stratego.Semantics.Fail
 import org.sugarj.sweettooth.stratego.Syntax.{Call, Exp, Trm}
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 import org.sugarj.sweettooth.stratego.lib.Library
 import scala.language.implicitConversions
 
@@ -18,21 +18,20 @@ object AnalysisSuite {
 abstract class AnalysisSuite extends FunSuite {
   val prefix = this.getClass.getPackage.getName.substring(getClass.getPackage.getName.lastIndexOf('.') + 1)
 
-  type V
-  type D <: Domain[V]
+  type D <: Domain
   val dom: D
 
-  val analysis: Analysis[V, D]
+  val analysis: Analysis[D]
   val baseLib: Library
 
   def lift(t: Trm) = dom.lift(t)
 
   abstract class Spec
-  case class Equals(v: V) extends Spec
-  case class BoundBy(lower: V, upper: V) extends Spec
-  implicit def equalsSpec(v: V): Spec = Equals(v)
+  case class Equals(v: Val) extends Spec
+  case class BoundBy(lower: Val, upper: Val) extends Spec
+  implicit def equalsSpec(v: Val): Spec = Equals(v)
 
-  def test_analysis(name: String)(e: Exp, input: =>V)(expected: =>Spec): Unit =
+  def test_analysis(name: String)(e: Exp, input: =>Val)(expected: =>Spec): Unit =
     test(s"$prefix: $name") {
       try {
         val res = analysis.analyze(e, input, baseLib.DEFS)
@@ -57,7 +56,7 @@ abstract class AnalysisSuite extends FunSuite {
       }
     }
 
-  def test_strat(strat: String, name: String)(input: =>V)(expected: =>Spec) = {
+  def test_strat(strat: String, name: String)(input: =>Val)(expected: =>Spec) = {
     val normStrat = s"${strat.replace('-','_')}_0_0"
     test_analysis(s"<$strat> ($name)")(Call(Symbol(normStrat)), input)(expected)
   }

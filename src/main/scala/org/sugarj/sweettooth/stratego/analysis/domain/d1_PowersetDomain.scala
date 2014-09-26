@@ -5,9 +5,8 @@ import org.sugarj.sweettooth.stratego.Syntax.{Trm, Pat, Cons, litLT}
 object d1_PowersetDomain {
   import Trm.Lit
 
-  type T = Option[TS] // None represents the infinite set, Some represents finite sets
-
-  case class TS(lits: Set[Lit[_]], apps: Map[Cons, List[T]]) {
+  case object Inf extends Val
+  case class Fin(lits: Set[Lit[_]], apps: Map[Cons, List[Val]]) extends Val {
     def isEmpty = lits.isEmpty && apps.isEmpty
     def size = lits.size + apps.size
 
@@ -26,86 +25,85 @@ object d1_PowersetDomain {
       litString + appString + ")"
     }
 
-    def listString(xs: List[T]): String = xs match {
+    def listString(xs: List[Val]): String = xs match {
       case Nil => ""
       case x::Nil => x.toString
       case x::xs => x.toString + ", " + listString(xs)
     }
   }
 
-  trait D extends Domain[T] {
-    def bottom: T = Some(TS(Set(), Map()))
-    def top: T = None
+  trait D extends Domain {
+    def bottom: Val = Fin(Set(), Map())
+    def top: Val = Inf
 
-    def compare(morePrecise: T, lessPrecise: T): Boolean = (morePrecise, lessPrecise) match {
-      case (_,None) => true
-      case (None,_) => false
-      case (Some(s1), Some(s2)) =>
+    def compare(morePrecise: Val, lessPrecise: Val): Boolean = (morePrecise, lessPrecise) match {
+      case (_,Inf) => true
+      case (Inf,_) => false
+      case (Fin(lits1, apps1), Fin(lits2, apps2)) =>
 
-        def findInS2(t1: (Cons, List[T])): Boolean = s2.apps.get(t1._1) match {
+        def findInS2(t1: (Cons, List[Val])): Boolean = apps2.get(t1._1) match {
           case None => false
           case Some(args2) => t1._2.zip(args2).forall{p => compare(p._1, p._2)}
         }
 
-        s1.lits.forall(s2.lits.contains(_)) &&
-        s1.apps.forall(findInS2)
+        lits1.forall(lits2.contains(_)) && apps1.forall(findInS2)
     }
 
-    def join(t1: T, t2: T): T = (t1,t2) match {
-      case (None,_) => None
-      case (_,None) => None
-      case (Some(s1), Some(s2)) => Some(TS(s1.lits ++ s2.lits, mergeUnion(s1.apps, s2.apps)))
+    def join(t1: Val, t2: Val): Val = (t1,t2) match {
+      case (Inf,_) => Inf
+      case (_,Inf) => Inf
+      case (Fin(lits1, apps1), Fin(lits2, apps2)) => Fin(lits1 ++ lits2, mergeUnion(apps1, apps2))
     }
 
-    def meet(t1: T, t2: T): T = (t1,t2) match {
-      case (None,_) => t2
-      case (_,None) => t1
-      case (Some(s1), Some(s2)) => Some(TS(s1.lits.intersect(s2.lits), mergeIntersect(s1.apps, s2.apps)))
+    def meet(t1: Val, t2: Val): Val = (t1,t2) match {
+      case (Inf,_) => t2
+      case (_,Inf) => t1
+      case (Fin(lits1, apps1), Fin(lits2, apps2)) => Fin(lits1.intersect(lits2), mergeIntersect(apps1, apps2))
     }
 
-//    def diff(t1: T, t2: T): T = (t1,t2) match {
+//    def diff(t1: Val, t2: Val): Val = (t1,t2) match {
 //      case (None,_) => None
 //      case (_,None) => t1
 //      case (Some(s1), Some(s2)) => Some(TS(s1.lits -- s2.lits, mergeDiff(s1.apps, s2.apps)))
 //    }
 
-    def matchAppPat(cons: Cons, t: T): Set[List[T]] = t match {
-      case None => Set(for (i <- (1 to cons.ar).toList) yield top)
-      case Some(TS(_,apps)) => apps.get(cons) match {
+    def matchAppPat(cons: Cons, t: Val): Set[List[Val]] = t match {
+      case Inf => Set(for (i <- (1 to cons.ar).toList) yield top)
+      case Fin(_,apps) => apps.get(cons) match {
         case None => Set()
         case Some(xs) => Set(xs)
       }
     }
 
-    def liftLit[V](v: V) = Some(TS(Set(Lit(v)), Map()))
-    def liftApp(cons: Cons, xs: List[T]): T = Some(TS(Set(), Map(cons -> xs)))
+    def liftLit[V](v: V) = Fin(Set(Lit(v)), Map())
+    def liftApp(cons: Cons, xs: List[Val]): Val = Fin(Set(), Map(cons -> xs))
 
-    def explode(t: T, depth: Int): List[Pat] = t match {
-      case None => List(Pat.Var('?))
-      case Some(ts) =>
-        val litExplode = ts.lits.toList map {case Lit(l) => Pat.Lit(l)}
-        val appExplode = ts.apps flatMap(p => explodeApp(p._1, p._2, depth))
-        litExplode ++ appExplode
-    }
-
-    def explodeApp(cons: Cons, args: List[T], depth: Int): List[Pat] =
-      if (depth <= 1)
-        List(Pat.Var('_ooo))
-      else {
-        val ls = args map (explode(_, depth-1))
-        crossProduct(ls) map (args => Pat.App(cons, args))
-      }
-
-    def crossProduct[T](tss: List[List[T]]): List[List[T]] =
-      if (tss.isEmpty)
-        List(List())
-      else if (tss.tail.isEmpty)
-        tss.head map (List(_))
-      else {
-        val rest = crossProduct(tss.tail)
-        for (prod <- rest;
-             ts <- tss.head)
-        yield ts :: prod
-      }
+//    def explode(t: Val, depth: Int): List[Pat] = t match {
+//      case None => List(Pat.Var('?))
+//      case Some(ts) =>
+//        val litExplode = ts.lits.toList map {case Lit(l) => Pat.Lit(l)}
+//        val appExplode = ts.apps flatMap(p => explodeApp(p._1, p._2, depth))
+//        litExplode ++ appExplode
+//    }
+//
+//    def explodeApp(cons: Cons, args: List[T], depth: Int): List[Pat] =
+//      if (depth <= 1)
+//        List(Pat.Var('_ooo))
+//      else {
+//        val ls = args map (explode(_, depth-1))
+//        crossProduct(ls) map (args => Pat.App(cons, args))
+//      }
+//
+//    def crossProduct[T](tss: List[List[T]]): List[List[T]] =
+//      if (tss.isEmpty)
+//        List(List())
+//      else if (tss.tail.isEmpty)
+//        tss.head map (List(_))
+//      else {
+//        val rest = crossProduct(tss.tail)
+//        for (prod <- rest;
+//             ts <- tss.head)
+//        yield ts :: prod
+//      }
   }
 }

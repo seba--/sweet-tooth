@@ -1,23 +1,23 @@
 package org.sugarj.sweettooth.stratego.analysis.base
 
 import org.sugarj.sweettooth.stratego.Syntax.Exp
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 
 /**
  * Created by seba on 09/09/14.
  */
-trait StoreTrait[V, D <: Domain[V]] {
+trait StoreTrait[D <: Domain] {
   val dom: D
   val emptyStore = Store(Map(), Map())
 
   case class ClosureStore(var store: Store)
   case class Closure(e: Exp, store: ClosureStore)
 
-  case class Store(store: Map[Symbol, V], sstore: Map[Symbol, Closure]) {
+  case class Store(store: Map[Symbol, Val], sstore: Map[Symbol, Closure]) {
     def lookup(s: Symbol) = store.get(s)
     def slookup(s: Symbol) = sstore.get(s)
 
-    def +(p1: Symbol, p2: V) = Store(store + (p1 -> p2), sstore)
+    def +(p1: Symbol, p2: Val) = Store(store + (p1 -> p2), sstore)
     def +(p1: Symbol, p2: Closure) = Store(store, sstore + (p1 -> p2))
 
     def join(other: Store): Store = {

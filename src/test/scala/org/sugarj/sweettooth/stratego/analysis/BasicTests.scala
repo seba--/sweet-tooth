@@ -2,7 +2,7 @@ package org.sugarj.sweettooth.stratego.analysis
 
 import org.scalatest.FunSuite
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
-import org.sugarj.sweettooth.stratego.analysis.domain.{d2_PowersetFlagDomain, d1_PowersetDomain, Domain}
+import org.sugarj.sweettooth.stratego.analysis.domain.{d1_PowersetDomainFactory, Domain}
 
 import scala.language.implicitConversions
 
@@ -12,7 +12,8 @@ class BasicTests extends FunSuite {
 
 //  type V
 //  type D <: Domain[V]
-  object dom extends d2_PowersetFlagDomain.D
+//  object dom extends d2_PowersetFlagDomain.D
+
 
 //  test (s"$prefix: diff 1") {
 //    val x = dom.liftApp('Foo, dom.join(dom.liftLit(1), dom.liftLit(2)), dom.join(dom.liftLit(3), dom.liftLit(4)))

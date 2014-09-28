@@ -1,7 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.v3_struct_lists
 
 import org.sugarj.sweettooth.stratego.analysis.base.Analysis
-import org.sugarj.sweettooth.stratego.analysis.domain.Domain
+import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 import org.sugarj.sweettooth.stratego.analysis.v1._
 import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2AnalyzeMatch
 

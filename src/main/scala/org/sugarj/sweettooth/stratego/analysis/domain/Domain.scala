@@ -11,11 +11,6 @@ trait Val[V <: Val[V]] {
   /* meet this value with another value */
   def &&(t2: V): V
 
-  def ||(t2: V, t3: V, ts: V*): V =
-    this || (t2::t3::List(ts:_*) reduce(_||_))
-  def &&(t2: V, t3: V, ts: V*): V =
-    this && (t2::t3::List(ts:_*) reduce(_&&_))
-
   def <=(lessPrecise: V): Boolean
   def >=(morePrecise: V): Boolean
   def <(lessPrecise: V) = !(this >= lessPrecise)

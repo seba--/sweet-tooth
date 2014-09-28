@@ -43,11 +43,11 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
     dom.liftApp('_String,
       dom.liftApp('_Cons, dom.liftLit('\\'), dom.top))
 
-  val ce2str_top = List(ce2str_lit_top, ce2str_range_top, ce2str_negation_top, ce2str_union_top, ce2str_intersection_top, ce2str_predefined_dot_top, ce2str_predefined_other_top).reduce(dom.join)
+  val ce2str_top = List(ce2str_lit_top, ce2str_range_top, ce2str_negation_top, ce2str_union_top, ce2str_intersection_top, ce2str_predefined_dot_top, ce2str_predefined_other_top).reduce(_||_)
 
   val r2str_lit1_top = dom.top
-  val r2str_lit2_top = dom.liftApp('_String, dom.join(dom.liftApp('_Nil), dom.liftApp('_Cons, dom.top, dom.top)))
-  val r2str_lit_top = dom.join(r2str_lit1_top, r2str_lit2_top)
+  val r2str_lit2_top = dom.liftApp('_String, dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.top, dom.top))
+  val r2str_lit_top = r2str_lit1_top || r2str_lit2_top
   val r2str_ccexp_top = dom.liftApp('_String, dom.liftApp('_Cons, dom.liftLit('['), dom.liftApp('_Cons, dom.top, dom.top)))
   val r2str_option_top = dom.liftApp('_String, dom.liftApp('_Cons, dom.liftLit('?'), dom.top))
   val r2str_many_top = dom.liftApp('_String, dom.liftApp('_Cons, dom.top, dom.top))

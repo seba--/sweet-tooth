@@ -19,11 +19,11 @@ class AnalyzeNumTest extends AnalyzeNumSuite with Config {
     expected
   }
   def plus(m: Int, n: Int) = lift(m + n)
-  val plus_top_top = dom.join(dom.top, dom.liftApp('Succ, List(dom.top)))
+  val plus_top_top = dom.mliftApp('Succ, dom.top)
   val plus_zero_top = dom.top
   val plus_one_top = dom.liftApp('Succ, List(dom.top))
-  val plus_oneMore_top = dom.liftApp('Succ, List(dom.join(dom.top, dom.liftApp('Succ, List(dom.top)))))
-  val plus_top_one = dom.liftApp('Succ, List(dom.join(dom.top, dom.liftApp('Zero))))
+  val plus_oneMore_top = dom.liftApp('Succ, List(dom.mliftApp('Succ, dom.top)))
+  val plus_top_one = dom.liftApp('Succ, List(dom.mliftApp('Zero)))
   val plus_top_oneMore = dom.liftApp('Succ, List(dom.top))
   val plus_oneMore_oneMore = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
   val plus_two_top = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))

@@ -6,32 +6,24 @@ trait d1_PowersetDomainFactory {
   import Trm.Lit
 
   type Vx <: Val[Vx]
-  val domain: Domain[Vx]
-  trait Factory {
-    def makeInf: Vx
-    def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]): Vx
-  }
-  val factory: Factory
+  val domain: D
 
-
-  abstract class V extends Val[Vx] {
-    val dom = domain
-//    def matchCons(cons: Cons): Set[List[V]] = Set()
-  }
+  abstract class V extends Val[Vx]
+  
   class Inf extends V {
     def isBottom = false
     def isTop = true
-    def ||(v: Vx) = factory.makeInf
+    def ||(v: Vx) = domain.makeInf
     def &&(v: Vx) = v
     def <=(lessPrecise: Vx) = lessPrecise == this
     def >=(morePrecise: Vx) = true
-    def matchCons(cons: Cons) = Set(for (i <- (1 to cons.ar).toList) yield dom.top)
+    def matchCons(cons: Cons) = Set(for (i <- (1 to cons.ar).toList) yield domain.top)
     override def toString = "?"
     override def hashCode = 0
     override def equals(a: Any) = a.isInstanceOf[Inf]
   }
   object Inf {
-    def apply() = new Inf()
+    def apply() = domain.makeInf
     def unapply(v: Vx): Boolean = v.isInstanceOf[Inf]
   }
   class Fin(val lits: Set[Lit[_]], val apps: Map[Cons, List[Vx]]) extends V {
@@ -39,12 +31,12 @@ trait d1_PowersetDomainFactory {
     def isTop = false
     def ||(v: Vx) = v match {
       case Inf() => v
-      case Fin(lits2, apps2) => factory.makeFin(lits ++ lits2, mergeUnion(apps, apps2))
+      case Fin(lits2, apps2) => domain.makeFin(lits ++ lits2, mergeUnion(apps, apps2))
     }
 
     def &&(v: Vx) = v match {
-      case Inf() => factory.makeInf
-      case Fin(lits2, apps2) => factory.makeFin(lits intersect lits2, mergeIntersect(apps, apps2))
+      case Inf() => domain.makeInf
+      case Fin(lits2, apps2) => domain.makeFin(lits intersect lits2, mergeIntersect(apps, apps2))
     }
 
     def <=(lessPrecise: Vx) = lessPrecise match {
@@ -57,7 +49,7 @@ trait d1_PowersetDomainFactory {
         lits.forall(lits2.contains(_)) && apps.forall(findInS2)
     }
 
-    def >=(morePrecise: Vx) = morePrecise <= factory.makeFin(lits, apps)
+    def >=(morePrecise: Vx) = morePrecise <= domain.makeFin(lits, apps)
     def matchCons(cons: Cons) = apps.get(cons) match {
       case None => Set()
       case Some(xs) => Set(xs)
@@ -99,7 +91,7 @@ trait d1_PowersetDomainFactory {
 
   }
   object Fin {
-    def apply(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = factory.makeFin(lits, apps)
+    def apply(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = domain.makeFin(lits, apps)
     def unapply(v: Vx): Option[(Set[Lit[_]], Map[Cons, List[Vx]])] =
       if (v.isInstanceOf[Fin]) {
         val w = v.asInstanceOf[Fin]
@@ -110,10 +102,13 @@ trait d1_PowersetDomainFactory {
   }
 
   trait D extends Domain[Vx] {
-    def bottom: Vx = factory.makeFin(Set(), Map())
-    def top: Vx = factory.makeInf
+    def bottom: Vx = makeFin(Set(), Map())
+    def top: Vx = makeInf
 
-    def liftLit[T](v: T): Vx = factory.makeFin(Set(Lit(v)), Map())
-    def liftApp(cons: Cons, xs: List[Vx]): Vx = factory.makeFin(Set(), Map(cons -> xs))
+    def liftLit[T](v: T): Vx = makeFin(Set(Lit(v)), Map())
+    def liftApp(cons: Cons, xs: List[Vx]): Vx = makeFin(Set(), Map(cons -> xs))
+
+    def makeInf: Vx
+    def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]): Vx
   }
 }

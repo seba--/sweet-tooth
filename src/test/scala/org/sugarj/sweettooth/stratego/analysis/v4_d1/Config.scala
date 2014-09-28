@@ -13,28 +13,24 @@ import org.sugarj.sweettooth.stratego.analysis.v4._
 */
 trait Config {
   object factory extends d1_PowersetDomainFactory {
-    trait Vx extends Val[Vx] with BoxableVal[Vx] // trait Vx extends V with BoxVal[Vx]
+    trait Vx extends Val[Vx] with BoxableVal[Vx]
     class ConcInf extends Inf with Vx with NoBox[Vx]
     class ConcFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) extends Fin(lits, apps) with Vx with NoBox[Vx]
     class ConcBoxVal extends BoxVal[Vx] with Vx
 
-    trait D extends super.D with BoxDomain[Vx] {
+    object domain extends D with BoxDomain[Vx] {
+      def makeInf = new ConcInf()
+      def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = new ConcFin(lits, apps)
       def makeBox(v: Vx) = {
         val b = new ConcBoxVal
         b.target = v
         b
       }
     }
-
-    object domain extends D
-    object factory extends Factory {
-      def makeInf = new ConcInf()
-      def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = new ConcFin(lits, apps)
-    }
   }
   val dom = factory.domain
   type V = factory.Vx
-  type D = factory.D
+  type D = dom.type
 
   object analysis extends
   v2Analysis[V, D] with

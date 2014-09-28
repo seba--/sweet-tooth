@@ -12,8 +12,7 @@ import org.sugarj.sweettooth.stratego.analysis.v2_refine_match.v2Analysis
 trait Config {
   object factory extends d2_PowersetTopTraceDomainFactory {
     type Vx = V
-    object domain extends D
-    object factory extends Factory {
+    object domain extends D {
       def makeMFin(lits: Set[Lit[_]], apps: Map[Cons, List[V]], inf: Boolean) = new MFin(lits, apps, inf)
     }
   }

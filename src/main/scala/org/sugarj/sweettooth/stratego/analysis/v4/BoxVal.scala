@@ -21,6 +21,24 @@ trait NoBox[V <: Val[V]] extends BoxableVal[V] {
   def isBoxable = false
   def target = throw new UnsupportedOperationException
   def target_=(v: V) = throw new UnsupportedOperationException
+
+  abstract override def ||(v: V) = v match {
+    case BoxVal(target) => this || target
+    case _ => super.||(v)
+  }
+  abstract override def &&(v: V) = v match {
+    case BoxVal(target) => this && target
+    case _ => super.&&(v)
+  }
+
+  abstract override def <=(lessPrecise: V) = lessPrecise match {
+    case BoxVal(target) => this <= target
+    case _ => super.<=(lessPrecise)
+  }
+  abstract override def >=(morePrecise: V) = morePrecise match {
+    case BoxVal(target) => this <= target
+    case _ => super.>=(morePrecise)
+  }
 }
 
 abstract class BoxVal[V <: Val[V]] extends BoxableVal[V] {
@@ -30,13 +48,22 @@ abstract class BoxVal[V <: Val[V]] extends BoxableVal[V] {
   def isBottom = target.isBottom
   def isTop = target.isTop
 
-  def ||(v: V) = target || v
-  def &&(v: V) = target && v
+  def ||(v: V) = if (this == v) v else target || v
+  def &&(v: V) = if (this == v) v else target && v
 
-  def <=(lessPrecise: V) = target <= lessPrecise
-  def >=(morePrecise: V) = target >= morePrecise
+  def <=(lessPrecise: V) = this == lessPrecise || target <= lessPrecise
+  def >=(morePrecise: V) = this == morePrecise || target >= morePrecise
 
   def matchCons(cons: Cons) = target.matchCons(cons)
+
+  override def toString = s"Box($target)"
+}
+object BoxVal {
+  def unapply[V <: Val[V]](v: Val[V]): Option[V] =
+    if (v.isInstanceOf[BoxVal[_]])
+      Some(v.asInstanceOf[BoxVal[V]].target)
+    else
+      None
 }
 
 trait BoxDomain[V <: Val[V]] extends Domain[V] {

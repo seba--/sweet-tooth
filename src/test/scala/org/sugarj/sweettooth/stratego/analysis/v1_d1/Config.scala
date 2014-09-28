@@ -12,8 +12,7 @@ import org.sugarj.sweettooth.stratego.analysis.v1.v1Analysis
 trait Config {
   object factory extends d1_PowersetDomainFactory {
     type Vx = V
-    object domain extends D
-    object factory extends Factory {
+    object domain extends D {
       def makeInf = new Inf()
       def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[V]]) = new Fin(lits, apps)
     }

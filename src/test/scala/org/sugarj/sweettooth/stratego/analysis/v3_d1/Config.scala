@@ -11,12 +11,13 @@ import org.sugarj.sweettooth.stratego.analysis.v3_struct_lists.{ConcatenableVal,
 */
 trait Config {
   object factory extends d1_PowersetDomainFactory {
-    trait Vx extends V with ConcatenableVal[Vx]
+    trait Vx extends V with ConcatenableVal[Vx] {
+      val dom = domain
+    }
     class ConcInf extends Inf with Vx
     class ConcFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) extends Fin(lits, apps) with Vx
 
-    object domain extends D
-    object factory extends Factory {
+    object domain extends D {
       def makeInf = new ConcInf()
       def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = new ConcFin(lits, apps)
     }

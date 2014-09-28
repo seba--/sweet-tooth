@@ -18,6 +18,8 @@ trait d2_PowersetTopTraceDomainFactory {
 //    def matchCons(cons: Cons): Set[List[V]] = Set()
   }
   class MFin(val lits: Set[Lit[_]], val apps: Map[Cons, List[Vx]], val inf: Boolean) extends V {
+    def isBottom = !inf && lits.isEmpty && apps.isEmpty
+    def isTop = inf
     def ||(v: Vx) = v match {
       case MFin(lits2, apps2, inf2) => factory.makeMFin(lits ++ lits2, mergeUnion(apps, apps2), inf || inf2)
     }

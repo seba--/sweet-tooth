@@ -4,7 +4,8 @@ import org.sugarj.sweettooth.stratego.Syntax
 import org.sugarj.sweettooth.stratego.Syntax.Cons
 
 trait Val[V <: Val[V]] {
-  val dom: Domain[V]
+  def isBottom: Boolean
+  def isTop: Boolean
 
   /* join this value with another value */
   def ||(t2: V): V
@@ -35,7 +36,7 @@ trait Val[V <: Val[V]] {
         case None => // no meet
         case Some(xs) =>
           val met = (xs.zip(ys).map(p => p._1 && p._2))
-          if (met.isEmpty || met.exists(x => x != dom.bottom))
+          if (met.isEmpty || met.exists(!_.isBottom))
             apps += c -> met
       }
     apps

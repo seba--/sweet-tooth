@@ -19,6 +19,8 @@ trait d1_PowersetDomainFactory {
 //    def matchCons(cons: Cons): Set[List[V]] = Set()
   }
   class Inf extends V {
+    def isBottom = false
+    def isTop = true
     def ||(v: Vx) = factory.makeInf
     def &&(v: Vx) = v
     def <=(lessPrecise: Vx) = lessPrecise == this
@@ -33,6 +35,8 @@ trait d1_PowersetDomainFactory {
     def unapply(v: Vx): Boolean = v.isInstanceOf[Inf]
   }
   class Fin(val lits: Set[Lit[_]], val apps: Map[Cons, List[Vx]]) extends V {
+    def isBottom = lits.isEmpty && apps.isEmpty
+    def isTop = false
     def ||(v: Vx) = v match {
       case Inf() => v
       case Fin(lits2, apps2) => factory.makeFin(lits ++ lits2, mergeUnion(apps, apps2))

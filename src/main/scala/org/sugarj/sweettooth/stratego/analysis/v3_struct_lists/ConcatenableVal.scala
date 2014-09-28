@@ -11,13 +11,15 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 //
   trait ConcatenableVal[V <: Val[V]] extends Val[V] {
 
+    val dom: Domain[V]
+
     //  abstract override def liftApp(cons: Cons, xs: List[T]): T = cons match {
     //    case Cons('_Cons, 2) => super.liftApp('_Conc, super.liftApp('_Elem, xs(0)), xs(1))
     //    case _ => super.liftApp(cons, xs)
     //  }
 
     abstract override def matchCons(cons: Cons): Set[List[V]] = {
-      if (this >= dom.top) // It would even be safe to run this.matchAppPat even for `top <= t`. But does this improve precision?
+      if (isTop) // It would even be safe to run this.matchAppPat even for `top <= t`. But does this improve precision?
         super.matchCons(cons)
       else {
         val consres = cons match {

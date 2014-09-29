@@ -34,12 +34,7 @@ class AnalyzeNumTest extends AnalyzeNumSuite with Config {
     dom.liftApp('Succ, res)
   }
   val plus_top_one = dom.liftApp('Succ, List(dom.mliftApp('Zero)))
-  val plus_top_oneMore = {
-    val box = dom.makeBox(dom.top)
-    val res = dom.mliftApp('Succ, box)
-    box.target = res
-    res
-  }
+  val plus_top_oneMore = dom.liftApp('Succ, List(dom.top))
   val plus_oneMore_oneMore = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
   val plus_two_top = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
 }

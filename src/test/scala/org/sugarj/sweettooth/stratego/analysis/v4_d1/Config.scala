@@ -13,7 +13,9 @@ import org.sugarj.sweettooth.stratego.analysis.v4._
 */
 trait Config {
   object factory extends d1_PowersetDomainFactory {
-    trait Vx extends Val[Vx] with BoxableVal[Vx]
+    trait Vx extends Val[Vx] with BoxableVal[Vx] with ConcatenableVal[Vx] {
+      val dom = domain
+    }
     class ConcInf extends Inf with Vx with NoBox[Vx]
     class ConcFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) extends Fin(lits, apps) with Vx with NoBox[Vx]
     class ConcBoxVal extends BoxVal[Vx] with Vx
@@ -33,7 +35,7 @@ trait Config {
   type D = dom.type
 
   object analysis extends
-  v2Analysis[V, D] with
+  v3Analysis[V, D] with
   GraphStack[V, D] with
   StoreTrait[V, D] {
     val dom = Config.this.dom

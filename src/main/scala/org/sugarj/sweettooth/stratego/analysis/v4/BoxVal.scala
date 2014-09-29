@@ -43,20 +43,66 @@ trait NoBox[V <: Val[V]] extends BoxableVal[V] {
 
 abstract class BoxVal[V <: Val[V]] extends BoxableVal[V] {
   var target: V = _
+  val num = BoxVal.nextBoxNum
   def isBoxable = true
 
   def isBottom = target.isBottom
   def isTop = target.isTop
 
-  def ||(v: V) = if (this == v) v else target || v
-  def &&(v: V) = if (this == v) v else target && v
+  def ||(v: V) = if (this eq v) v else target || v
+  def &&(v: V) = if (this eq v) v else target && v
 
   def <=(lessPrecise: V) = this == lessPrecise || target <= lessPrecise
   def >=(morePrecise: V) = this == morePrecise || target >= morePrecise
 
   def matchCons(cons: Cons) = target.matchCons(cons)
 
-  override def toString = s"Box($target)"
+  var syncToString = false
+  override def toString =
+    if (syncToString)
+      s"Box->#$num"
+    else {
+      syncToString = true
+      val res = s"Box#$num($target)"
+      syncToString = false
+      res
+    }
+
+  var syncHashCode = false
+  override def hashCode =
+    if (syncHashCode)
+      104033
+    else {
+      syncHashCode = true
+      val res = target.hashCode
+      syncHashCode = false
+      res
+    }
+
+  var syncEquals = Set[(Int, Int)]()
+  override def equals(a: Any) = a match {
+    case bv: BoxVal[_] =>
+      if (this.num == bv.num)
+        true
+      else if (syncEquals.contains((this.num, bv.num)))
+        true
+      else {
+        syncEquals += this.num -> bv.num
+        syncEquals += bv.num -> this.num
+        this.target == bv.target
+      }
+    case _ => {
+      val h = -Math.abs(a.hashCode + 1)
+      if (syncEquals.contains((this.num, h)))
+        true
+      else {
+        syncEquals += this.num -> h
+        syncEquals += h -> this.num
+        this.target == a
+      }
+    }
+  }
+
 }
 object BoxVal {
   def unapply[V <: Val[V]](v: Val[V]): Option[V] =
@@ -64,6 +110,13 @@ object BoxVal {
       Some(v.asInstanceOf[BoxVal[V]].target)
     else
       None
+
+  private var count = 0
+  def nextBoxNum = synchronized {
+    val num = count
+    count += 1
+    num
+  }
 }
 
 trait BoxDomain[V <: Val[V]] extends Domain[V] {

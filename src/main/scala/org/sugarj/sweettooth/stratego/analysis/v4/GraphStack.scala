@@ -23,7 +23,8 @@ trait GraphStack[V <: BoxableVal[V], D <: BoxDomain[V]] extends StackTrait[V, D]
             val b = dom.makeBox(dom.top)
             boxes += call -> b
             Some(b)
-          case b@Some(_) => b
+          case b@Some(_) =>
+            Some(b.get)
         }
       }
       else

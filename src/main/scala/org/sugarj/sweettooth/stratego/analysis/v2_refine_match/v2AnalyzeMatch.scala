@@ -15,7 +15,7 @@ trait v2AnalyzeMatch[V <: Val[V], D <: Domain[V]] extends AnalyzeMatch[V,D] {
 //    if (!dom.compare(current, refined))
 //      println(s"Refined\n  $current to\n  $refined")
 
-    (refined, mStore)
+    (current && refined, mStore)
   }
 
   def matchPat(p: Pat, t: V, store: Store): (V, Store) = p match {
@@ -36,6 +36,9 @@ trait v2AnalyzeMatch[V <: Val[V], D <: Domain[V]] extends AnalyzeMatch[V,D] {
       val argLists = t.matchCons(cons)
       if (argLists.isEmpty)
         fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
+
+      if (cons.name.length == 2 && cons.name(1) == '_')
+        print("")
 
       val newArgs = argLists flatMap (ys =>
         try {

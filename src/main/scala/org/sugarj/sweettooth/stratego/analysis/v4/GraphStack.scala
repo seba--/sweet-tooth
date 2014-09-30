@@ -6,14 +6,14 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 /**
 * Created by seba on 25/09/14.
 */
-trait GraphStack[V <: BoxableVal[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
+trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
   type Call = (Symbol, Map[Symbol, Closure], Map[Symbol, V])
 
   def emptyStack = new Stack()
 
   class Stack extends super.Stack {
     var st: List[(Call, V)] = List()
-    var boxes: Map[(Call, V), V] = Map()
+    var boxes: Map[(Call, V), V with BoxedVal[V]] = Map()
 
     def terminate(f: Symbol, sargs: Map[Symbol, Closure], targs: Map[Symbol, V], current: V, store: Store): Option[V] = {
       val call = ((f, sargs, targs), current)
@@ -24,7 +24,7 @@ trait GraphStack[V <: BoxableVal[V], D <: BoxDomain[V]] extends StackTrait[V, D]
             boxes += call -> b
             Some(b)
           case b@Some(_) =>
-            Some(b.get)
+            b
         }
       }
       else
@@ -43,8 +43,12 @@ trait GraphStack[V <: BoxableVal[V], D <: BoxDomain[V]] extends StackTrait[V, D]
       boxes.get(call) match {
         case None => result
         case Some(b) =>
-          b.target = result
-          b
+          if (b.target >= result) {
+            b.target = result
+            b
+          }
+          else
+            throw new IllegalStateException(s"Boxed value is more precise than result of recursive call\n    box = ${b.target}\n    res = $result")
       }
     }
 

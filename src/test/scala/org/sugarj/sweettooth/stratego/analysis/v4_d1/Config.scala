@@ -13,21 +13,25 @@ import org.sugarj.sweettooth.stratego.analysis.v4._
 */
 trait Config {
   object factory extends d1_PowersetDomainFactory {
-    trait Vx extends Val[Vx] with BoxableVal[Vx] with ConcatenableVal[Vx] {
+    trait Vx extends Val[Vx] with ConcatenableVal[Vx] {
       val dom = domain
     }
     class ConcInf extends Inf with Vx with NoBox[Vx]
     class ConcFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) extends Fin(lits, apps) with Vx with NoBox[Vx]
-    class ConcBoxVal extends BoxVal[Vx] with Vx
+    class ConcBox extends Box[Vx] with Vx
+    class ConcMMeet(b: MutableVal[Vx], ref: Vx) extends MMeet[Vx](b, ref) with Vx
+    class ConcMJoin(b: MutableVal[Vx], ref: Vx) extends MJoin[Vx](b, ref) with Vx
 
     object domain extends D with BoxDomain[Vx] {
       def makeInf = new ConcInf()
       def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = new ConcFin(lits, apps)
       def makeBox(v: Vx) = {
-        val b = new ConcBoxVal
+        val b = new ConcBox
         b.target = v
         b
       }
+      def makeMMeet(b: MutableVal[Vx], ref: Vx) = new ConcMMeet(b, ref)
+      def makeMJoin(b: MutableVal[Vx], ref: Vx) = new ConcMJoin(b, ref)
     }
   }
   val dom = factory.domain

@@ -11,6 +11,7 @@ object Semantics {
 
   case class Fail(current: Exp, msg: String = "") extends Exception
   def fail(current: Exp, msg: String = "") = throw Fail(current, msg)
+  def tryFail[T](f: =>T): Option[T] = try {Some(f)} catch {case ex: Fail => None}
 
   case class Store(store: Map[Symbol, Trm], sstore: Map[Symbol, Closure]) {
     def lookup(s: Symbol) = store.get(s)

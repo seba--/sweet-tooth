@@ -27,22 +27,15 @@ trait v1AnalyzeMatch[V <: Val[V], D <: Domain[V]] extends AnalyzeMatch[V,D] {
     }
     case Pat.App(cons, xs) =>
       val argLists = t.matchCons(cons)
-      if (argLists.isEmpty)
-        fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
 
-      val newStores = argLists flatMap (ys =>
+      var st = store
+      xs.zip(argLists) map { p =>
         try {
-          Some(xs.zip(ys).foldLeft[Store](store)((st, pt) => matchPat(pt._1, pt._2, st)))
+          st = st join matchPat(p._1, p._2, st)
         } catch {
-          case Fail(e,msg) =>
-            //            println(s"Elimated argument list ys; $msg\n    $e")
-            None
+          case Fail(_,_) => fail(Match(p._1), s"Mismatching pattern. Expected ${p._1}, was ${p._2}")
         }
-        )
-
-      if (newStores.isEmpty)
-        fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
-
-      newStores.foldLeft(store)((st, newStore) => st join newStore)
+      }
+      st
   }
 }

@@ -1,6 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
-import org.sugarj.sweettooth.stratego.Syntax.{Trm, Pat, Cons, litLT}
+import org.sugarj.sweettooth.stratego.Semantics.Fail
+import org.sugarj.sweettooth.stratego.Syntax._
 
 trait d2_PowersetTopTraceDomainFactory {
   import Trm.Lit
@@ -18,7 +19,13 @@ trait d2_PowersetTopTraceDomainFactory {
     }
 
     def &&(v: Vx) = v match {
-      case MFin(lits2, apps2, inf2) => domain.makeMFin(lits intersect  lits2, mergeIntersect(apps, apps2), inf || inf2)
+      case MFin(lits2, apps2, inf2) => {
+        if (inf && !inf2)
+          domain.makeMFin(lits2, apps2, inf2)
+        else if (!inf && inf2)
+          domain.makeMFin(lits, apps, inf)
+        else domain.makeMFin(lits intersect lits2, mergeIntersect(apps, apps2), inf || inf2)
+      }
     }
 
     def <=(lessPrecise: Vx) = lessPrecise match {
@@ -34,14 +41,18 @@ trait d2_PowersetTopTraceDomainFactory {
 
     def >=(morePrecise: Vx) = morePrecise <= domain.makeMFin(lits, apps, inf)
     def matchCons(cons: Cons) = {
-      val fin: Set[List[Vx]] = apps.get(cons) match {
-        case None => Set()
-        case Some(xs) => Set(xs)
+      apps.get(cons) match {
+        case None =>
+          if (inf)
+            for (i <- (1 to cons.ar).toList) yield domain.top
+          else
+            throw new Fail(Match(Pat.App(cons, List())), s"Match failed, expected $cons was $this")
+        case Some(xs) =>
+          if (inf)
+            xs map (_ || domain.top)
+          else
+            xs
       }
-      if (inf)
-        fin + (for (i <- (1 to cons.ar).toList) yield domain.top)
-      else
-        fin
     }
 
     def isEmpty = if (inf) throw new IllegalStateException("Cannot call `isEmpty` on infinite val") else lits.isEmpty && apps.isEmpty

@@ -1,6 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.domain
 
-import org.sugarj.sweettooth.stratego.Syntax.{Trm, Pat, Cons, litLT}
+import org.sugarj.sweettooth.stratego.Semantics.Fail
+import org.sugarj.sweettooth.stratego.Syntax._
 
 trait d1_PowersetDomainFactory {
   import Trm.Lit
@@ -17,7 +18,7 @@ trait d1_PowersetDomainFactory {
     def &&(v: Vx) = v
     def <=(lessPrecise: Vx) = lessPrecise == this
     def >=(morePrecise: Vx) = true
-    def matchCons(cons: Cons) = Set(for (i <- (1 to cons.ar).toList) yield domain.top)
+    def matchCons(cons: Cons) = for (i <- (1 to cons.ar).toList) yield domain.top
     override def toString = "?"
     override def hashCode = 0
     override def equals(a: Any) = a.isInstanceOf[Inf]
@@ -51,8 +52,8 @@ trait d1_PowersetDomainFactory {
 
     def >=(morePrecise: Vx) = morePrecise <= domain.makeFin(lits, apps)
     def matchCons(cons: Cons) = apps.get(cons) match {
-      case None => Set()
-      case Some(xs) => Set(xs)
+      case None => throw new Fail(Match(Pat.App(cons, List())), s"Match failed, expected $cons was $this")// for (i <- (1 to cons.ar).toList) yield domain.bottom
+      case Some(xs) => xs
     }
 
     def isEmpty = lits.isEmpty && apps.isEmpty

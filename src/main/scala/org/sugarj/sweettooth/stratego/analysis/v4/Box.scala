@@ -3,10 +3,13 @@ package org.sugarj.sweettooth.stratego.analysis.v4
 import org.sugarj.sweettooth.stratego.Syntax.Cons
 import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 
-trait MutableVal[V <: Val[V]] extends Val[V]
+trait MutableVal[V <: Val[V]] extends Val[V] {
+  def current: V
+}
 
 trait BoxedVal[V <: Val[V]] extends MutableVal[V] {
   var target: V
+  def current = target
 }
 
 trait NoBox[V <: Val[V]] extends Val[V] {
@@ -118,14 +121,16 @@ abstract class MMeet[V <: Val[V]](val b: MutableVal[V], val ref: V) extends Muta
   val dom: BoxDomain[V]
   print("")
 
+  def current = b.current && ref
+
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V) = dom.makeMMeet(dom.makeMJoin(b, v), ref || v) // (b || v) && (ref || v)
-  def &&(v: V) = dom.makeMMeet(b, ref && v)
+  def ||(v: V): V = dom.makeMMeet(dom.makeMJoin(b, v), ref || v) // (b || v) && (ref || v)
+  def &&(v: V): V = dom.makeMMeet(b, ref && v)
 
-  def <=(v: V) = (b && ref) <= v
-  def >=(v: V) = (b && ref) >= v
+  def <=(v: V) = current <= v
+  def >=(v: V) = current >= v
 
   def matchCons(cons: Cons) = b.matchCons(cons) intersect ref.matchCons(cons)
 
@@ -142,18 +147,20 @@ abstract class MJoin[V <: Val[V]](val b: MutableVal[V], val ref: V) extends Muta
   val dom: BoxDomain[V]
   print("")
 
+  def current = b.current || ref
+
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V) = dom.makeMJoin(b, ref || v)
-  def &&(v: V) = v match {
+  def ||(v: V): V = dom.makeMJoin(b, ref || v)
+  def &&(v: V): V = v match {
     case MJoin(b2, ref2) if b eq b2 => dom.makeMJoin(b, ref && ref2)
     case MMeet(b2, ref2) if b eq b2 => dom.makeMJoin(dom.makeMMeet(b, ref2), dom.makeMMeet(b, ref && ref2))
     case _ => dom.makeMJoin(dom.makeMMeet(b, v), ref && v)
   }
 
-  def <=(v: V) = (b || ref) <= v
-  def >=(v: V) = (b || ref) >= v
+  def <=(v: V) = current <= v
+  def >=(v: V) = current >= v
 
   def matchCons(cons: Cons) = {
     val bs = b.matchCons(cons)

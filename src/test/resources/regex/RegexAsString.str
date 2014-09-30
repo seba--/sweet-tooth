@@ -96,11 +96,11 @@ rules
   ce2str =
     ce2str-lit <+
     ce2str-range <+
-    ce2str-negation /*<+
+    ce2str-negation <+
     ce2str-union <+
     ce2str-intersection <+
     ce2str-predefined-dot <+
-    ce2str-predefined-other */
+    ce2str-predefined-other
 
   ce2str-lit :
     ccexp-lit(lit) -> lit

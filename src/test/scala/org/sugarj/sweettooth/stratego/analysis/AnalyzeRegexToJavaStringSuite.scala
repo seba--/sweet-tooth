@@ -22,7 +22,7 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
   implicit def mkStringTrm(s: String) = eval(lib.String.buildString(s), Trm.App('Foo), baseLib.DEFS)
 
   override def test_strat(strat: String, name: String)(input: =>V)(expected: =>Spec) =
-    if (strat == "ce2str-negation")
+//    if (strat == "ce2str-negation")
       super.test_strat(strat, name)(input)(expected)
 
   val bracket_top: V
@@ -101,24 +101,25 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
 
 
   def string(v: V) = dom.liftApp('_String, v)
-  def unstring(t: V): V = t.matchCons(Cons('_String, 1)).map(_.head).reduce(_||_)
+  def unstring(t: V): V = t.matchCons(Cons('_String, 1)).head
 
   def a_at_end(current: V, end: V, stack:List[(V,V)]=List()): V = {
     if (stack.contains((current, end)))
       return dom.top
 
     var res = dom.bottom
-    if (!current.matchCons(Cons('_Nil, 0)).isEmpty)
+    tryFail {
+      current.matchCons(Cons('_Nil, 0))
       res = res || end
+    }
 
     var args = List(dom.bottom, dom.bottom)
-    for (argList <- current.matchCons(Cons('_Cons, 2)))
-      args = args.zip(argList).map(p => (p._1 || p._2))
-    val hd = args(0)
-    val tl = args(1)
+    tryFail {
+      val List(hd, tl) = current.matchCons(Cons('_Cons, 2))
 
-    val cons = dom.liftApp('_Cons, hd, a_at_end(tl, end, (current,end)::stack))
-    val res2 = res || cons
-    res2
+      val cons = dom.liftApp('_Cons, hd, a_at_end(tl, end, (current, end) :: stack))
+      res = res || cons
+    }
+    res
   }
 }

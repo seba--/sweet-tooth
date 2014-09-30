@@ -34,33 +34,18 @@ trait v2AnalyzeMatch[V <: Val[V], D <: Domain[V]] extends AnalyzeMatch[V,D] {
     }
     case Pat.App(cons, args) =>
       val argLists = t.matchCons(cons)
-      if (argLists.isEmpty)
-        fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
 
-      if (cons.name.length == 2 && cons.name(1) == '_')
-        print("")
-
-      val newArgs = argLists flatMap (ys =>
+      var st = store
+      val newArgs = args.zip(argLists) map { p =>
         try {
-          var itStore = store
-          val matchedArgs = args.zip(ys).map(xy => {
-            val (v, matchStore) = matchPat(xy._1, xy._2, itStore)
-            itStore = matchStore
-            v
-          })
-          Some((matchedArgs, itStore))
+          val (v, st2) = matchPat(p._1, p._2, st)
+          st = st join st2
+          v
         } catch {
-          case Fail(e,msg) =>
-            None
+          case Fail(_,_) => fail(Match(p._1), s"Mismatching pattern. Expected ${p._1}, was ${p._2}")
         }
-        )
+      }
 
-      if (newArgs.isEmpty)
-        fail(Match(p), s"Mismatching pattern. Expected $p, was $t")
-
-      val joinedArgs = newArgs.map(_._1).reduce((xs,ys) => xs.zip(ys).map(xy => (xy._1 || xy._2)))
-      val joinedStore = newArgs.map(_._2).foldLeft(store)((st, newStore) => st join newStore)
-
-      (dom.liftApp(cons, joinedArgs), joinedStore)
+      (dom.liftApp(cons, newArgs), st)
   }
 }

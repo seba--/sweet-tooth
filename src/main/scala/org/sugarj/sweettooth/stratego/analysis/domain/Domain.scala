@@ -17,7 +17,7 @@ trait Val[V <: Val[V]] {
   def <(lessPrecise: V) = !(this >= lessPrecise)
   def >(morePrecise: V) = !(this <= morePrecise)
 
-  def matchCons(cons: Cons): Set[List[V]]
+  def matchCons(cons: Cons): List[V]
 
   def mergeUnion(s1: Map[Cons, List[V]], s2: Map[Cons, List[V]]) = {
     var apps = s1

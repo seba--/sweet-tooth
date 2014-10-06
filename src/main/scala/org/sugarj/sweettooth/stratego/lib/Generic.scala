@@ -17,10 +17,13 @@ object Generic extends Library {
 
   val app = 'app_1_0 -> Def(scala.List('s), scala.List(), SVar('s))
 
+  val equal = 'equal_0_0 -> Def(??('_@@('x, 'x)))
+
   val DEFS =  Map(
     id,
     fail,
     not,
-    app
+    app,
+    equal
   )
 }

@@ -9,6 +9,9 @@ trait ConcatenableVal[V <: Val[V]] extends Val[V] {
 
   val dom: Domain[V]
 
+  // TODO implement <=, >=
+  // TODO canonical list representation with Conc ?
+
   abstract override def &&(v: V): V = {
     if (this == v)
       return v

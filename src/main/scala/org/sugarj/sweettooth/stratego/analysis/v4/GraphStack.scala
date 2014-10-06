@@ -43,8 +43,13 @@ trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
       boxes.get(call) match {
         case None => result
         case Some(b) =>
-          if (b.target >= result) {
+          if (b.isStable) {
+            assert(b.current == result)
+            b
+          }
+          else if (b.target >= result) {
             b.target = result
+            b.markStable
             b
           }
           else

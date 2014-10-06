@@ -22,7 +22,7 @@ abstract class AnalyzeRegexToJavaStringSuite extends AnalysisSuite {
   implicit def mkStringTrm(s: String) = eval(lib.String.buildString(s), Trm.App('Foo), baseLib.DEFS)
 
   override def test_strat(strat: String, name: String)(input: =>V)(expected: =>Spec) =
-//    if (strat == "ce2str-negation")
+    if (strat == "ce2str-negation")
       super.test_strat(strat, name)(input)(expected)
 
   val bracket_top: V

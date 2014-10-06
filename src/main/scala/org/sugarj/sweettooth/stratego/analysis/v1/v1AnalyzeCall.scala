@@ -27,8 +27,8 @@ trait v1AnalyzeCall[V <: Val[V], D <: Domain[V]] extends AnalyzeCall[V,D] {
         stack.push(f, sStore, tStore, current, store)
         try {
           val (t,_) = analyze(d.body, current, Store(tStore, sStore), stack)
-          stack.popSuccess(f, sStore, tStore, current, store, t)
-          (t, clStore.store)
+          val t2 = stack.popSuccess(f, sStore, tStore, current, store, t)
+          (t2, clStore.store)
         } catch {
           case fail:Fail =>
             stack.popFail(f, sStore, tStore, current, store)

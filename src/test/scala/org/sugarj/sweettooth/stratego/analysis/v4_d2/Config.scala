@@ -15,10 +15,25 @@ trait Config {
     trait Vx extends Val[Vx] with ConcatenableVal[Vx] {
       val dom = domain
     }
+    trait MVx extends Vx with ConcatenableVal[Vx] with MutableVal[Vx] {
+      abstract override def matchCons(cons: Cons) = dom.makeMMatches(this, cons)
+    }
+
     class ConcMFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]], inf: Boolean) extends MFin(lits, apps, inf) with Vx with NoBox[Vx]
-    class ConcBox extends Box[Vx] with Vx
-    class ConcMMeet(b: MutableVal[Vx], ref: Vx) extends MMeet[Vx](b, ref) with Vx
-    class ConcMJoin(b: MutableVal[Vx], ref: Vx) extends MJoin[Vx](b, ref) with Vx
+    class ConcBox extends Box[Vx] with MVx
+    class ConcMMeet(_b: MutableVal[Vx], _ref: Vx) extends MMeet[Vx] with MVx {
+      val b = _b
+      val ref = _ref
+    }
+    class ConcMJoin(_b: MutableVal[Vx], _ref: Vx) extends MJoin[Vx] with MVx {
+      val b = _b
+      val ref = _ref
+    }
+    class ConcMMatch(_b: MutableVal[Vx], _cons: Cons, _index: Int) extends MMatch[Vx] with MVx {
+      val b = _b
+      val cons = _cons
+      val index = _index
+    }
 
     object domain extends D with BoxDomain[Vx] {
       def makeMFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]], inf: Boolean) = new ConcMFin(lits, apps, inf)
@@ -29,6 +44,7 @@ trait Config {
       }
       def makeMMeet(b: MutableVal[Vx], ref: Vx) = new ConcMMeet(b, ref)
       def makeMJoin(b: MutableVal[Vx], ref: Vx) = new ConcMJoin(b, ref)
+      def makeMMatch(b: MutableVal[Vx], cons: Cons, index: Int) = new ConcMMatch(b, cons, index)
     }
   }
   val dom = factory.domain

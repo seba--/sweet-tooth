@@ -4,13 +4,16 @@ import org.sugarj.sweettooth.stratego.Syntax.Cons
 import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 
 trait MutableVal[V <: Val[V]] extends Val[V] {
+  val dom: BoxDomain[V]
   def current: V
+
+  def matchCons(cons: Cons): List[V] = dom.makeMMatches(this, cons)
 }
 
 trait BoxedVal[V <: Val[V]] extends MutableVal[V] {
   var target: V
   def isStable: Boolean
-  def markStable: Unit
+  def markStable(): Unit
   def current = target
 }
 
@@ -91,13 +94,12 @@ abstract class Box[V <: Val[V]] extends BoxedVal[V] {
 
   def >=(morePrecise: V) = this == morePrecise || target >= morePrecise
 
-  def matchCons(cons: Cons) = target.matchCons(cons)
-
   var syncToString = false
   override def toString = {
     val stab = if (stable) "" else "!"
-    if (syncToString)
+    if (syncToString) {
       s"Box$stab->#$num"
+    }
     else {
       syncToString = true
       val res = s"Box$stab#$num($target)"
@@ -166,26 +168,32 @@ object Box {
   }
 }
 
-abstract class MMeet[V <: Val[V]](val b: MutableVal[V], val ref: V) extends MutableVal[V] {
+trait MMeet[V <: Val[V]] extends MutableVal[V] {
   val dom: BoxDomain[V]
-  print("")
+
+  val b: MutableVal[V]
+  val ref: V
 
   def current = b.current && ref
 
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V): V = dom.makeMMeet(dom.makeMJoin(b, v), ref || v) // (b || v) && (ref || v)
-  def &&(v: V): V = dom.makeMMeet(b, ref && v)
+  def ||(v: V): V = if (this eq v) v else dom.makeMMeet(dom.makeMJoin(b, v), ref || v) // (b || v) && (ref || v)
+  def &&(v: V): V = if (this eq v) v else dom.makeMMeet(b, ref && v)
 
   def <=(v: V) = b <= v && ref <= v
   def >=(v: V) = b >= v && ref >= v
 
-  def matchCons(cons: Cons) = b.matchCons(cons) intersect ref.matchCons(cons)
-
   override def toString = s"MMeet($b, $ref)"
   override def hashCode = b.hashCode * 173 + ref.hashCode
-  override def equals(a: Any) = current equals a
+  override def equals(a: Any) = a match {
+    case x if x.isInstanceOf[V] =>
+      val v = x.asInstanceOf[V]
+      this <= v && v <= this.asInstanceOf[V]
+    case _ => false
+  }
+
 }
 object MMeet {
   def unapply[V <: Val[V]](v: Val[V]): Option[(MutableVal[V],V)] = v match {
@@ -194,17 +202,19 @@ object MMeet {
   }
 }
 
-abstract class MJoin[V <: Val[V]](val b: MutableVal[V], val ref: V) extends MutableVal[V] {
+trait MJoin[V <: Val[V]] extends MutableVal[V] {
   val dom: BoxDomain[V]
-  print("")
+
+  val b: MutableVal[V]
+  val ref: V
 
   def current = b.current || ref
 
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V): V = dom.makeMJoin(b, ref || v)
-  def &&(v: V): V = v match {
+  def ||(v: V): V = if (this eq v) v else dom.makeMJoin(b, ref || v)
+  def &&(v: V): V = if (this eq v) v else v match {
     case MJoin(b2, ref2) if b eq b2 => dom.makeMJoin(b, ref && ref2)
     case MMeet(b2, ref2) if b eq b2 => dom.makeMJoin(dom.makeMMeet(b, ref2), dom.makeMMeet(b, ref && ref2))
     case _ => dom.makeMJoin(dom.makeMMeet(b, v), ref && v)
@@ -212,13 +222,6 @@ abstract class MJoin[V <: Val[V]](val b: MutableVal[V], val ref: V) extends Muta
 
   def <=(v: V) = b <= v || ref <= v
   def >=(v: V) = b >= v || ref >= v
-
-  def matchCons(cons: Cons) = {
-    val bs = b.matchCons(cons)
-    val rs = ref.matchCons(cons)
-    bs ++ rs
-
-  }
 
   override def toString = s"MJoin($b, $ref)"
   override def hashCode = b.hashCode * 173 + ref.hashCode
@@ -236,42 +239,46 @@ object MJoin {
   }
 }
 
-//abstract class MMatch[V <: Val[V]](val b: MutableVal[V], val cons: Cons, val index: Int) extends MutableVal[V] {
-//  val dom: BoxDomain[V]
-//  print("")
-//
-//  def actual = b.matchCons
-//
-//  def isBottom = b.matchCons(cons)
-//  def isTop = b.isTop && ref.isTop
-//
-//  def ||(v: V) = dom.makeMJoin(b, ref || v)
-//  def &&(v: V) = v match {
-//    case MJoin(b2, ref2) if b eq b2 => dom.makeMJoin(b, ref && ref2)
-//    case MMeet(b2, ref2) if b eq b2 => dom.makeMJoin(dom.makeMMeet(b, ref2), dom.makeMMeet(b, ref && ref2))
-//    case _ => dom.makeMJoin(dom.makeMMeet(b, v), ref && v)
-//  }
-//
-//  def <=(v: V) = (b || ref) <= v
-//  def >=(v: V) = (b || ref) >= v
-//
-//  def matchCons(cons: Cons) = {
-//    val bs = b.matchCons(cons)
-//    val rs = ref.matchCons(cons)
-//    bs ++ rs
-//  }
-//
-//  override def toString = s"MJoin($b, $ref)"
-//}
-//object MMatch {
-//  def unapply[V <: Val[V]](v: Val[V]): Option[(MutableVal[V],V)] = v match {
-//    case m: MJoin[V] => Some((m.b, m.ref))
-//    case _ => None
-//  }
-//}
+trait MMatch[V <: Val[V]] extends MutableVal[V] {
+  val dom: BoxDomain[V]
+
+  val b: MutableVal[V]
+  val cons: Cons
+  val index: Int
+
+  def current = b.current.matchCons(cons)(index)
+
+  def isBottom = current.isBottom
+  def isTop = current.isTop
+
+  def ||(v: V): V = if (this eq v) v else dom.makeMJoin(this, v)
+  def &&(v: V): V = if (this eq v) v else dom.makeMMeet(this, v)
+
+  def <=(v: V) = current <= v
+  def >=(v: V) = current >= v
+
+  override def toString = s"MMatch($b, $cons/$index)"
+  override def hashCode = b.hashCode * 173 + cons.hashCode * 13 + index
+  override def equals(a: Any) = a match {
+    case x if x.isInstanceOf[V] =>
+      val v = x.asInstanceOf[V]
+      this <= v && v <= this.asInstanceOf[V]
+    case _ => false
+  }
+}
+object MMatch {
+  def unapply[V <: Val[V]](v: Val[V]): Option[(MutableVal[V],Cons,Int)] = v match {
+    case m: MMatch[V] => Some((m.b, m.cons, m.index))
+    case _ => None
+  }
+}
 
 trait BoxDomain[V <: Val[V]] extends Domain[V] {
   def makeBox(v: V): V with BoxedVal[V]
   def makeMMeet(b: MutableVal[V], ref: V): V with MutableVal[V]
   def makeMJoin(b: MutableVal[V], ref: V): V with MutableVal[V]
+  def makeMMatch(b: MutableVal[V], cons: Cons, index: Int): V with MutableVal[V]
+
+  def makeMMatches(b: MutableVal[V], cons: Cons): List[V with MutableVal[V]] =
+    (0 until cons.ar).toList map (makeMMatch(b, cons, _))
 }

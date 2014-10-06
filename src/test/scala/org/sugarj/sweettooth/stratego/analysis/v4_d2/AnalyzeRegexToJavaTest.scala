@@ -74,11 +74,11 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   def ce2str_top_rec_skips(skip: List[V=>V])(v: V): V = List(
     ce2str_lit_top,
     ce2str_range_top_rec(v, v),
-    ce2str_negation_top_rec(v)
-//    ce2str_union_top_rec(v, v),
-//    ce2str_intersection_top_rec(v, v),
-//    ce2str_predefined_dot_top,
-//    ce2str_predefined_other_top_rec(v)
+    ce2str_negation_top_rec(v)/*,
+    ce2str_union_top_rec(v, v),
+    ce2str_intersection_top_rec(v, v),
+    ce2str_predefined_dot_top,
+    ce2str_predefined_other_top_rec(v) */
   ).diff(skip.map(_(v))).reduce(_||_)
 
   val ce2str_top = ce2str_top_rec(dom.top)

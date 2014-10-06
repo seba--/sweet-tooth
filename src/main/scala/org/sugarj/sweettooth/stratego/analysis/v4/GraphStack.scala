@@ -49,7 +49,7 @@ trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
           }
           else if (b.target >= result) {
             b.target = result
-            b.markStable
+            b.markStable()
             b
           }
           else

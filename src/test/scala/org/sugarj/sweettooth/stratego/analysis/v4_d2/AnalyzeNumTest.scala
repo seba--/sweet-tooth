@@ -9,6 +9,15 @@ import scala.language.implicitConversions
  */
 class AnalyzeNumTest extends AnalyzeNumSuite with Config {
 
+  val NAT = {
+    val box = dom.makeBox(dom.top)
+    val nat = dom.liftApp('Zero) || dom.liftApp('Succ, box)
+    box.target = nat
+    box.markStable()
+    nat
+  }
+  override lazy val atLeastOne = dom.liftApp('Succ, NAT)
+
   val zero = lift(0)
   val zero_top = lift(0)
   def succ(i: Int) = lift(i+1)
@@ -33,8 +42,8 @@ class AnalyzeNumTest extends AnalyzeNumSuite with Config {
     box.target = res
     dom.liftApp('Succ, res)
   }
-  val plus_top_one = dom.liftApp('Succ, List(dom.mliftApp('Zero)))
-  val plus_top_oneMore = dom.liftApp('Succ, List(dom.top))
-  val plus_oneMore_oneMore = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
+  val plus_top_one = dom.liftApp('Succ, NAT)
+  val plus_top_oneMore = dom.liftApp('Succ, NAT)
+  val plus_oneMore_oneMore = dom.liftApp('Succ, dom.liftApp('Succ, NAT))
   val plus_two_top = dom.liftApp('Succ, List(dom.liftApp('Succ, List(dom.top))))
 }

@@ -60,7 +60,13 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
   val ce2str_top = List(ce2str_lit_top, ce2str_range_top, ce2str_negation_top, ce2str_union_top, ce2str_intersection_top, ce2str_predefined_dot_top, ce2str_predefined_other_top).reduce(_||_)
 
   val r2str_lit1_top = dom.top
-  val r2str_lit2_top = dom.liftApp('_String, dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.top, dom.top))
+  val r2str_lit2_top = {
+    val box = dom.makeBox(dom.top)
+    val rec = dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.liftLit('\\'), box)
+    box.target = rec
+    box.markStable()
+    dom.liftApp('_String, dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.top, box))
+  }
   val r2str_lit_top = r2str_lit1_top || r2str_lit2_top
   val r2str_ccexp_top = bracket_top_rec(ce2str_top)
   val r2str_option_top = dom.liftApp('_String, dom.liftApp('_Cons, dom.liftLit('?'), dom.top))

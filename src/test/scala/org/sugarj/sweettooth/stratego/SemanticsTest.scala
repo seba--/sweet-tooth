@@ -144,4 +144,14 @@ class SemanticsTest extends FunSuite {
     )
     assertFail(eval(s, Trm.App('Foo), DEFS))
   }
+
+  test ("equal") {
+    for (i <- 1 to 5; j <- 1 to 5) {
+      val trm = Trm.App('_, i, j)
+      if (i == j)
+        assertTrm(trm)(eval(Call('equal_0_0), trm, DEFS))
+      else
+        assertFail(eval(Call('equal_0_0), trm, DEFS))
+    }
+  }
 }

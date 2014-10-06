@@ -38,6 +38,7 @@ abstract class AnalysisSuite extends FunSuite {
         val sname = name
         val res = analysis.analyze(e, input, baseLib.DEFS)
         val expectedV = expected match {case Equals(v)=>v;case BoundBy(v,_)=>v}
+        val b = res == expectedV
         lazy val hint = "\n\n" +
           s"exp = $expectedV\n\n" +
           s"res = $res\n\n"

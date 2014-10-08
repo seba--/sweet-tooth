@@ -44,7 +44,7 @@ trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
         case None => result
         case Some(b) =>
           if (b.isStable) {
-            assert(b.current == result)
+            assert(result <= b.current)
             b
           }
           else if (b.target >= result) {

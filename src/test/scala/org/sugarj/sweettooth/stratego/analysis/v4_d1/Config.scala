@@ -44,7 +44,7 @@ trait Config {
         b.target = v
         b
       }
-      def makeMMeet(b: MutableVal[Vx], ref: Vx) = new ConcMMeet(b, ref)
+      def _makeMMeet(b: MutableVal[Vx], ref: Vx) = new ConcMMeet(b, ref)
       def _makeMJoin(b: MutableVal[Vx], ref: Vx) = new ConcMJoin(b, ref)
       def makeMMatch(b: MutableVal[Vx], cons: Cons, index: Int) = new ConcMMatch(b, cons, index)
     }

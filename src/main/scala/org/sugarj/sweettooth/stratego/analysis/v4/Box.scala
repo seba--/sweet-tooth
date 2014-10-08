@@ -210,8 +210,8 @@ trait MMeet[V <: Val[V]] extends MutableVal[V] {
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V): V = if (this eq v) v else (b || v) && (ref || v) // (b || v) && (ref || v)
-  def &&(v: V): V = if (this eq v) v else dom.makeMMeet(b, ref && v)
+  def ||(v: V): V = dom.makeMJoin(this, v)
+  def &&(v: V): V = dom.makeMMeet(this, v)
 
   def <=(v: V) = b <= v || ref <= v
   def >=(v: V) = b >= v && ref >= v
@@ -245,12 +245,8 @@ trait MJoin[V <: Val[V]] extends MutableVal[V] {
   def isBottom = b.isBottom || ref.isBottom
   def isTop = b.isTop && ref.isTop
 
-  def ||(v: V): V = if (this eq v) v else dom.makeMJoin(b, ref || v)
-  def &&(v: V): V = if (this eq v) v else v match {
-    case MJoin(b2, ref2) if b eq b2 => dom.makeMJoin(b, ref && ref2)
-    case MMeet(b2, ref2) if b eq b2 => dom.makeMJoin(dom.makeMMeet(b, ref2), dom.makeMMeet(b, ref && ref2))
-    case _ => dom.makeMJoin(dom.makeMMeet(b, v), ref && v)
-  }
+  def ||(v: V): V = dom.makeMJoin(this, v)
+  def &&(v: V): V = dom.makeMMeet(this, v)
 
   def <=(v: V) = b <= v && ref <= v
   def >=(v: V) = b >= v || ref >= v
@@ -309,14 +305,33 @@ object MMatch {
 
 trait BoxDomain[V <: Val[V]] extends Domain[V] {
   def makeBox(v: V): V with BoxedVal[V]
-  def makeMMeet(b: MutableVal[V], ref: V): V with MutableVal[V]
+  def _makeMMeet(b: MutableVal[V], ref: V): V with MutableVal[V]
+  def makeMMeet(b: MutableVal[V], ref: V): V = (b,ref) match {
+    case (bot,_) if bot.isBottom => this.bottom
+    case (_,bot) if bot.isBottom => this.bottom
+    case (top,_) if top.isTop => ref
+    case (_,top) if top.isTop => b.cast
+    case (MMeet(b1, ref1), _) => (b1 && ref) && ref1
+    case (_, MMeet(b2, ref2)) => (b && b2.cast) && ref2
+    case (MJoin(b1, ref1), _) => (b1 && ref) || (ref1 && ref)
+    case (_, MJoin(b2, ref2)) => (b && b2.cast) || (b && ref2)
+    case (_,_) if b <= ref => ref
+    case (_,_) if b >= ref => b.cast
+    case (_,_) => _makeMMeet(b, ref)
+  }
   def _makeMJoin(b: MutableVal[V], ref: V): V with MutableVal[V]
   def makeMJoin(b: MutableVal[V], ref: V): V = (b,ref) match {
-//    case (_,bot) if bot.isBottom => b.cast
-//    case (_,_) if b eq ref => b.cast
-//    case (MJoin(b1, ref1), _) => (b1 || ref) || ref1
-//    case (_,_) if b <= ref => ref
-//    case (_,_) if b >= ref => b.cast
+    case (bot,_) if bot.isBottom => b.cast
+    case (_,bot) if bot.isBottom => b.cast
+    case (top,_) if top.isTop => this.top
+    case (_,top) if top.isTop => this.top
+    case (_,_) if b eq ref => b.cast
+    case (MMeet(b1, ref1), _) => _makeMJoin(b, ref)
+    case (_, MMeet(b2, ref2)) => _makeMJoin(b, ref)
+    case (MJoin(b1, ref1), _) => (b1 || ref) || ref1
+    case (_, MJoin(b2, ref2)) => (b || b2.cast) || ref2
+    case (_,_) if b <= ref => ref
+    case (_,_) if b >= ref => b.cast
     case (_,_) => _makeMJoin(b, ref)
   }
   def makeMMatch(b: MutableVal[V], cons: Cons, index: Int): V with MutableVal[V]

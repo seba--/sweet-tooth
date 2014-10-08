@@ -74,26 +74,10 @@ abstract class Box[V <: Val[V]] extends BoxedVal[V] {
   def isTop = target.isTop
 
   var syncJoin = false
-  def ||(v: V) =
-    if (this eq v) v
-//    else if (stable && !syncJoin) {
-//      syncJoin = true
-//      val res = target || v
-//      syncJoin = false
-//      res
-//    }
-    else dom.makeMJoin(this, v)
+  def ||(v: V) = dom.makeMJoin(this, v)
 
   var syncMeet = false
-  def &&(v: V) =
-    if (this eq v) v
-//    else if (stable && !syncMeet) {
-//      syncMeet = true
-//      val res = target && v
-//      syncMeet = false
-//      res
-//    }
-    else dom.makeMMeet(this, v)
+  def &&(v: V) = dom.makeMMeet(this, v)
 
 //  def <=(lessPrecise: V) = this == lessPrecise || target <= lessPrecise
   var syncLT: Option[V] = None
@@ -152,36 +136,7 @@ abstract class Box[V <: Val[V]] extends BoxedVal[V] {
   var syncEquals: Set[(Int,Int)] = Set()
   override def equals(a: Any) = a match {
     case x: AnyRef if this eq x => true
-    case bv: Box[_] =>
-      if (this.num == bv.num)
-        true
-      else if (syncEquals.contains((this.num, bv.num)))
-        true
-      else {
-        syncEquals += this.num -> bv.num
-        syncEquals += bv.num -> this.num
-        val res = this.target == bv.target
-        if (!res) {
-          syncEquals -= this.num -> bv.num
-          syncEquals -= bv.num -> this.num
-        }
-        res
-      }
-    case _ => {
-      val h = -Math.abs(a.hashCode + 1)
-      if (syncEquals.contains((this.num, h)))
-        true
-      else {
-        syncEquals += this.num -> h
-        syncEquals += h -> this.num
-        val res = this.target == a
-        if (!res) {
-          syncEquals -= this.num -> h
-          syncEquals -= h -> this.num
-        }
-        res
-      }
-    }
+    case a: Val[V] => this <= a.cast && this >= a.cast
   }
 }
 object Box {
@@ -307,31 +262,28 @@ trait BoxDomain[V <: Val[V]] extends Domain[V] {
   def makeBox(v: V): V with BoxedVal[V]
   def _makeMMeet(b: MutableVal[V], ref: V): V with MutableVal[V]
   def makeMMeet(b: MutableVal[V], ref: V): V = (b,ref) match {
+    case (_,_) if b eq ref => b.cast
     case (bot,_) if bot.isBottom => this.bottom
     case (_,bot) if bot.isBottom => this.bottom
-    case (top,_) if top.isTop => ref
-    case (_,top) if top.isTop => b.cast
     case (MMeet(b1, ref1), _) => (b1 && ref) && ref1
     case (_, MMeet(b2, ref2)) => (b && b2.cast) && ref2
     case (MJoin(b1, ref1), _) => (b1 && ref) || (ref1 && ref)
     case (_, MJoin(b2, ref2)) => (b && b2.cast) || (b && ref2)
-    case (_,_) if b <= ref => ref
-    case (_,_) if b >= ref => b.cast
+    case (_,_) if b <= ref => b.cast
+    case (_,_) if b >= ref => ref
     case (_,_) => _makeMMeet(b, ref)
   }
   def _makeMJoin(b: MutableVal[V], ref: V): V with MutableVal[V]
   def makeMJoin(b: MutableVal[V], ref: V): V = (b,ref) match {
+    case (_,_) if b eq ref => b.cast
     case (bot,_) if bot.isBottom => b.cast
     case (_,bot) if bot.isBottom => b.cast
-    case (top,_) if top.isTop => this.top
-    case (_,top) if top.isTop => this.top
-    case (_,_) if b eq ref => b.cast
     case (MMeet(b1, ref1), _) => _makeMJoin(b, ref)
     case (_, MMeet(b2, ref2)) => _makeMJoin(b, ref)
     case (MJoin(b1, ref1), _) => (b1 || ref) || ref1
     case (_, MJoin(b2, ref2)) => (b || b2.cast) || ref2
-    case (_,_) if b <= ref => ref
-    case (_,_) if b >= ref => b.cast
+    case (_,_) if !ref.isTop && b <= ref => ref
+    case (_,_) if !b.isTop && b >= ref => b.cast
     case (_,_) => _makeMJoin(b, ref)
   }
   def makeMMatch(b: MutableVal[V], cons: Cons, index: Int): V with MutableVal[V]

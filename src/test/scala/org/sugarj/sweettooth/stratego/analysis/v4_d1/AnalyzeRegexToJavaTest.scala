@@ -64,7 +64,6 @@ class AnalyzeRegexToJavaTest extends AnalyzeRegexToJavaStringSuite with Config {
     val box = dom.makeBox(dom.top)
     val rec = dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.liftLit('\\'), box)
     box.target = rec
-    box.markStable()
     dom.liftApp('_String, dom.liftApp('_Nil) || dom.liftApp('_Cons, dom.top, box))
   }
   val r2str_lit_top = r2str_lit1_top || r2str_lit2_top

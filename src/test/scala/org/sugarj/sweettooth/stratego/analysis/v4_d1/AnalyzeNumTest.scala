@@ -13,7 +13,6 @@ class AnalyzeNumTest extends AnalyzeNumSuite with Config {
     val box = dom.makeBox(dom.top)
     val nat = dom.liftApp('Zero) || dom.liftApp('Succ, box)
     box.target = nat
-    box.markStable()
     nat
   }
   override lazy val atLeastOne = dom.liftApp('Succ, NAT)

@@ -21,7 +21,9 @@ trait Config {
     }
     class ConcInf extends Inf with Vx with NoBox[Vx]
     class ConcFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) extends Fin(lits, apps) with Vx with NoBox[Vx]
-    class ConcBox extends Box[Vx] with MVx
+    class ConcBox(v: Vx) extends Box[Vx] with MVx {
+      protected var _target = v
+    }
     class ConcMMeet(_b: MutableVal[Vx], _ref: Vx) extends MMeet[Vx] with MVx {
       val b = _b
       val ref = _ref
@@ -39,11 +41,7 @@ trait Config {
     object domain extends D with BoxDomain[Vx] {
       def makeInf = new ConcInf()
       def makeFin(lits: Set[Lit[_]], apps: Map[Cons, List[Vx]]) = new ConcFin(lits, apps)
-      def makeBox(v: Vx) = {
-        val b = new ConcBox
-        b.target = v
-        b
-      }
+      def _makeBox(v: Vx) = new ConcBox(v)
       def _makeMMeet(b: MutableVal[Vx], ref: Vx) = new ConcMMeet(b, ref)
       def _makeMJoin(b: MutableVal[Vx], ref: Vx) = new ConcMJoin(b, ref)
       def makeMMatch(b: MutableVal[Vx], cons: Cons, index: Int) = new ConcMMatch(b, cons, index)

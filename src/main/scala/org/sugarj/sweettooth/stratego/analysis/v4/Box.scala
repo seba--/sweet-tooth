@@ -14,7 +14,6 @@ trait MutableVal[V <: Val[V]] extends Val[V] {
 trait BoxedVal[V <: Val[V]] extends MutableVal[V] {
   var target: V
   def isStable: Boolean
-  def markStable(): Unit
 }
 
 trait NoBox[V <: Val[V]] extends Val[V] {
@@ -47,20 +46,17 @@ trait NoBox[V <: Val[V]] extends Val[V] {
 abstract class Box[V <: Val[V]] extends BoxedVal[V] {
   val dom: BoxDomain[V]
 
-  private var stable: Boolean = false
-  def isStable = stable
-  def markStable() {
-    stable = true
-  }
-
-
-  private var _target: V = _
+  protected var _target: V
   def target = _target
   def target_=(v: V) {
-    if (stable)
-      throw new IllegalStateException(s"Cannot mutate stable value $this")
+    if (isStable)
+      throw new IllegalStateException(s"Cannot set target of stable value $this")
+    stable = true
     _target = v
   }
+
+  private var stable: Boolean = false
+  def isStable = stable
 
   def current = target match {
     case x: MutableVal[V] => x.current
@@ -259,7 +255,8 @@ object MMatch {
 }
 
 trait BoxDomain[V <: Val[V]] extends Domain[V] {
-  def makeBox(v: V): V with BoxedVal[V]
+  def _makeBox(v: V): V with BoxedVal[V]
+  def makeBox(v: V): V with BoxedVal[V] = _makeBox(v)
   def _makeMMeet(b: MutableVal[V], ref: V): V with MutableVal[V]
   def makeMMeet(b: MutableVal[V], ref: V): V = (b,ref) match {
     case (_,_) if b eq ref => b.cast

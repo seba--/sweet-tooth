@@ -41,7 +41,10 @@ trait Val[V <: Val[V]] {
       }
     apps
   }
+
+  def cast = this.asInstanceOf[V]
 }
+
 
 trait Domain[V <: Val[V]] {
   def top: V

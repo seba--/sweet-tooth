@@ -7,6 +7,8 @@ import org.sugarj.sweettooth.stratego.analysis.domain.{Val, Domain}
 * Created by seba on 25/09/14.
 */
 trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
+  val STACK_LOG = true
+
   type Call = (Symbol, Map[Symbol, Closure], Map[Symbol, V])
 
   def emptyStack = new Stack()
@@ -17,18 +19,22 @@ trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
 
     def terminate(f: Symbol, sargs: Map[Symbol, Closure], targs: Map[Symbol, V], current: V, store: Store): Option[V] = {
       val call = ((f, sargs, targs), current)
-      if (st.contains(call)) {
-        boxes.get(call) match {
-          case None =>
-            val b = dom.makeBox(dom.top)
-            boxes += call -> b
-            Some(b)
-          case b@Some(_) =>
-            b
-        }
+      if (boxes.contains(call)) {
+        Some(boxes(call))
       }
-      else
+      else if (st.contains(call)) {
+        val b = dom.makeBox(dom.top)
+        boxes += call -> b
+        Some(b)
+      }
+      else {
+        if (STACK_LOG) {
+          var indent = ""
+          (1 to st.size) foreach (_ => indent += "  ")
+          println(s"$indent=>$f($current)")
+        }
         None
+      }
     }
 
     def push(f: Symbol, sargs: Map[Symbol, Closure], targs: Map[Symbol, V], current: V, store: Store) {
@@ -40,10 +46,17 @@ trait GraphStack[V <: Val[V], D <: BoxDomain[V]] extends StackTrait[V, D] {
       assert(st.head == call)
       st = st.tail
 
+      if (STACK_LOG) {
+        var indent = ""
+        (1 to st.size) foreach (_ => indent += "  ")
+        println(s"$indent<=$f($result)")
+      }
+
       boxes.get(call) match {
         case None => result
         case Some(b) =>
           if (b.isStable) {
+            val c = (result <= b.current)
             assert(result <= b.current)
             b
           }

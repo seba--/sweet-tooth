@@ -1,6 +1,7 @@
 package org.sugarj.sweettooth.stratego.analysis.v4_d1
 
 import org.scalatest.FunSuite
+import org.sugarj.sweettooth.stratego.Syntax._
 
 /**
  * Created by seba on 30/07/14.
@@ -33,4 +34,18 @@ class BoxTest extends FunSuite with Config {
   test("atLeastOne1 == atLeastOne2") { assert(atLeastOne1 == atLeastOne2) }
   test("atLeastOne1 == atLeastOne3") { assert(atLeastOne1 == atLeastOne3) }
   test("atLeastOne2 == atLeastOne3") { assert(atLeastOne2 == atLeastOne3) }
+
+
+  val pentatope = {
+    val a = 'a -> Def(Call('b), Call('c), Call('d), Call('e))
+    val b = 'b -> Def(Call('a), Call('c), Call('d), Call('e))
+    val c = 'c -> Def(Call('a), Call('b), Call('d), Call('e))
+    val d = 'd -> Def(Call('a), Call('b), Call('c), Call('e))
+    val e = 'e -> Def(Call('a), Call('b), Call('c), Call('d))
+
+    val defs = Map(a,b,c,d,e)
+    analysis.analyze(Call('a), dom.top, defs)
+  }
+
+  println(pentatope)
 }

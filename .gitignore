@@ -3,3 +3,5 @@ stratego-core-stratego-analysis/lib
 target/
 project/
 .idea/
+.DS_Store
+
